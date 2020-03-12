@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace RogueSurvivor.Engine
@@ -171,6 +172,28 @@ namespace RogueSurvivor.Engine
                 list.Add(Parse(l));
 
             return list;
+        }
+
+        public CSVTable ParseToTableFromFile(string path, int nbFields)
+        {
+            List<string> allLines = new List<string>();
+            bool ignoreHeader = true;
+            using (StreamReader reader = File.OpenText(path))
+            {
+                while (!reader.EndOfStream)
+                {
+                    string inLine = reader.ReadLine();
+                    if (ignoreHeader)
+                    {
+                        ignoreHeader = false;
+                        continue;
+                    }
+                    allLines.Add(inLine);
+                }
+                reader.Close();
+            }
+
+            return ParseToTable(allLines.ToArray(), nbFields);
         }
 
         public CSVTable ParseToTable(string[] lines, int nbFields)

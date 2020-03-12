@@ -862,7 +862,7 @@ namespace RogueSurvivor.Engine
             if (filepath == null)
                 throw new ArgumentNullException("filepath");
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving options...");
+            Logger.WriteLine(Logger.Stage.RUN, "saving options...");
 
             IFormatter formatter = CreateFormatter();
             Stream stream = CreateStream(filepath, true);
@@ -871,7 +871,7 @@ namespace RogueSurvivor.Engine
             stream.Flush();
             stream.Close();
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving options... done!");
+            Logger.WriteLine(Logger.Stage.RUN, "saving options... done!");
         }
 
         /// <summary>
@@ -883,7 +883,7 @@ namespace RogueSurvivor.Engine
             if (filepath == null)
                 throw new ArgumentNullException("filepath");
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading options...");
+            Logger.WriteLine(Logger.Stage.RUN, "loading options...");
 
             GameOptions options;
             try
@@ -896,14 +896,14 @@ namespace RogueSurvivor.Engine
             }
             catch (Exception e)
             {
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load options (no custom options?).");
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, String.Format("load exception : {0}.", e.ToString()));
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, "returning default values.");
+                Logger.WriteLine(Logger.Stage.RUN, "failed to load options (no custom options?).");
+                Logger.WriteLine(Logger.Stage.RUN, String.Format("load exception : {0}.", e.ToString()));
+                Logger.WriteLine(Logger.Stage.RUN, "returning default values.");
                 options = new GameOptions();
                 options.ResetToDefaultValues();
             }
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading options... done!");
+            Logger.WriteLine(Logger.Stage.RUN, "loading options... done!");
             return options;
         }
 

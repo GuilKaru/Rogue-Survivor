@@ -561,7 +561,7 @@ namespace RogueSurvivor.Engine
             if (filepath == null)
                 throw new ArgumentNullException("filepath");
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
+            Logger.WriteLine(Logger.Stage.RUN, "saving session...");
 
             IFormatter formatter = CreateFormatter();
             using (Stream stream = CreateStream(filepath, true))
@@ -571,7 +571,7 @@ namespace RogueSurvivor.Engine
                 stream.Close();
             }
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
+            Logger.WriteLine(Logger.Stage.RUN, "saving session... done!");
         }
 
         /// <summary>
@@ -583,7 +583,7 @@ namespace RogueSurvivor.Engine
             if (filepath == null)
                 throw new ArgumentNullException("filepath");
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
+            Logger.WriteLine(Logger.Stage.RUN, "loading session...");
 
             try
             {
@@ -600,14 +600,14 @@ namespace RogueSurvivor.Engine
             }
             catch (Exception e)
             {
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load session (no save game?).");
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, String.Format("load exception : {0}.", e.ToString()));
+                Logger.WriteLine(Logger.Stage.RUN, "failed to load session (no save game?).");
+                Logger.WriteLine(Logger.Stage.RUN, String.Format("load exception : {0}.", e.ToString()));
                 s_TheSession = null;
                 return false;
             }
 
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");
+            Logger.WriteLine(Logger.Stage.RUN, "loading session... done!");
             return true;
         }
 
@@ -616,7 +616,7 @@ namespace RogueSurvivor.Engine
             if (filepath == null)
                 throw new ArgumentNullException("filepath");
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "deleting saved game...");
+            Logger.WriteLine(Logger.Stage.RUN, "deleting saved game...");
 
             bool hasDeleted = false;
             try
@@ -626,13 +626,13 @@ namespace RogueSurvivor.Engine
             }
             catch (Exception e)
             {
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to delete saved game (no save?)");
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, "exception :");
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, e.ToString());
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, "failing silently.");
+                Logger.WriteLine(Logger.Stage.RUN, "failed to delete saved game (no save?)");
+                Logger.WriteLine(Logger.Stage.RUN, "exception :");
+                Logger.WriteLine(Logger.Stage.RUN, e.ToString());
+                Logger.WriteLine(Logger.Stage.RUN, "failing silently.");
             }
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "deleting saved game... done!");
+            Logger.WriteLine(Logger.Stage.RUN, "deleting saved game... done!");
 
             return hasDeleted;
         }

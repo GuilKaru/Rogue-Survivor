@@ -1,19 +1,14 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
-using RogueSurvivor.Engine;
 using RogueSurvivor.Extensions;
 using RogueSurvivor.UI;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using Xna = Microsoft.Xna.Framework;
 
 namespace RogueSurvivor.Gameplay
 {
     static class GameImages
     {
-        private static GraphicsDevice graphicsDevice;
-        private static TextureLoader textureLoader;
-
         const float GRAYLEVEL_DIM_FACTOR = 0.55f;
         const string FOLDER = @"Resources\Images\";
 
@@ -25,12 +20,12 @@ namespace RogueSurvivor.Gameplay
         public const string ACTIVITY_FOLLOWING = @"Activities\following";
         public const string ACTIVITY_FOLLOWING_ORDER = @"Activities\following_order";
         public const string ACTIVITY_FOLLOWING_PLAYER = @"Activities\following_player";
-        public const string ACTIVITY_FOLLOWING_LEADER = @"Activities\following_leader";  // alpha10
+        public const string ACTIVITY_FOLLOWING_LEADER = @"Activities\following_leader";
         public const string ACTIVITY_SLEEPING = @"Activities\sleeping";
 
         public const string ICON_BLAST = @"Icons\blast";
         public const string ICON_CAN_TRADE = @"Icons\can_trade";
-        public const string ICON_HAS_VITAL_ITEM = @"Icons\has_vital_item";  // alpha10.1
+        public const string ICON_HAS_VITAL_ITEM = @"Icons\has_vital_item";
         public const string ICON_THREAT_SAFE = @"Icons\threat_safe";
         public const string ICON_THREAT_DANGER = @"Icons\threat_danger";
         public const string ICON_THREAT_HIGH_DANGER = @"Icons\threat_high_danger";
@@ -42,14 +37,14 @@ namespace RogueSurvivor.Gameplay
         public const string ICON_HEALING = @"Icons\healing";
         public const string ICON_IS_TARGET = @"Icons\is_target";
         public const string ICON_IS_TARGETTED = @"Icons\is_targetted";
-        public const string ICON_IS_TARGETING = @"Icons\is_targeting";  // alpha10
-        public const string ICON_IS_IN_GROUP = @"Icons\is_in_group";  // alpha10
+        public const string ICON_IS_TARGETING = @"Icons\is_targeting";
+        public const string ICON_IS_IN_GROUP = @"Icons\is_in_group";
         public const string ICON_KILLED = @"Icons\killed";
         public const string ICON_LEADER = @"Icons\leader";
         public const string ICON_MELEE_ATTACK = @"Icons\melee_attack";
         public const string ICON_MELEE_MISS = @"Icons\melee_miss";
         public const string ICON_MELEE_DAMAGE = @"Icons\melee_damage";
-        public const string ICON_ODOR_SUPPRESSED = @"Icons\odor_suppressed";  // alpha10
+        public const string ICON_ODOR_SUPPRESSED = @"Icons\odor_suppressed";
         public const string ICON_OUT_OF_AMMO = @"Icons\out_of_ammo";
         public const string ICON_OUT_OF_BATTERIES = @"Icons\out_of_batteries";
         public const string ICON_RANGED_ATTACK = @"Icons\ranged_attack";
@@ -69,20 +64,19 @@ namespace RogueSurvivor.Gameplay
         public const string ICON_LINE_BAD = @"Icons\line_bad";
         public const string ICON_SCENT_LIVING = @"Icons\scent_living";
         public const string ICON_SCENT_ZOMBIEMASTER = @"Icons\scent_zm";
-        //alpha10 obsolete public const string ICON_SCENT_LIVING_SUPRESSOR = @"Icons\scent_living_supressor";
         public const string ICON_AGGRESSOR = @"Icons\enemy_you_aggressor";
         public const string ICON_INDIRECT_ENEMIES = @"Icons\enemy_indirect";
         public const string ICON_SELF_DEFENCE = @"Icons\enemy_you_self_defence";
         public const string ICON_TRAP_ACTIVATED = @"Icons\trap_activated";
-        public const string ICON_TRAP_ACTIVATED_SAFE_GROUP = @"Icons\trap_activated_safe_group";  // alpha10
-        public const string ICON_TRAP_ACTIVATED_SAFE_PLAYER = @"Icons\trap_activated_safe_player";  // alpha10
+        public const string ICON_TRAP_ACTIVATED_SAFE_GROUP = @"Icons\trap_activated_safe_group";
+        public const string ICON_TRAP_ACTIVATED_SAFE_PLAYER = @"Icons\trap_activated_safe_player";
         public const string ICON_TRAP_TRIGGERED = @"Icons\trap_triggered";
-        public const string ICON_TRAP_TRIGGERED_SAFE_GROUP = @"Icons\trap_triggered_safe_group";  // alpha10
-        public const string ICON_TRAP_TRIGGERED_SAFE_PLAYER = @"Icons\trap_triggered_safe_player";  // alpha10
+        public const string ICON_TRAP_TRIGGERED_SAFE_GROUP = @"Icons\trap_triggered_safe_group";
+        public const string ICON_TRAP_TRIGGERED_SAFE_PLAYER = @"Icons\trap_triggered_safe_player";
         public const string ICON_SANITY_DISTURBED = @"Icons\sanity_disturbed";
         public const string ICON_SANITY_INSANE = @"Icons\sanity_insane";
         public const string ICON_BORING_ITEM = @"Icons\boring_item";
-        public const string ICON_ZGRAB = @"Icons\zgrab";  // alpha10
+        public const string ICON_ZGRAB = @"Icons\zgrab";
 
         public const string TILE_FLOOR_ASPHALT = @"Tiles\floor_asphalt";
         public const string TILE_FLOOR_CONCRETE = @"Tiles\floor_concrete";
@@ -223,7 +217,6 @@ namespace RogueSurvivor.Gameplay
         public const string OBJ_HOSPITAL_DOOR_CLOSED = @"MapObjects\hospital_door_closed";
         public const string OBJ_HOSPITAL_DOOR_BROKEN = @"MapObjects\hospital_door_broken";
 
-        // alpha10
         public const string OBJ_GARDEN_FENCE = @"MapObjects\garden_fence";
         public const string OBJ_WIRE_FENCE = @"MapObjects\wire_fence";
 
@@ -468,478 +461,470 @@ namespace RogueSurvivor.Gameplay
         public const string ROT5_1 = @"rot5_1";
         public const string ROT5_2 = @"rot5_2";
 
+        private static GraphicsDevice graphicsDevice;
+        private static TextureLoader textureLoader;
+
         static readonly Dictionary<string, Texture2D> s_Images = new Dictionary<string, Texture2D>();
         static readonly Dictionary<string, Texture2D> s_GrayLevelImages = new Dictionary<string, Texture2D>();
 
-        public static void LoadResources(IRogueUI ui)
+        public static void LoadResources(GameLoader loader, GraphicsDevice _graphicsDevice)
         {
-            graphicsDevice = ui.Graphics.GraphicsDevice;
+            graphicsDevice = _graphicsDevice;
             textureLoader = new TextureLoader(graphicsDevice);
 
-            Notify(ui, "icons...");
-            Load(ACTIVITY_CHASING);
-            Load(ACTIVITY_CHASING_PLAYER);
-            Load(ACTIVITY_TRACKING);
-            Load(ACTIVITY_FLEEING);
-            Load(ACTIVITY_FLEEING_FROM_EXPLOSIVE);
-            Load(ACTIVITY_FOLLOWING);
-            Load(ACTIVITY_FOLLOWING_ORDER);
-            Load(ACTIVITY_FOLLOWING_PLAYER);
-            Load(ACTIVITY_FOLLOWING_LEADER); // alpha10
-            Load(ACTIVITY_SLEEPING);
+            loader.CategoryStart("Loading images...");
 
-            Load(ICON_EXPIRED_FOOD);
-            Load(ICON_TARGET);
-            Load(ICON_MELEE_ATTACK);
-            Load(ICON_MELEE_MISS);
-            Load(ICON_MELEE_DAMAGE);
-            Load(ICON_RANGED_ATTACK);
-            Load(ICON_RANGED_DAMAGE);
-            Load(ICON_RANGED_MISS);
-            Load(ICON_KILLED);
-            Load(ICON_LEADER);
-            Load(ICON_RUNNING);
-            Load(ICON_CANT_RUN);
-            Load(ICON_CAN_TRADE);
-            Load(ICON_HAS_VITAL_ITEM);  // alpha10.1
-            Load(ICON_OUT_OF_AMMO);
-            Load(ICON_OUT_OF_BATTERIES);
-            Load(ICON_SLEEP_ALMOST_SLEEPY);
-            Load(ICON_SLEEP_SLEEPY);
-            Load(ICON_SLEEP_EXHAUSTED);
-            Load(ICON_SPOILED_FOOD);
-            Load(ICON_FOOD_ALMOST_HUNGRY);
-            Load(ICON_FOOD_HUNGRY);
-            Load(ICON_FOOD_STARVING);
-            Load(ICON_LINE_BAD);
-            Load(ICON_LINE_BLOCKED);
-            Load(ICON_LINE_CLEAR);
-            Load(ICON_BLAST);
-            Load(ICON_HEALING);
-            Load(ICON_IS_TARGET);
-            Load(ICON_IS_TARGETTED);
-            Load(ICON_IS_TARGETING); // alpha10
-            Load(ICON_IS_IN_GROUP);  // alpha10
-            Load(ICON_THREAT_DANGER);
-            Load(ICON_THREAT_HIGH_DANGER);
-            Load(ICON_THREAT_SAFE);
-            Load(ICON_SCENT_LIVING);
-            Load(ICON_SCENT_ZOMBIEMASTER);
-            //Load(ICON_SCENT_LIVING_SUPRESSOR); // alpha10 obsolete
-            Load(ICON_ODOR_SUPPRESSED);  // alpha10
-            Load(ICON_SELF_DEFENCE);
-            Load(ICON_INDIRECT_ENEMIES);
-            Load(ICON_AGGRESSOR);
-            Load(ICON_TRAP_ACTIVATED);
-            Load(ICON_TRAP_ACTIVATED_SAFE_GROUP);  // alpha10
-            Load(ICON_TRAP_ACTIVATED_SAFE_PLAYER);  // alpha10
-            Load(ICON_TRAP_TRIGGERED);
-            Load(ICON_TRAP_TRIGGERED_SAFE_GROUP);  // alpha10
-            Load(ICON_TRAP_TRIGGERED_SAFE_PLAYER);  // alpha10
-            Load(ICON_ROT_ALMOST_HUNGRY);
-            Load(ICON_ROT_HUNGRY);
-            Load(ICON_ROT_STARVING);
-            Load(ICON_SANITY_INSANE);
-            Load(ICON_SANITY_DISTURBED);
-            Load(ICON_BORING_ITEM);
-            Load(ICON_ZGRAB);  // alpha10
+            loader.LoadImage(ACTIVITY_CHASING);
+            loader.LoadImage(ACTIVITY_CHASING_PLAYER);
+            loader.LoadImage(ACTIVITY_TRACKING);
+            loader.LoadImage(ACTIVITY_FLEEING);
+            loader.LoadImage(ACTIVITY_FLEEING_FROM_EXPLOSIVE);
+            loader.LoadImage(ACTIVITY_FOLLOWING);
+            loader.LoadImage(ACTIVITY_FOLLOWING_ORDER);
+            loader.LoadImage(ACTIVITY_FOLLOWING_PLAYER);
+            loader.LoadImage(ACTIVITY_FOLLOWING_LEADER);
+            loader.LoadImage(ACTIVITY_SLEEPING);
 
-            Notify(ui, "tiles...");
-            Load(TILE_FLOOR_ASPHALT);
-            Load(TILE_FLOOR_CONCRETE);
-            Load(TILE_FLOOR_GRASS);
-            Load(TILE_FLOOR_OFFICE);
-            Load(TILE_FLOOR_PLANKS);
-            Load(TILE_FLOOR_SEWER_WATER);
-            Load(TILE_FLOOR_SEWER_WATER_ANIM1);
-            Load(TILE_FLOOR_SEWER_WATER_ANIM2);
-            Load(TILE_FLOOR_SEWER_WATER_ANIM3);
-            Load(TILE_FLOOR_SEWER_WATER_COVER);
-            Load(TILE_FLOOR_TILES);
-            Load(TILE_FLOOR_WALKWAY);
+            loader.LoadImage(ICON_EXPIRED_FOOD);
+            loader.LoadImage(ICON_TARGET);
+            loader.LoadImage(ICON_MELEE_ATTACK);
+            loader.LoadImage(ICON_MELEE_MISS);
+            loader.LoadImage(ICON_MELEE_DAMAGE);
+            loader.LoadImage(ICON_RANGED_ATTACK);
+            loader.LoadImage(ICON_RANGED_DAMAGE);
+            loader.LoadImage(ICON_RANGED_MISS);
+            loader.LoadImage(ICON_KILLED);
+            loader.LoadImage(ICON_LEADER);
+            loader.LoadImage(ICON_RUNNING);
+            loader.LoadImage(ICON_CANT_RUN);
+            loader.LoadImage(ICON_CAN_TRADE);
+            loader.LoadImage(ICON_HAS_VITAL_ITEM);
+            loader.LoadImage(ICON_OUT_OF_AMMO);
+            loader.LoadImage(ICON_OUT_OF_BATTERIES);
+            loader.LoadImage(ICON_SLEEP_ALMOST_SLEEPY);
+            loader.LoadImage(ICON_SLEEP_SLEEPY);
+            loader.LoadImage(ICON_SLEEP_EXHAUSTED);
+            loader.LoadImage(ICON_SPOILED_FOOD);
+            loader.LoadImage(ICON_FOOD_ALMOST_HUNGRY);
+            loader.LoadImage(ICON_FOOD_HUNGRY);
+            loader.LoadImage(ICON_FOOD_STARVING);
+            loader.LoadImage(ICON_LINE_BAD);
+            loader.LoadImage(ICON_LINE_BLOCKED);
+            loader.LoadImage(ICON_LINE_CLEAR);
+            loader.LoadImage(ICON_BLAST);
+            loader.LoadImage(ICON_HEALING);
+            loader.LoadImage(ICON_IS_TARGET);
+            loader.LoadImage(ICON_IS_TARGETTED);
+            loader.LoadImage(ICON_IS_TARGETING);
+            loader.LoadImage(ICON_IS_IN_GROUP);
+            loader.LoadImage(ICON_THREAT_DANGER);
+            loader.LoadImage(ICON_THREAT_HIGH_DANGER);
+            loader.LoadImage(ICON_THREAT_SAFE);
+            loader.LoadImage(ICON_SCENT_LIVING);
+            loader.LoadImage(ICON_SCENT_ZOMBIEMASTER);
+            loader.LoadImage(ICON_ODOR_SUPPRESSED);
+            loader.LoadImage(ICON_SELF_DEFENCE);
+            loader.LoadImage(ICON_INDIRECT_ENEMIES);
+            loader.LoadImage(ICON_AGGRESSOR);
+            loader.LoadImage(ICON_TRAP_ACTIVATED);
+            loader.LoadImage(ICON_TRAP_ACTIVATED_SAFE_GROUP);
+            loader.LoadImage(ICON_TRAP_ACTIVATED_SAFE_PLAYER);
+            loader.LoadImage(ICON_TRAP_TRIGGERED);
+            loader.LoadImage(ICON_TRAP_TRIGGERED_SAFE_GROUP);
+            loader.LoadImage(ICON_TRAP_TRIGGERED_SAFE_PLAYER);
+            loader.LoadImage(ICON_ROT_ALMOST_HUNGRY);
+            loader.LoadImage(ICON_ROT_HUNGRY);
+            loader.LoadImage(ICON_ROT_STARVING);
+            loader.LoadImage(ICON_SANITY_INSANE);
+            loader.LoadImage(ICON_SANITY_DISTURBED);
+            loader.LoadImage(ICON_BORING_ITEM);
+            loader.LoadImage(ICON_ZGRAB);
 
-            Load(TILE_ROAD_ASPHALT_NS);
-            Load(TILE_ROAD_ASPHALT_EW);
-            Load(TILE_RAIL_ES);
+            loader.LoadImage(TILE_FLOOR_ASPHALT);
+            loader.LoadImage(TILE_FLOOR_CONCRETE);
+            loader.LoadImage(TILE_FLOOR_GRASS);
+            loader.LoadImage(TILE_FLOOR_OFFICE);
+            loader.LoadImage(TILE_FLOOR_PLANKS);
+            loader.LoadImage(TILE_FLOOR_SEWER_WATER);
+            loader.LoadImage(TILE_FLOOR_SEWER_WATER_ANIM1);
+            loader.LoadImage(TILE_FLOOR_SEWER_WATER_ANIM2);
+            loader.LoadImage(TILE_FLOOR_SEWER_WATER_ANIM3);
+            loader.LoadImage(TILE_FLOOR_SEWER_WATER_COVER);
+            loader.LoadImage(TILE_FLOOR_TILES);
+            loader.LoadImage(TILE_FLOOR_WALKWAY);
 
-            Load(TILE_WALL_BRICK);
-            Load(TILE_WALL_CHAR_OFFICE);
-            Load(TILE_WALL_HOSPITAL);
-            Load(TILE_WALL_SEWER);
-            Load(TILE_WALL_STONE);
+            loader.LoadImage(TILE_ROAD_ASPHALT_NS);
+            loader.LoadImage(TILE_ROAD_ASPHALT_EW);
+            loader.LoadImage(TILE_RAIL_ES);
 
-            Notify(ui, "tile decorations...");
-            Load(DECO_BLOODIED_FLOOR);
-            Load(DECO_BLOODIED_WALL);
-            Load(DECO_ZOMBIE_REMAINS);
-            Load(DECO_VOMIT);
+            loader.LoadImage(TILE_WALL_BRICK);
+            loader.LoadImage(TILE_WALL_CHAR_OFFICE);
+            loader.LoadImage(TILE_WALL_HOSPITAL);
+            loader.LoadImage(TILE_WALL_SEWER);
+            loader.LoadImage(TILE_WALL_STONE);
 
-            Load(DECO_POSTERS1);
-            Load(DECO_POSTERS2);
-            Load(DECO_TAGS1);
-            Load(DECO_TAGS2);
-            Load(DECO_TAGS3);
-            Load(DECO_TAGS4);
-            Load(DECO_TAGS5);
-            Load(DECO_TAGS6);
-            Load(DECO_TAGS7);
+            loader.LoadImage(DECO_BLOODIED_FLOOR);
+            loader.LoadImage(DECO_BLOODIED_WALL);
+            loader.LoadImage(DECO_ZOMBIE_REMAINS);
+            loader.LoadImage(DECO_VOMIT);
 
-            Load(DECO_SHOP_CONSTRUCTION);
-            Load(DECO_SHOP_GENERAL_STORE);
-            Load(DECO_SHOP_GROCERY);
-            Load(DECO_SHOP_GUNSHOP);
-            Load(DECO_SHOP_PHARMACY);
-            Load(DECO_SHOP_SPORTSWEAR);
-            Load(DECO_SHOP_HUNTING);
+            loader.LoadImage(DECO_POSTERS1);
+            loader.LoadImage(DECO_POSTERS2);
+            loader.LoadImage(DECO_TAGS1);
+            loader.LoadImage(DECO_TAGS2);
+            loader.LoadImage(DECO_TAGS3);
+            loader.LoadImage(DECO_TAGS4);
+            loader.LoadImage(DECO_TAGS5);
+            loader.LoadImage(DECO_TAGS6);
+            loader.LoadImage(DECO_TAGS7);
 
-            Load(DECO_CHAR_OFFICE);
-            Load(DECO_CHAR_FLOOR_LOGO);
-            Load(DECO_CHAR_POSTER1);
-            Load(DECO_CHAR_POSTER2);
-            Load(DECO_CHAR_POSTER3);
+            loader.LoadImage(DECO_SHOP_CONSTRUCTION);
+            loader.LoadImage(DECO_SHOP_GENERAL_STORE);
+            loader.LoadImage(DECO_SHOP_GROCERY);
+            loader.LoadImage(DECO_SHOP_GUNSHOP);
+            loader.LoadImage(DECO_SHOP_PHARMACY);
+            loader.LoadImage(DECO_SHOP_SPORTSWEAR);
+            loader.LoadImage(DECO_SHOP_HUNTING);
 
-            Load(DECO_PLAYER_TAG1);
-            Load(DECO_PLAYER_TAG2);
-            Load(DECO_PLAYER_TAG3);
-            Load(DECO_PLAYER_TAG4);
+            loader.LoadImage(DECO_CHAR_OFFICE);
+            loader.LoadImage(DECO_CHAR_FLOOR_LOGO);
+            loader.LoadImage(DECO_CHAR_POSTER1);
+            loader.LoadImage(DECO_CHAR_POSTER2);
+            loader.LoadImage(DECO_CHAR_POSTER3);
 
-            Load(DECO_ROGUEDJACK_TAG);
+            loader.LoadImage(DECO_PLAYER_TAG1);
+            loader.LoadImage(DECO_PLAYER_TAG2);
+            loader.LoadImage(DECO_PLAYER_TAG3);
+            loader.LoadImage(DECO_PLAYER_TAG4);
 
-            Load(DECO_SEWER_LADDER);
-            Load(DECO_SEWER_HOLE);
-            Load(DECO_SEWERS_BUILDING);
+            loader.LoadImage(DECO_ROGUEDJACK_TAG);
 
-            Load(DECO_SUBWAY_BUILDING);
+            loader.LoadImage(DECO_SEWER_LADDER);
+            loader.LoadImage(DECO_SEWER_HOLE);
+            loader.LoadImage(DECO_SEWERS_BUILDING);
 
-            Load(DECO_STAIRS_DOWN);
-            Load(DECO_STAIRS_UP);
+            loader.LoadImage(DECO_SUBWAY_BUILDING);
 
-            Load(DECO_POWER_SIGN_BIG);
+            loader.LoadImage(DECO_STAIRS_DOWN);
+            loader.LoadImage(DECO_STAIRS_UP);
 
-            Load(DECO_POLICE_STATION);
+            loader.LoadImage(DECO_POWER_SIGN_BIG);
 
-            Load(DECO_HOSPITAL);
+            loader.LoadImage(DECO_POLICE_STATION);
 
-            Notify(ui, "map objects...");
-            Load(OBJ_TREE);
+            loader.LoadImage(DECO_HOSPITAL);
 
-            Load(OBJ_WOODEN_DOOR_CLOSED);
-            Load(OBJ_WOODEN_DOOR_OPEN);
-            Load(OBJ_WOODEN_DOOR_BROKEN);
+            loader.LoadImage(OBJ_TREE);
 
-            Load(OBJ_GLASS_DOOR_CLOSED);
-            Load(OBJ_GLASS_DOOR_OPEN);
-            Load(OBJ_GLASS_DOOR_BROKEN);
+            loader.LoadImage(OBJ_WOODEN_DOOR_CLOSED);
+            loader.LoadImage(OBJ_WOODEN_DOOR_OPEN);
+            loader.LoadImage(OBJ_WOODEN_DOOR_BROKEN);
 
-            Load(OBJ_CHAR_DOOR_BROKEN);
-            Load(OBJ_CHAR_DOOR_CLOSED);
-            Load(OBJ_CHAR_DOOR_OPEN);
+            loader.LoadImage(OBJ_GLASS_DOOR_CLOSED);
+            loader.LoadImage(OBJ_GLASS_DOOR_OPEN);
+            loader.LoadImage(OBJ_GLASS_DOOR_BROKEN);
 
-            Load(OBJ_WINDOW_CLOSED);
-            Load(OBJ_WINDOW_OPEN);
-            Load(OBJ_WINDOW_BROKEN);
+            loader.LoadImage(OBJ_CHAR_DOOR_BROKEN);
+            loader.LoadImage(OBJ_CHAR_DOOR_CLOSED);
+            loader.LoadImage(OBJ_CHAR_DOOR_OPEN);
 
-            Load(OBJ_BENCH);
-            Load(OBJ_FENCE);
+            loader.LoadImage(OBJ_WINDOW_CLOSED);
+            loader.LoadImage(OBJ_WINDOW_OPEN);
+            loader.LoadImage(OBJ_WINDOW_BROKEN);
 
-            Load(OBJ_CAR1);
-            Load(OBJ_CAR2);
-            Load(OBJ_CAR3);
-            Load(OBJ_CAR4);
+            loader.LoadImage(OBJ_BENCH);
+            loader.LoadImage(OBJ_FENCE);
 
-            Load(OBJ_SHOP_SHELF);
-            Load(OBJ_BED);
-            Load(OBJ_WARDROBE);
-            Load(OBJ_TABLE);
-            Load(OBJ_FRIDGE);
-            Load(OBJ_DRAWER);
-            Load(OBJ_CHAIR);
-            Load(OBJ_NIGHT_TABLE);
+            loader.LoadImage(OBJ_CAR1);
+            loader.LoadImage(OBJ_CAR2);
+            loader.LoadImage(OBJ_CAR3);
+            loader.LoadImage(OBJ_CAR4);
 
-            Load(OBJ_CHAR_CHAIR);
-            Load(OBJ_CHAR_TABLE);
+            loader.LoadImage(OBJ_SHOP_SHELF);
+            loader.LoadImage(OBJ_BED);
+            loader.LoadImage(OBJ_WARDROBE);
+            loader.LoadImage(OBJ_TABLE);
+            loader.LoadImage(OBJ_FRIDGE);
+            loader.LoadImage(OBJ_DRAWER);
+            loader.LoadImage(OBJ_CHAIR);
+            loader.LoadImage(OBJ_NIGHT_TABLE);
 
-            Load(OBJ_IRON_BENCH);
-            Load(OBJ_IRON_FENCE);
-            Load(OBJ_IRON_DOOR_BROKEN);
-            Load(OBJ_IRON_DOOR_CLOSED);
-            Load(OBJ_IRON_DOOR_OPEN);
+            loader.LoadImage(OBJ_CHAR_CHAIR);
+            loader.LoadImage(OBJ_CHAR_TABLE);
 
-            Load(OBJ_BARRELS);
-            Load(OBJ_JUNK);
+            loader.LoadImage(OBJ_IRON_BENCH);
+            loader.LoadImage(OBJ_IRON_FENCE);
+            loader.LoadImage(OBJ_IRON_DOOR_BROKEN);
+            loader.LoadImage(OBJ_IRON_DOOR_CLOSED);
+            loader.LoadImage(OBJ_IRON_DOOR_OPEN);
 
-            Load(OBJ_POWERGEN_OFF);
-            Load(OBJ_POWERGEN_ON);
+            loader.LoadImage(OBJ_BARRELS);
+            loader.LoadImage(OBJ_JUNK);
 
-            Load(OBJ_GATE_CLOSED);
-            Load(OBJ_GATE_OPEN);
+            loader.LoadImage(OBJ_POWERGEN_OFF);
+            loader.LoadImage(OBJ_POWERGEN_ON);
 
-            Load(OBJ_BOARD);
+            loader.LoadImage(OBJ_GATE_CLOSED);
+            loader.LoadImage(OBJ_GATE_OPEN);
 
-            Load(OBJ_SMALL_WOODEN_FORTIFICATION);
-            Load(OBJ_LARGE_WOODEN_FORTIFICATION);
+            loader.LoadImage(OBJ_BOARD);
 
-            Load(OBJ_HOSPITAL_BED);
-            Load(OBJ_HOSPITAL_CHAIR);
-            Load(OBJ_HOSPITAL_DOOR_BROKEN);
-            Load(OBJ_HOSPITAL_DOOR_CLOSED);
-            Load(OBJ_HOSPITAL_DOOR_OPEN);
-            Load(OBJ_HOSPITAL_NIGHT_TABLE);
-            Load(OBJ_HOSPITAL_WARDROBE);
+            loader.LoadImage(OBJ_SMALL_WOODEN_FORTIFICATION);
+            loader.LoadImage(OBJ_LARGE_WOODEN_FORTIFICATION);
 
-            // alpha10
-            Load(OBJ_GARDEN_FENCE);
-            Load(OBJ_WIRE_FENCE);
+            loader.LoadImage(OBJ_HOSPITAL_BED);
+            loader.LoadImage(OBJ_HOSPITAL_CHAIR);
+            loader.LoadImage(OBJ_HOSPITAL_DOOR_BROKEN);
+            loader.LoadImage(OBJ_HOSPITAL_DOOR_CLOSED);
+            loader.LoadImage(OBJ_HOSPITAL_DOOR_OPEN);
+            loader.LoadImage(OBJ_HOSPITAL_NIGHT_TABLE);
+            loader.LoadImage(OBJ_HOSPITAL_WARDROBE);
 
-            Notify(ui, "actors...");
-            Load(PLAYER_FOLLOWER);
-            Load(PLAYER_FOLLOWER_TRUST);
-            Load(PLAYER_FOLLOWER_BOND);
+            loader.LoadImage(OBJ_GARDEN_FENCE);
+            loader.LoadImage(OBJ_WIRE_FENCE);
 
-            Load(ACTOR_SKELETON);
-            Load(ACTOR_RED_EYED_SKELETON);
-            Load(ACTOR_RED_SKELETON);
-            Load(ACTOR_ZOMBIE);
-            Load(ACTOR_DARK_EYED_ZOMBIE);
-            Load(ACTOR_DARK_ZOMBIE);
-            Load(ACTOR_MALE_NEOPHYTE);
-            Load(ACTOR_FEMALE_NEOPHYTE);
-            Load(ACTOR_MALE_DISCIPLE);
-            Load(ACTOR_FEMALE_DISCIPLE);
-            Load(ACTOR_ZOMBIE_MASTER);
-            Load(ACTOR_ZOMBIE_LORD);
-            Load(ACTOR_ZOMBIE_PRINCE);
-            Load(ACTOR_RAT_ZOMBIE);
-            Load(ACTOR_SEWERS_THING);
-            Load(ACTOR_JASON_MYERS);
-            Load(ACTOR_BIG_BEAR);
-            Load(ACTOR_FAMU_FATARU);
-            Load(ACTOR_SANTAMAN);
-            Load(ACTOR_ROGUEDJACK);
-            Load(ACTOR_DUCKMAN);
-            Load(ACTOR_HANS_VON_HANZ);
+            loader.LoadImage(PLAYER_FOLLOWER);
+            loader.LoadImage(PLAYER_FOLLOWER_TRUST);
+            loader.LoadImage(PLAYER_FOLLOWER_BOND);
 
-            Notify(ui, "actor decorations...");
+            loader.LoadImage(ACTOR_SKELETON);
+            loader.LoadImage(ACTOR_RED_EYED_SKELETON);
+            loader.LoadImage(ACTOR_RED_SKELETON);
+            loader.LoadImage(ACTOR_ZOMBIE);
+            loader.LoadImage(ACTOR_DARK_EYED_ZOMBIE);
+            loader.LoadImage(ACTOR_DARK_ZOMBIE);
+            loader.LoadImage(ACTOR_MALE_NEOPHYTE);
+            loader.LoadImage(ACTOR_FEMALE_NEOPHYTE);
+            loader.LoadImage(ACTOR_MALE_DISCIPLE);
+            loader.LoadImage(ACTOR_FEMALE_DISCIPLE);
+            loader.LoadImage(ACTOR_ZOMBIE_MASTER);
+            loader.LoadImage(ACTOR_ZOMBIE_LORD);
+            loader.LoadImage(ACTOR_ZOMBIE_PRINCE);
+            loader.LoadImage(ACTOR_RAT_ZOMBIE);
+            loader.LoadImage(ACTOR_SEWERS_THING);
+            loader.LoadImage(ACTOR_JASON_MYERS);
+            loader.LoadImage(ACTOR_BIG_BEAR);
+            loader.LoadImage(ACTOR_FAMU_FATARU);
+            loader.LoadImage(ACTOR_SANTAMAN);
+            loader.LoadImage(ACTOR_ROGUEDJACK);
+            loader.LoadImage(ACTOR_DUCKMAN);
+            loader.LoadImage(ACTOR_HANS_VON_HANZ);
 
-            Load(BLOODIED);
+            loader.LoadImage(BLOODIED);
 
-            Load(MALE_SKIN1);
-            Load(MALE_SKIN2);
-            Load(MALE_SKIN3);
-            Load(MALE_SKIN4);
-            Load(MALE_SKIN5);
-            Load(MALE_SHIRT1);
-            Load(MALE_SHIRT2);
-            Load(MALE_SHIRT3);
-            Load(MALE_SHIRT4);
-            Load(MALE_SHIRT5);
-            Load(MALE_HAIR1);
-            Load(MALE_HAIR2);
-            Load(MALE_HAIR3);
-            Load(MALE_HAIR4);
-            Load(MALE_HAIR5);
-            Load(MALE_HAIR6);
-            Load(MALE_HAIR7);
-            Load(MALE_HAIR8);
-            Load(MALE_PANTS1);
-            Load(MALE_PANTS2);
-            Load(MALE_PANTS3);
-            Load(MALE_PANTS4);
-            Load(MALE_PANTS5);
-            Load(MALE_SHOES1);
-            Load(MALE_SHOES2);
-            Load(MALE_SHOES3);
-            Load(MALE_EYES1);
-            Load(MALE_EYES2);
-            Load(MALE_EYES3);
-            Load(MALE_EYES4);
-            Load(MALE_EYES5);
-            Load(MALE_EYES6);
+            loader.LoadImage(MALE_SKIN1);
+            loader.LoadImage(MALE_SKIN2);
+            loader.LoadImage(MALE_SKIN3);
+            loader.LoadImage(MALE_SKIN4);
+            loader.LoadImage(MALE_SKIN5);
+            loader.LoadImage(MALE_SHIRT1);
+            loader.LoadImage(MALE_SHIRT2);
+            loader.LoadImage(MALE_SHIRT3);
+            loader.LoadImage(MALE_SHIRT4);
+            loader.LoadImage(MALE_SHIRT5);
+            loader.LoadImage(MALE_HAIR1);
+            loader.LoadImage(MALE_HAIR2);
+            loader.LoadImage(MALE_HAIR3);
+            loader.LoadImage(MALE_HAIR4);
+            loader.LoadImage(MALE_HAIR5);
+            loader.LoadImage(MALE_HAIR6);
+            loader.LoadImage(MALE_HAIR7);
+            loader.LoadImage(MALE_HAIR8);
+            loader.LoadImage(MALE_PANTS1);
+            loader.LoadImage(MALE_PANTS2);
+            loader.LoadImage(MALE_PANTS3);
+            loader.LoadImage(MALE_PANTS4);
+            loader.LoadImage(MALE_PANTS5);
+            loader.LoadImage(MALE_SHOES1);
+            loader.LoadImage(MALE_SHOES2);
+            loader.LoadImage(MALE_SHOES3);
+            loader.LoadImage(MALE_EYES1);
+            loader.LoadImage(MALE_EYES2);
+            loader.LoadImage(MALE_EYES3);
+            loader.LoadImage(MALE_EYES4);
+            loader.LoadImage(MALE_EYES5);
+            loader.LoadImage(MALE_EYES6);
 
-            Load(FEMALE_SKIN1);
-            Load(FEMALE_SKIN2);
-            Load(FEMALE_SKIN3);
-            Load(FEMALE_SKIN4);
-            Load(FEMALE_SKIN5);
-            Load(FEMALE_SHIRT1);
-            Load(FEMALE_SHIRT2);
-            Load(FEMALE_SHIRT3);
-            Load(FEMALE_SHIRT4);
-            Load(FEMALE_HAIR1);
-            Load(FEMALE_HAIR2);
-            Load(FEMALE_HAIR3);
-            Load(FEMALE_HAIR4);
-            Load(FEMALE_HAIR5);
-            Load(FEMALE_HAIR6);
-            Load(FEMALE_HAIR7);
-            Load(FEMALE_PANTS1);
-            Load(FEMALE_PANTS2);
-            Load(FEMALE_PANTS3);
-            Load(FEMALE_PANTS4);
-            Load(FEMALE_PANTS5);
-            Load(FEMALE_SHOES1);
-            Load(FEMALE_SHOES2);
-            Load(FEMALE_SHOES3);
-            Load(FEMALE_EYES1);
-            Load(FEMALE_EYES2);
-            Load(FEMALE_EYES3);
-            Load(FEMALE_EYES4);
-            Load(FEMALE_EYES5);
-            Load(FEMALE_EYES6);
+            loader.LoadImage(FEMALE_SKIN1);
+            loader.LoadImage(FEMALE_SKIN2);
+            loader.LoadImage(FEMALE_SKIN3);
+            loader.LoadImage(FEMALE_SKIN4);
+            loader.LoadImage(FEMALE_SKIN5);
+            loader.LoadImage(FEMALE_SHIRT1);
+            loader.LoadImage(FEMALE_SHIRT2);
+            loader.LoadImage(FEMALE_SHIRT3);
+            loader.LoadImage(FEMALE_SHIRT4);
+            loader.LoadImage(FEMALE_HAIR1);
+            loader.LoadImage(FEMALE_HAIR2);
+            loader.LoadImage(FEMALE_HAIR3);
+            loader.LoadImage(FEMALE_HAIR4);
+            loader.LoadImage(FEMALE_HAIR5);
+            loader.LoadImage(FEMALE_HAIR6);
+            loader.LoadImage(FEMALE_HAIR7);
+            loader.LoadImage(FEMALE_PANTS1);
+            loader.LoadImage(FEMALE_PANTS2);
+            loader.LoadImage(FEMALE_PANTS3);
+            loader.LoadImage(FEMALE_PANTS4);
+            loader.LoadImage(FEMALE_PANTS5);
+            loader.LoadImage(FEMALE_SHOES1);
+            loader.LoadImage(FEMALE_SHOES2);
+            loader.LoadImage(FEMALE_SHOES3);
+            loader.LoadImage(FEMALE_EYES1);
+            loader.LoadImage(FEMALE_EYES2);
+            loader.LoadImage(FEMALE_EYES3);
+            loader.LoadImage(FEMALE_EYES4);
+            loader.LoadImage(FEMALE_EYES5);
+            loader.LoadImage(FEMALE_EYES6);
 
-            Load(ARMY_HELMET);
-            Load(ARMY_PANTS);
-            Load(ARMY_SHIRT);
-            Load(ARMY_SHOES);
+            loader.LoadImage(ARMY_HELMET);
+            loader.LoadImage(ARMY_PANTS);
+            loader.LoadImage(ARMY_SHIRT);
+            loader.LoadImage(ARMY_SHOES);
 
-            Load(BIKER_HAIR1);
-            Load(BIKER_HAIR2);
-            Load(BIKER_HAIR3);
-            Load(BIKER_PANTS);
-            Load(BIKER_SHOES);
+            loader.LoadImage(BIKER_HAIR1);
+            loader.LoadImage(BIKER_HAIR2);
+            loader.LoadImage(BIKER_HAIR3);
+            loader.LoadImage(BIKER_PANTS);
+            loader.LoadImage(BIKER_SHOES);
 
-            Load(GANGSTA_HAT);
-            Load(GANGSTA_PANTS);
-            Load(GANGSTA_SHIRT);
+            loader.LoadImage(GANGSTA_HAT);
+            loader.LoadImage(GANGSTA_PANTS);
+            loader.LoadImage(GANGSTA_SHIRT);
 
-            Load(CHARGUARD_HAIR);
-            Load(CHARGUARD_PANTS);
+            loader.LoadImage(CHARGUARD_HAIR);
+            loader.LoadImage(CHARGUARD_PANTS);
 
-            Load(POLICE_HAT);
-            Load(POLICE_PANTS);
-            Load(POLICE_SHOES);
-            Load(POLICE_UNIFORM);
+            loader.LoadImage(POLICE_HAT);
+            loader.LoadImage(POLICE_PANTS);
+            loader.LoadImage(POLICE_SHOES);
+            loader.LoadImage(POLICE_UNIFORM);
 
-            Load(BLACKOP_SUIT);
+            loader.LoadImage(BLACKOP_SUIT);
 
-            Load(HOSPITAL_DOCTOR_UNIFORM);
-            Load(HOSPITAL_NURSE_UNIFORM);
-            Load(HOSPITAL_PATIENT_UNIFORM);
+            loader.LoadImage(HOSPITAL_DOCTOR_UNIFORM);
+            loader.LoadImage(HOSPITAL_NURSE_UNIFORM);
+            loader.LoadImage(HOSPITAL_PATIENT_UNIFORM);
 
-            Load(SURVIVOR_FEMALE_BANDANA);
-            Load(SURVIVOR_MALE_BANDANA);
+            loader.LoadImage(SURVIVOR_FEMALE_BANDANA);
+            loader.LoadImage(SURVIVOR_MALE_BANDANA);
 
-            Load(DOG_SKIN1);
-            Load(DOG_SKIN2);
-            Load(DOG_SKIN3);
+            loader.LoadImage(DOG_SKIN1);
+            loader.LoadImage(DOG_SKIN2);
+            loader.LoadImage(DOG_SKIN3);
 
-            Notify(ui, "items...");
-            Load(ITEM_SLOT);
-            Load(ITEM_EQUIPPED);
+            loader.LoadImage(ITEM_SLOT);
+            loader.LoadImage(ITEM_EQUIPPED);
 
-            Load(ITEM_AMMO_BOLTS);
-            Load(ITEM_AMMO_HEAVY_PISTOL);
-            Load(ITEM_AMMO_HEAVY_RIFLE);
-            Load(ITEM_AMMO_LIGHT_PISTOL);
-            Load(ITEM_AMMO_LIGHT_RIFLE);
-            Load(ITEM_AMMO_SHOTGUN);
-            Load(ITEM_ARMY_BODYARMOR);
-            Load(ITEM_ARMY_PISTOL);
-            Load(ITEM_ARMY_RATION);
-            Load(ITEM_ARMY_RIFLE);
-            Load(ITEM_BANDAGES);
-            Load(ITEM_BARBED_WIRE);
-            Load(ITEM_BASEBALL_BAT);
-            Load(ITEM_BEAR_TRAP);
-            Load(ITEM_BIGBEAR_BAT);
-            Load(ITEM_BIG_FLASHLIGHT);
-            Load(ITEM_BIG_FLASHLIGHT_OUT);
-            Load(ITEM_BLACKOPS_GPS);
-            Load(ITEM_BOOK);
-            Load(ITEM_CANNED_FOOD);
-            Load(ITEM_CELL_PHONE);
-            Load(ITEM_CHAR_LIGHT_BODYARMOR);
-            Load(ITEM_COMBAT_KNIFE);
-            Load(ITEM_CROWBAR);
-            Load(ITEM_EMPTY_CAN);
-            Load(ITEM_FAMU_FATARU_KATANA);
-            Load(ITEM_FLASHLIGHT);
-            Load(ITEM_FLASHLIGHT_OUT);
-            Load(ITEM_FREE_ANGELS_JACKET);
-            Load(ITEM_GOLF_CLUB);
-            Load(ITEM_GRENADE);
-            Load(ITEM_GRENADE_PRIMED);
-            Load(ITEM_GROCERIES);
-            Load(ITEM_HELLS_SOULS_JACKET);
-            Load(ITEM_HUGE_HAMMER);
-            Load(ITEM_HUNTER_VEST);
-            Load(ITEM_HUNTING_CROSSBOW);
-            Load(ITEM_HUNTING_RIFLE);
-            Load(ITEM_IMPROVISED_CLUB);
-            Load(ITEM_IMPROVISED_SPEAR);
-            Load(ITEM_IRON_GOLF_CLUB);
-            Load(ITEM_JASON_MYERS_AXE);
-            Load(ITEM_HANS_VON_HANZ_PISTOL);
-            Load(ITEM_KOLT_REVOLVER);
-            Load(ITEM_MAGAZINE);
-            Load(ITEM_MEDIKIT);
-            Load(ITEM_PILLS_ANTIVIRAL);
-            Load(ITEM_PILLS_BLUE);
-            Load(ITEM_PILLS_GREEN);
-            Load(ITEM_PILLS_SAN);
-            Load(ITEM_PISTOL);
-            Load(ITEM_POLICE_JACKET);
-            Load(ITEM_POLICE_RADIO);
-            Load(ITEM_POLICE_RIOT_ARMOR);
-            Load(ITEM_PRECISION_RIFLE);
-            Load(ITEM_ROGUEDJACK_KEYBOARD);
-            Load(ITEM_SANTAMAN_SHOTGUN);
-            Load(ITEM_SHOTGUN);
-            Load(ITEM_SHOVEL);
-            Load(ITEM_SMALL_HAMMER);
-            Load(ITEM_SHORT_SHOVEL);
-            Load(ITEM_SPIKES);
-            Load(ITEM_SPRAYPAINT);
-            Load(ITEM_SPRAYPAINT2);
-            Load(ITEM_SPRAYPAINT3);
-            Load(ITEM_SPRAYPAINT4);
-            Load(ITEM_STENCH_KILLER);
-            Load(ITEM_SUBWAY_BADGE);
-            Load(ITEM_TRUNCHEON);
-            Load(ITEM_WOODEN_PLANK);
-            Load(ITEM_ZTRACKER);
+            loader.LoadImage(ITEM_AMMO_BOLTS);
+            loader.LoadImage(ITEM_AMMO_HEAVY_PISTOL);
+            loader.LoadImage(ITEM_AMMO_HEAVY_RIFLE);
+            loader.LoadImage(ITEM_AMMO_LIGHT_PISTOL);
+            loader.LoadImage(ITEM_AMMO_LIGHT_RIFLE);
+            loader.LoadImage(ITEM_AMMO_SHOTGUN);
+            loader.LoadImage(ITEM_ARMY_BODYARMOR);
+            loader.LoadImage(ITEM_ARMY_PISTOL);
+            loader.LoadImage(ITEM_ARMY_RATION);
+            loader.LoadImage(ITEM_ARMY_RIFLE);
+            loader.LoadImage(ITEM_BANDAGES);
+            loader.LoadImage(ITEM_BARBED_WIRE);
+            loader.LoadImage(ITEM_BASEBALL_BAT);
+            loader.LoadImage(ITEM_BEAR_TRAP);
+            loader.LoadImage(ITEM_BIGBEAR_BAT);
+            loader.LoadImage(ITEM_BIG_FLASHLIGHT);
+            loader.LoadImage(ITEM_BIG_FLASHLIGHT_OUT);
+            loader.LoadImage(ITEM_BLACKOPS_GPS);
+            loader.LoadImage(ITEM_BOOK);
+            loader.LoadImage(ITEM_CANNED_FOOD);
+            loader.LoadImage(ITEM_CELL_PHONE);
+            loader.LoadImage(ITEM_CHAR_LIGHT_BODYARMOR);
+            loader.LoadImage(ITEM_COMBAT_KNIFE);
+            loader.LoadImage(ITEM_CROWBAR);
+            loader.LoadImage(ITEM_EMPTY_CAN);
+            loader.LoadImage(ITEM_FAMU_FATARU_KATANA);
+            loader.LoadImage(ITEM_FLASHLIGHT);
+            loader.LoadImage(ITEM_FLASHLIGHT_OUT);
+            loader.LoadImage(ITEM_FREE_ANGELS_JACKET);
+            loader.LoadImage(ITEM_GOLF_CLUB);
+            loader.LoadImage(ITEM_GRENADE);
+            loader.LoadImage(ITEM_GRENADE_PRIMED);
+            loader.LoadImage(ITEM_GROCERIES);
+            loader.LoadImage(ITEM_HELLS_SOULS_JACKET);
+            loader.LoadImage(ITEM_HUGE_HAMMER);
+            loader.LoadImage(ITEM_HUNTER_VEST);
+            loader.LoadImage(ITEM_HUNTING_CROSSBOW);
+            loader.LoadImage(ITEM_HUNTING_RIFLE);
+            loader.LoadImage(ITEM_IMPROVISED_CLUB);
+            loader.LoadImage(ITEM_IMPROVISED_SPEAR);
+            loader.LoadImage(ITEM_IRON_GOLF_CLUB);
+            loader.LoadImage(ITEM_JASON_MYERS_AXE);
+            loader.LoadImage(ITEM_HANS_VON_HANZ_PISTOL);
+            loader.LoadImage(ITEM_KOLT_REVOLVER);
+            loader.LoadImage(ITEM_MAGAZINE);
+            loader.LoadImage(ITEM_MEDIKIT);
+            loader.LoadImage(ITEM_PILLS_ANTIVIRAL);
+            loader.LoadImage(ITEM_PILLS_BLUE);
+            loader.LoadImage(ITEM_PILLS_GREEN);
+            loader.LoadImage(ITEM_PILLS_SAN);
+            loader.LoadImage(ITEM_PISTOL);
+            loader.LoadImage(ITEM_POLICE_JACKET);
+            loader.LoadImage(ITEM_POLICE_RADIO);
+            loader.LoadImage(ITEM_POLICE_RIOT_ARMOR);
+            loader.LoadImage(ITEM_PRECISION_RIFLE);
+            loader.LoadImage(ITEM_ROGUEDJACK_KEYBOARD);
+            loader.LoadImage(ITEM_SANTAMAN_SHOTGUN);
+            loader.LoadImage(ITEM_SHOTGUN);
+            loader.LoadImage(ITEM_SHOVEL);
+            loader.LoadImage(ITEM_SMALL_HAMMER);
+            loader.LoadImage(ITEM_SHORT_SHOVEL);
+            loader.LoadImage(ITEM_SPIKES);
+            loader.LoadImage(ITEM_SPRAYPAINT);
+            loader.LoadImage(ITEM_SPRAYPAINT2);
+            loader.LoadImage(ITEM_SPRAYPAINT3);
+            loader.LoadImage(ITEM_SPRAYPAINT4);
+            loader.LoadImage(ITEM_STENCH_KILLER);
+            loader.LoadImage(ITEM_SUBWAY_BADGE);
+            loader.LoadImage(ITEM_TRUNCHEON);
+            loader.LoadImage(ITEM_WOODEN_PLANK);
+            loader.LoadImage(ITEM_ZTRACKER);
 
-            Notify(ui, "effects...");
+            loader.LoadImage(EFFECT_BARRICADED);
+            loader.LoadImage(EFFECT_ONFIRE);
 
-            Load(EFFECT_BARRICADED);
-            Load(EFFECT_ONFIRE);
+            loader.LoadImage(UNDEF);
+            loader.LoadImage(MAP_EXIT);
+            loader.LoadImage(MINI_BLACKOPS_POSITION);
+            loader.LoadImage(MINI_FOLLOWER_POSITION);
+            loader.LoadImage(MINI_PLAYER_POSITION);
+            loader.LoadImage(MINI_PLAYER_TAG1);
+            loader.LoadImage(MINI_PLAYER_TAG2);
+            loader.LoadImage(MINI_PLAYER_TAG3);
+            loader.LoadImage(MINI_PLAYER_TAG4);
+            loader.LoadImage(MINI_POLICE_POSITION);
+            loader.LoadImage(MINI_UNDEAD_POSITION);
+            loader.LoadImage(TRACK_BLACKOPS_POSITION);
+            loader.LoadImage(TRACK_FOLLOWER_POSITION);
+            loader.LoadImage(TRACK_POLICE_POSITION);
+            loader.LoadImage(TRACK_UNDEAD_POSITION);
+            loader.LoadImage(WEATHER_RAIN1);
+            loader.LoadImage(WEATHER_RAIN2);
+            loader.LoadImage(WEATHER_HEAVY_RAIN1);
+            loader.LoadImage(WEATHER_HEAVY_RAIN2);
+            loader.LoadImage(ROT1_1);
+            loader.LoadImage(ROT1_2);
+            loader.LoadImage(ROT2_1);
+            loader.LoadImage(ROT2_2);
+            loader.LoadImage(ROT3_1);
+            loader.LoadImage(ROT3_2);
+            loader.LoadImage(ROT4_1);
+            loader.LoadImage(ROT4_2);
+            loader.LoadImage(ROT5_1);
+            loader.LoadImage(ROT5_2);
+            loader.LoadImage(CORPSE_DRAGGED);
 
-            Notify(ui, "misc...");
-            Load(UNDEF);
-            Load(MAP_EXIT);
-            Load(MINI_BLACKOPS_POSITION);
-            Load(MINI_FOLLOWER_POSITION);
-            Load(MINI_PLAYER_POSITION);
-            Load(MINI_PLAYER_TAG1);
-            Load(MINI_PLAYER_TAG2);
-            Load(MINI_PLAYER_TAG3);
-            Load(MINI_PLAYER_TAG4);
-            Load(MINI_POLICE_POSITION);
-            Load(MINI_UNDEAD_POSITION);
-            Load(TRACK_BLACKOPS_POSITION);
-            Load(TRACK_FOLLOWER_POSITION);
-            Load(TRACK_POLICE_POSITION);
-            Load(TRACK_UNDEAD_POSITION);
-            Load(WEATHER_RAIN1);
-            Load(WEATHER_RAIN2);
-            Load(WEATHER_HEAVY_RAIN1);
-            Load(WEATHER_HEAVY_RAIN2);
-            Load(ROT1_1);
-            Load(ROT1_2);
-            Load(ROT2_1);
-            Load(ROT2_2);
-            Load(ROT3_1);
-            Load(ROT3_2);
-            Load(ROT4_1);
-            Load(ROT4_2);
-            Load(ROT5_1);
-            Load(ROT5_2);
-            Load(CORPSE_DRAGGED);
-
-            Notify(ui, "done!");
+            loader.CategoryEnd("Loading images done.");
         }
 
-        static void Load(string id)
+        public static void Load(string id)
         {
             string file = FOLDER + id + ".png";
             try
@@ -954,7 +939,7 @@ namespace RogueSurvivor.Gameplay
             }
         }
 
-        static Texture2D MakeGrayLevel(Texture2D img)
+        private static Texture2D MakeGrayLevel(Texture2D img)
         {
             Xna.Color[] inBufer = new Xna.Color[img.Width * img.Height];
             img.GetData(inBufer);
@@ -973,13 +958,6 @@ namespace RogueSurvivor.Gameplay
 
             grayed.SetData(outBufer);
             return grayed;
-        }
-
-        static void Notify(IRogueUI ui, string stage)
-        {
-            ui.UI_Clear(Color.Black);
-            ui.UI_DrawStringBold(Color.White, "Loading resources: " + stage, 0, 0);
-            ui.UI_Repaint();
         }
 
         public static Texture2D Get(string imageID)

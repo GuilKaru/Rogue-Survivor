@@ -699,26 +699,26 @@ namespace RogueSurvivor.Engine
 
         public RogueGame(IRogueUI UI)
         {
-            Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame()");
+            Logger.WriteLine(Logger.Stage.INIT, "RogueGame()");
 
             m_UI = UI;
 
-            Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating MusicManager");
+            Logger.WriteLine(Logger.Stage.INIT, "creating MusicManager");
             m_MusicManager = new MusicManager();
 
-            Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating MessageManager");
+            Logger.WriteLine(Logger.Stage.INIT, "creating MessageManager");
             m_MessageManager = new MessageManager(MESSAGES_SPACING, MESSAGES_FADEOUT, MESSAGES_HISTORY);
 
             m_Session = Session.Get;
-            Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Rules");
+            Logger.WriteLine(Logger.Stage.INIT, "creating Rules");
             m_Rules = new Rules(new DiceRoller(m_Session.Seed));
 
             BaseTownGenerator.Parameters genParams = BaseTownGenerator.DEFAULT_PARAMS;
             genParams.MapWidth = genParams.MapHeight = 100;
-            Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Generator");
+            Logger.WriteLine(Logger.Stage.INIT, "creating Generator");
             m_TownGenerator = new StdTownGenerator(this, genParams);
 
-            Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating options, keys, hints.");
+            Logger.WriteLine(Logger.Stage.INIT, "creating options, keys, hints.");
             s_Options = new GameOptions();
             s_Options.ResetToDefaultValues();
             s_KeyBindings = new Keybindings();
@@ -726,13 +726,13 @@ namespace RogueSurvivor.Engine
             s_Hints = new GameHintsStatus();
             s_Hints.ResetAllHints();
 
-            Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating dbs");
+            Logger.WriteLine(Logger.Stage.INIT, "creating dbs");
             m_GameFactions = new GameFactions();
             m_GameActors = new GameActors();
             m_GameItems = new GameItems();
             m_GameTiles = new GameTiles();
 
-            Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame() done.");
+            Logger.WriteLine(Logger.Stage.INIT, "RogueGame() done.");
         }
 
         public void AddMessage(Message msg)
@@ -1018,79 +1018,21 @@ namespace RogueSurvivor.Engine
         /// <summary>
         /// Init game
         /// </summary>
-        public void Init()
+        public void Init(GameLoader loader)
         {
-            // first run inits.
-            InitDirectories();
+            InitDirectories(loader);
+            LoadData(loader);
+            LoadMusic(loader);
+            LoadSfxs(loader);
 
-            // load data.
-            LoadData();
-
-            // load options.
-            LoadOptions();
-
-            // load hints.
-            LoadHints();
-
-            // apply options.
-            ApplyOptions(false);
-
-            // load keys.
-            LoadKeybindings();
-
-            // load music & sfxs.
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Loading music...", 0, 0);
-            m_UI.UI_Repaint();
-
-            m_MusicManager.Load(GameMusics.ARMY, GameMusics.ARMY_FILE);
-            m_MusicManager.Load(GameMusics.BIGBEAR_THEME_SONG, GameMusics.BIGBEAR_THEME_SONG_FILE);
-            m_MusicManager.Load(GameMusics.BIKER, GameMusics.BIKER_FILE);
-            m_MusicManager.Load(GameMusics.CHAR_UNDERGROUND_FACILITY, GameMusics.CHAR_UNDERGROUND_FACILITY_FILE);
-            m_MusicManager.Load(GameMusics.DUCKMAN_THEME_SONG, GameMusics.DUCKMAN_THEME_SONG_FILE);
-            m_MusicManager.Load(GameMusics.FAMU_FATARU_THEME_SONG, GameMusics.FAMU_FATARU_THEME_SONG_FILE);
-            m_MusicManager.Load(GameMusics.FIGHT, GameMusics.FIGHT_FILE);
-            m_MusicManager.Load(GameMusics.GANGSTA, GameMusics.GANGSTA_FILE);
-            m_MusicManager.Load(GameMusics.HANS_VON_HANZ_THEME_SONG, GameMusics.HANS_VON_HANZ_THEME_SONG_FILE);
-            m_MusicManager.Load(GameMusics.HEYTHERE, GameMusics.HEYTHERE_FILE);
-            m_MusicManager.Load(GameMusics.HOSPITAL, GameMusics.HOSPITAL_FILE);
-            m_MusicManager.Load(GameMusics.INSANE, GameMusics.INSANE_FILE);
-            m_MusicManager.Load(GameMusics.INTERLUDE, GameMusics.INTERLUDE_FILE);
-            m_MusicManager.Load(GameMusics.INTRO, GameMusics.INTRO_FILE);
-            m_MusicManager.Load(GameMusics.LIMBO, GameMusics.LIMBO_FILE);
-            m_MusicManager.Load(GameMusics.PLAYER_DEATH, GameMusics.PLAYER_DEATH_FILE);
-            m_MusicManager.Load(GameMusics.REINCARNATE, GameMusics.REINCARNATE_FILE);
-            m_MusicManager.Load(GameMusics.ROGUEDJACK_THEME_SONG, GameMusics.ROGUEDJACK_THEME_SONG_FILE);
-            m_MusicManager.Load(GameMusics.SANTAMAN_THEME_SONG, GameMusics.SANTAMAN_THEME_SONG_FILE);
-            m_MusicManager.Load(GameMusics.SEWERS, GameMusics.SEWERS_FILE);
-            m_MusicManager.Load(GameMusics.SLEEP, GameMusics.SLEEP_FILE);
-            m_MusicManager.Load(GameMusics.SUBWAY, GameMusics.SUBWAY_FILE);
-            m_MusicManager.Load(GameMusics.SURVIVORS, GameMusics.SURVIVORS_FILE);
-            // alpha10
-            m_MusicManager.Load(GameMusics.SURFACE, GameMusics.SURFACE_FILE);
-
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Loading music... done!", 0, 0);
-            m_UI.UI_Repaint();
-
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Loading sfxs...", 0, 0);
-            m_UI.UI_Repaint();
-
-            m_MusicManager.Load(GameSounds.UNDEAD_EAT, GameSounds.UNDEAD_EAT_FILE);
-            m_MusicManager.Load(GameSounds.UNDEAD_RISE, GameSounds.UNDEAD_RISE_FILE);
-            m_MusicManager.Load(GameSounds.NIGHTMARE, GameSounds.NIGHTMARE_FILE);
-
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Loading sfxs... done!", 0, 0);
-            m_UI.UI_Repaint();
-
-
-            // load and parse manual.
-            LoadManual();
-
-            // load hi score table.
-            LoadHiScoreTable();
+            loader.CategoryStart("Loading misc...");
+            loader.Action(() => LoadOptions());
+            loader.Action(() => LoadHints());
+            loader.Action(() => ApplyOptions(false));
+            loader.Action(() => LoadKeybindings());
+            loader.Action(() => LoadManual());
+            loader.Action(() => LoadHiScoreTable());
+            loader.CategoryEnd();
         }
 
         public void Exit()
@@ -1147,44 +1089,29 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        void InitDirectories()
+        void InitDirectories(GameLoader loader)
         {
-            int gy = 0;
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.Yellow, "Checking user game directories...", 0, gy);
-            gy += BOLD_LINE_SPACING;
-            m_UI.UI_Repaint();
+            loader.CategoryStart("Checking user game directories...");
 
-            ///////////////////////
-            // Create directories.
-            //////////////////////
-            bool created = false;
-            created |= CheckDirectory(GetUserBasePath(), "base user", ref gy);
-            created |= CheckDirectory(GetUserConfigPath(), "config", ref gy);
-            created |= CheckDirectory(GetUserDocsPath(), "docs", ref gy);
-            created |= CheckDirectory(GetUserGraveyardPath(), "graveyard", ref gy);
-            created |= CheckDirectory(GetUserSavesPath(), "saves", ref gy);
-            created |= CheckDirectory(GetUserScreenshotsPath(), "screenshots", ref gy);
-
-            //////////////////
-            // Copying manual.
-            //////////////////
-            created |= CheckCopyOfManual();
-
-            if (created)
+            loader.Action(() =>
             {
-                m_UI.UI_DrawStringBold(Color.Yellow, "Directories and game manual created.", 0, gy);
-                gy += BOLD_LINE_SPACING;
-                m_UI.UI_DrawStringBold(Color.Yellow, "Your game data directory is in the game folder:", 0, gy);
-                gy += BOLD_LINE_SPACING;
-                m_UI.UI_DrawString(Color.LightGreen, GetUserBasePath(), 0, gy);
-                gy += BOLD_LINE_SPACING;
-                m_UI.UI_DrawStringBold(Color.Yellow, "When you uninstall the game you can delete this directory.", 0, gy);
-                gy += BOLD_LINE_SPACING;
-                DrawFootnote(Color.White, "press ENTER");
-                m_UI.UI_Repaint();
-                WaitEnter();
-            }
+                ///////////////////////
+                // Create directories.
+                //////////////////////
+                CreateDirectory(GetUserBasePath());
+                CreateDirectory(GetUserConfigPath());
+                CreateDirectory(GetUserDocsPath());
+                CreateDirectory(GetUserGraveyardPath());
+                CreateDirectory(GetUserSavesPath());
+                CreateDirectory(GetUserScreenshotsPath());
+
+                //////////////////
+                // Copying manual.
+                //////////////////
+                CheckCopyOfManual();
+            });
+
+            loader.CategoryEnd();
         }
 
         void HandleMainMenu()
@@ -1937,38 +1864,12 @@ namespace RogueSurvivor.Engine
 
         void LoadManual()
         {
-            m_UI.UI_Clear(Color.Black);
-            int gy = 0;
-            m_UI.UI_DrawStringBold(Color.White, "Loading game manual...", 0, 0);
-            gy += BOLD_LINE_SPACING;
-            m_UI.UI_Repaint();
-
             m_Manual = new TextFile();
             m_ManualLine = 0;
-            if (!m_Manual.Load(GetUserManualFilePath()))
-            {
-                // error.
-                m_UI.UI_DrawStringBold(Color.Red, "Error while loading the manual.", 0, gy);
-                gy += BOLD_LINE_SPACING;
-                m_UI.UI_DrawStringBold(Color.Red, "The manual won't be available ingame.", 0, gy);
-                gy += BOLD_LINE_SPACING;
-                m_UI.UI_Repaint();
-                DrawFootnote(Color.White, "press ENTER");
-                WaitEnter();
-
-                // delete manual.
+            if (m_Manual.Load(GetUserManualFilePath()))
+                m_Manual.FormatLines(TEXTFILE_CHARS_PER_LINE);
+            else
                 m_Manual = null;
-                return;
-            }
-
-            m_UI.UI_DrawStringBold(Color.White, "Parsing game manual...", 0, gy);
-            gy += BOLD_LINE_SPACING;
-            m_UI.UI_Repaint();
-            m_Manual.FormatLines(TEXTFILE_CHARS_PER_LINE);
-
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Game manual... done!", 0, gy);
-            m_UI.UI_Repaint();
         }
 
         void HandleHiScores(bool saveToTextfile)
@@ -2047,20 +1948,12 @@ namespace RogueSurvivor.Engine
 
         void LoadHiScoreTable()
         {
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Loading hiscores table...", 0, 0);
-            m_UI.UI_Repaint();
-
             m_HiScoreTable = HiScoreTable.Load(GetUserHiScoreFilePath());
             if (m_HiScoreTable == null)
             {
                 m_HiScoreTable = new HiScoreTable(HiScoreTable.DEFAULT_MAX_ENTRIES);
                 m_HiScoreTable.Clear();
             }
-
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Loading hiscores table... done!", 0, 0);
-            m_UI.UI_Repaint();
         }
 
         void SaveHiScoreTable()
@@ -2928,7 +2821,7 @@ namespace RogueSurvivor.Engine
                     if (++m_DEBUG_sameAiActorCount >= DEBUG_AI_ACTOR_LOOP_COUNT_WARNING)
                     {
                         // TO DEVS: you might want to add a debug breakpoint here ->
-                        Logger.WriteLine(Logger.Stage.RUN_MAIN, "WARNING: AI actor " + actor.Name + " is probably looping!!");
+                        Logger.WriteLine(Logger.Stage.RUN, "WARNING: AI actor " + actor.Name + " is probably looping!!");
 #if DEBUG
                         // in debug keep going to let us debug the ai
 #else
@@ -19236,16 +19129,7 @@ namespace RogueSurvivor.Engine
 
         void LoadKeybindings()
         {
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Loading keybindings...", 0, 0);
-            m_UI.UI_Repaint();
-
             s_KeyBindings = Keybindings.Load(GetUserConfigPath() + "keys.dat");
-
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Loading keybindings... done!", 0, 0);
-            m_UI.UI_Repaint();
-
         }
 
         void SaveKeybindings()
@@ -19263,15 +19147,7 @@ namespace RogueSurvivor.Engine
 
         void LoadHints()
         {
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Loading hints...", 0, 0);
-            m_UI.UI_Repaint();
-
             s_Hints = GameHintsStatus.Load(GetUserConfigPath() + "hints.dat");
-
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Loading hints... done!", 0, 0);
-            m_UI.UI_Repaint();
         }
 
         void SaveHints()
@@ -19463,15 +19339,15 @@ namespace RogueSurvivor.Engine
 
             // copy file.
             bool copied = false;
-            Logger.WriteLine(Logger.Stage.INIT_MAIN, "checking for manual...");
+            Logger.WriteLine(Logger.Stage.INIT, "checking for manual...");
             if (!File.Exists(dst_path + filename))
             {
-                Logger.WriteLine(Logger.Stage.INIT_MAIN, "copying manual...");
+                Logger.WriteLine(Logger.Stage.INIT, "copying manual...");
                 copied = true;
                 File.Copy(src_path + filename, dst_path + filename);
-                Logger.WriteLine(Logger.Stage.INIT_MAIN, "copying manual... done!");
+                Logger.WriteLine(Logger.Stage.INIT, "copying manual... done!");
             }
-            Logger.WriteLine(Logger.Stage.INIT_MAIN, "checking for manual... done!");
+            Logger.WriteLine(Logger.Stage.INIT, "checking for manual... done!");
 
             return copied;
         }
@@ -20738,7 +20614,7 @@ namespace RogueSurvivor.Engine
                     int dTurns = d.EntryMap.LocalTime.TurnCounter - otherDistrict.EntryMap.LocalTime.TurnCounter;
                     if (dTurns > 0)
                     {
-                        //Logger.WriteLine(Logger.Stage.RUN_MAIN, "sim has to catch " + dTurns + " turns");
+                        //Logger.WriteLine(Logger.Stage.RUN, "sim has to catch " + dTurns + " turns");
                         // simulate district.
                         hadToSim = true;
                         SimulateDistrict(otherDistrict);
@@ -20755,20 +20631,20 @@ namespace RogueSurvivor.Engine
         {
             if (s_Options.IsSimON && s_Options.SimThread)
             {
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, "starting sim...");
+                Logger.WriteLine(Logger.Stage.RUN, "starting sim...");
 
                 if (m_SimThread == null)
                 {
-                    Logger.WriteLine(Logger.Stage.RUN_MAIN, "...allocating sim thread");
+                    Logger.WriteLine(Logger.Stage.RUN, "...allocating sim thread");
                     m_SimThread = new Thread(new ThreadStart(SimThreadProc));
                     m_SimThread.Name = "Simulation Thread";
                 }
                 else
                 {
-                    Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread already allocated");
+                    Logger.WriteLine(Logger.Stage.RUN, "...sim thread already allocated");
                 }
 
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread start.");
+                Logger.WriteLine(Logger.Stage.RUN, "...sim thread start.");
                 lock (m_SimStateLock) { m_SimThreadDoRun = true; }; // alpha10
                 m_SimThread.Start();
             }
@@ -20783,21 +20659,21 @@ namespace RogueSurvivor.Engine
         /// <param name="abort">true to stop the thread by aborting, false to stop it cleanly (recommended)</param>
         void StopSimThread(bool abort)
         {
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "stopping & clearing sim thread...");
+            Logger.WriteLine(Logger.Stage.RUN, "stopping & clearing sim thread...");
 
             if (m_SimThread != null)
             {
                 // abort thread if asked to otherwise stop it cleanly
                 if (abort)
                 {
-                    Logger.WriteLine(Logger.Stage.RUN_MAIN, "...aborting sim thread");
+                    Logger.WriteLine(Logger.Stage.RUN, "...aborting sim thread");
                     try
                     {
                         m_SimThread.Abort();
                     }
                     catch (Exception e)
                     {
-                        Logger.WriteLine(Logger.Stage.RUN_MAIN, "...exception when aborting (ignored) " + e.Message);
+                        Logger.WriteLine(Logger.Stage.RUN, "...exception when aborting (ignored) " + e.Message);
                     }
                     m_SimThread = null;
                     m_SimThreadDoRun = false;
@@ -20805,34 +20681,34 @@ namespace RogueSurvivor.Engine
                 else
                 {
                     // try to stop cleanly
-                    Logger.WriteLine(Logger.Stage.RUN_MAIN, "...telling sim thread to stop");
+                    Logger.WriteLine(Logger.Stage.RUN, "...telling sim thread to stop");
                     lock (m_SimStateLock) { m_SimThreadDoRun = false; };
-                    Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread told to stop");
+                    Logger.WriteLine(Logger.Stage.RUN, "...sim thread told to stop");
                     for (; ; )
                     {
-                        Logger.WriteLine(Logger.Stage.RUN_MAIN, "...waiting for sim thread to stop");
+                        Logger.WriteLine(Logger.Stage.RUN, "...waiting for sim thread to stop");
                         Thread.Sleep(10);
                         bool stopped = false;
                         lock (m_SimStateLock) { stopped = !m_SimThreadIsWorking; }
                         if (!stopped && !m_SimThread.IsAlive)
                         {
-                            Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread is not alive and did not stop properly, consider it stopped");
+                            Logger.WriteLine(Logger.Stage.RUN, "...sim thread is not alive and did not stop properly, consider it stopped");
                             stopped = true;
                         }
                         if (stopped)
                             break;
                     }
-                    Logger.WriteLine(Logger.Stage.RUN_MAIN, "...sim thread has stopped");
+                    Logger.WriteLine(Logger.Stage.RUN, "...sim thread has stopped");
                     m_SimThread = null;
                 }
             }
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "stopping & clearing sim thread done!");
+            Logger.WriteLine(Logger.Stage.RUN, "stopping & clearing sim thread done!");
         }
 
         void SimThreadProc()
         {
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "sim thread: starting loop");
+            Logger.WriteLine(Logger.Stage.RUN, "sim thread: starting loop");
 
             District playerDistrict = m_Player.Location.Map.District;  // alpha10
 
@@ -20859,8 +20735,8 @@ namespace RogueSurvivor.Engine
                 }
                 catch (Exception e)
                 {
-                    Logger.WriteLine(Logger.Stage.RUN_MAIN, "sim thread: exception while running sim thread!");
-                    Logger.WriteLine(Logger.Stage.RUN_MAIN, "sim thread: " + e.Message);
+                    Logger.WriteLine(Logger.Stage.RUN, "sim thread: exception while running sim thread!");
+                    Logger.WriteLine(Logger.Stage.RUN, "sim thread: " + e.Message);
                     // stop sim thread, better than crashing i guess...
                     break;
                 }
@@ -20870,9 +20746,9 @@ namespace RogueSurvivor.Engine
                 //}
             }
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "sim thread: told to stop, stoping work");
+            Logger.WriteLine(Logger.Stage.RUN, "sim thread: told to stop, stoping work");
             lock (m_SimStateLock) { m_SimThreadIsWorking = false; }
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "sim thread: working stopped");
+            Logger.WriteLine(Logger.Stage.RUN, "sim thread: working stopped");
         }
 
         void ShowNewAchievement(Achievement.IDs id)
@@ -22305,42 +22181,90 @@ namespace RogueSurvivor.Engine
             AddMessage(new Message("DEAR DEV, FOLLOWERS TRUST MAXED.", m_Session.WorldTime.TurnCounter, Color.LightGreen));
         }
 
-        void LoadData()
+        void LoadData(GameLoader loader)
         {
-            LoadDataSkills();
-            LoadDataItems();
-            LoadDataActors();
+            LoadDataSkills(loader);
+            LoadDataItems(loader);
+            LoadDataActors(loader);
         }
 
-        void LoadDataActors()
+        void LoadDataActors(GameLoader loader)
         {
-            m_GameActors.LoadFromCSV(m_UI, @"Resources\Data\Actors.csv");
+            loader.CategoryStart("Loading actors data...");
+            loader.Action(() => m_GameActors.LoadFromCSV(@"Resources\Data\Actors.csv"));
+            loader.CategoryEnd();
         }
 
-        void LoadDataItems()
+        void LoadDataItems(GameLoader loader)
         {
-            // load all data.
-            m_GameItems.LoadMedicineFromCSV(m_UI, @"Resources\Data\Items_Medicine.csv");
-            m_GameItems.LoadFoodFromCSV(m_UI, @"Resources\Data\Items_Food.csv");
-            m_GameItems.LoadMeleeWeaponsFromCSV(m_UI, @"Resources\Data\Items_MeleeWeapons.csv");
-            m_GameItems.LoadRangedWeaponsFromCSV(m_UI, @"Resources\Data\Items_RangedWeapons.csv");
-            m_GameItems.LoadExplosivesFromCSV(m_UI, @"Resources\Data\Items_Explosives.csv");
-            m_GameItems.LoadBarricadingMaterialFromCSV(m_UI, @"Resources\Data\Items_Barricading.csv");
-            m_GameItems.LoadArmorsFromCSV(m_UI, @"Resources\Data\Items_Armors.csv");
-            m_GameItems.LoadTrackersFromCSV(m_UI, @"Resources\Data\Items_Trackers.csv");
-            m_GameItems.LoadSpraypaintsFromCSV(m_UI, @"Resources\Data\Items_Spraypaints.csv");
-            m_GameItems.LoadLightsFromCSV(m_UI, @"Resources\Data\Items_Lights.csv");
-            m_GameItems.LoadScentspraysFromCSV(m_UI, @"Resources\Data\Items_Scentsprays.csv");
-            m_GameItems.LoadTrapsFromCSV(m_UI, @"Resources\Data\Items_Traps.csv");
-            m_GameItems.LoadEntertainmentFromCSV(m_UI, @"Resources\Data\Items_Entertainment.csv");
+            loader.CategoryStart("Loading items data...");
 
-            // create.
-            m_GameItems.CreateModels();
+            loader.Action(() => m_GameItems.LoadMedicineFromCSV(@"Resources\Data\Items_Medicine.csv"));
+            loader.Action(() => m_GameItems.LoadFoodFromCSV(@"Resources\Data\Items_Food.csv"));
+            loader.Action(() => m_GameItems.LoadMeleeWeaponsFromCSV(@"Resources\Data\Items_MeleeWeapons.csv"));
+            loader.Action(() => m_GameItems.LoadRangedWeaponsFromCSV(@"Resources\Data\Items_RangedWeapons.csv"));
+            loader.Action(() => m_GameItems.LoadExplosivesFromCSV(@"Resources\Data\Items_Explosives.csv"));
+            loader.Action(() => m_GameItems.LoadBarricadingMaterialFromCSV(@"Resources\Data\Items_Barricading.csv"));
+            loader.Action(() => m_GameItems.LoadArmorsFromCSV(@"Resources\Data\Items_Armors.csv"));
+            loader.Action(() => m_GameItems.LoadTrackersFromCSV(@"Resources\Data\Items_Trackers.csv"));
+            loader.Action(() => m_GameItems.LoadSpraypaintsFromCSV(@"Resources\Data\Items_Spraypaints.csv"));
+            loader.Action(() => m_GameItems.LoadLightsFromCSV(@"Resources\Data\Items_Lights.csv"));
+            loader.Action(() => m_GameItems.LoadScentspraysFromCSV(@"Resources\Data\Items_Scentsprays.csv"));
+            loader.Action(() => m_GameItems.LoadTrapsFromCSV(@"Resources\Data\Items_Traps.csv"));
+            loader.Action(() => m_GameItems.LoadEntertainmentFromCSV(@"Resources\Data\Items_Entertainment.csv"));
+            loader.Action(() => m_GameItems.CreateModels());
+
+            loader.CategoryEnd();
         }
 
-        void LoadDataSkills()
+        void LoadDataSkills(GameLoader loader)
         {
-            Skills.LoadSkillsFromCSV(m_UI, @"Resources\Data\Skills.csv");
+            loader.CategoryStart("Loading actors data...");
+            loader.Action(() => Skills.LoadSkillsFromCSV(@"Resources\Data\Skills.csv"));
+            loader.CategoryEnd();
+        }
+
+        void LoadMusic(GameLoader loader)
+        {
+            loader.CategoryStart("Loading music...");
+
+            loader.Action(() => m_MusicManager.Load(GameMusics.ARMY, GameMusics.ARMY_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.BIGBEAR_THEME_SONG, GameMusics.BIGBEAR_THEME_SONG_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.BIKER, GameMusics.BIKER_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.CHAR_UNDERGROUND_FACILITY, GameMusics.CHAR_UNDERGROUND_FACILITY_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.DUCKMAN_THEME_SONG, GameMusics.DUCKMAN_THEME_SONG_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.FAMU_FATARU_THEME_SONG, GameMusics.FAMU_FATARU_THEME_SONG_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.FIGHT, GameMusics.FIGHT_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.GANGSTA, GameMusics.GANGSTA_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.HANS_VON_HANZ_THEME_SONG, GameMusics.HANS_VON_HANZ_THEME_SONG_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.HEYTHERE, GameMusics.HEYTHERE_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.HOSPITAL, GameMusics.HOSPITAL_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.INSANE, GameMusics.INSANE_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.INTERLUDE, GameMusics.INTERLUDE_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.INTRO, GameMusics.INTRO_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.LIMBO, GameMusics.LIMBO_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.PLAYER_DEATH, GameMusics.PLAYER_DEATH_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.REINCARNATE, GameMusics.REINCARNATE_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.ROGUEDJACK_THEME_SONG, GameMusics.ROGUEDJACK_THEME_SONG_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.SANTAMAN_THEME_SONG, GameMusics.SANTAMAN_THEME_SONG_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.SEWERS, GameMusics.SEWERS_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.SLEEP, GameMusics.SLEEP_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.SUBWAY, GameMusics.SUBWAY_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.SURVIVORS, GameMusics.SURVIVORS_FILE));
+            loader.Action(() => m_MusicManager.Load(GameMusics.SURFACE, GameMusics.SURFACE_FILE));
+
+            loader.CategoryEnd();
+        }
+
+        void LoadSfxs(GameLoader loader)
+        {
+            loader.CategoryStart("Loading sfxs...");
+
+            loader.Action(() => m_MusicManager.Load(GameSounds.UNDEAD_EAT, GameSounds.UNDEAD_EAT_FILE));
+            loader.Action(() => m_MusicManager.Load(GameSounds.UNDEAD_RISE, GameSounds.UNDEAD_RISE_FILE));
+            loader.Action(() => m_MusicManager.Load(GameSounds.NIGHTMARE, GameSounds.NIGHTMARE_FILE));
+
+            loader.CategoryEnd();
         }
 
         void UpdateBgMusic()

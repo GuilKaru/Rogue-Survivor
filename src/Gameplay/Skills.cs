@@ -1,8 +1,5 @@
 ﻿using RogueSurvivor.Engine;
 using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
 
 namespace RogueSurvivor.Gameplay
 {
@@ -207,13 +204,6 @@ namespace RogueSurvivor.Gameplay
             }
         }
 
-        static void Notify(IRogueUI ui, string what, string stage)
-        {
-            ui.UI_Clear(Color.Black);
-            ui.UI_DrawStringBold(Color.White, "Loading " + what + " data : " + stage, 0, 0);
-            ui.UI_Repaint();
-        }
-
         static CSVLine FindLineForModel(CSVTable table, IDs skillID)
         {
             foreach (CSVLine l in table.Lines)
@@ -225,7 +215,7 @@ namespace RogueSurvivor.Gameplay
             return null;
         }
 
-        static _DATA_TYPE_ GetDataFromCSVTable<_DATA_TYPE_>(IRogueUI ui, CSVTable table, Func<CSVLine, _DATA_TYPE_> fn, IDs skillID)
+        static DATA_TYPE GetDataFromCSVTable<DATA_TYPE>(CSVTable table, Func<CSVLine, DATA_TYPE> fn, IDs skillID)
         {
             // get line for id in table.
             CSVLine line = FindLineForModel(table, skillID);
@@ -233,7 +223,7 @@ namespace RogueSurvivor.Gameplay
                 throw new InvalidOperationException(String.Format("skill {0} not found", skillID.ToString()));
 
             // get data from line.
-            _DATA_TYPE_ data;
+            DATA_TYPE data;
             try
             {
                 data = fn(line);
@@ -247,57 +237,23 @@ namespace RogueSurvivor.Gameplay
             return data;
         }
 
-        static bool LoadDataFromCSV<_DATA_TYPE_>(IRogueUI ui, string path, string kind, int fieldsCount, Func<CSVLine, _DATA_TYPE_> fn, IDs[] idsToRead, out _DATA_TYPE_[] data)
+        static void LoadDataFromCSV<DATA_TYPE>(string path, int fieldsCount, Func<CSVLine, DATA_TYPE> fn, IDs[] idsToRead, out DATA_TYPE[] data)
         {
-            //////////////////////////
-            // Read & parse csv file.
-            //////////////////////////
-            Notify(ui, kind, "loading file...");
-            // read the whole file.
-            List<string> allLines = new List<string>();
-            bool ignoreHeader = true;
-            using (StreamReader reader = File.OpenText(path))
-            {
-                while (!reader.EndOfStream)
-                {
-                    string inLine = reader.ReadLine();
-                    if (ignoreHeader)
-                    {
-                        ignoreHeader = false;
-                        continue;
-                    }
-                    allLines.Add(inLine);
-                }
-                reader.Close();
-            }
-            // parse all the lines read.
-            Notify(ui, kind, "parsing CSV...");
             CSVParser parser = new CSVParser();
-            CSVTable table = parser.ParseToTable(allLines.ToArray(), fieldsCount);
+            CSVTable table = parser.ParseToTableFromFile(path, fieldsCount);
 
-            /////////////
-            // Set data.
-            /////////////
-            Notify(ui, kind, "reading data...");
-
-            data = new _DATA_TYPE_[idsToRead.Length];
+            data = new DATA_TYPE[idsToRead.Length];
             for (int i = 0; i < idsToRead.Length; i++)
             {
-                data[i] = GetDataFromCSVTable<_DATA_TYPE_>(ui, table, fn, idsToRead[i]);
+                data[i] = GetDataFromCSVTable<DATA_TYPE>(table, fn, idsToRead[i]);
             }
-
-            //////////////
-            // all fine.
-            /////////////
-            Notify(ui, kind, "done!");
-            return true;
         }
 
-        public static bool LoadSkillsFromCSV(IRogueUI ui, string path)
+        public static void LoadSkillsFromCSV(string path)
         {
             SkillData[] data;
 
-            LoadDataFromCSV<SkillData>(ui, path, "skills", SkillData.COUNT_FIELDS, SkillData.FromCSVLine,
+            LoadDataFromCSV<SkillData>(path, SkillData.COUNT_FIELDS, SkillData.FromCSVLine,
                 new IDs[] { IDs.AGILE, IDs.AWAKE, IDs.BOWS, IDs.CARPENTRY, IDs.CHARISMATIC, IDs.FIREARMS, IDs.HARDY, IDs.HAULER,
                             IDs.HIGH_STAMINA, IDs.LEADERSHIP, IDs.LIGHT_EATER, IDs.LIGHT_FEET, IDs.LIGHT_SLEEPER, IDs.MARTIAL_ARTS, IDs.MEDIC,
                             IDs.NECROLOGY, IDs.STRONG, IDs.STRONG_PSYCHE, IDs.TOUGH, IDs.UNSUSPICIOUS,
@@ -412,8 +368,6 @@ namespace RogueSurvivor.Gameplay
 
             s = data[(int)IDs.Z_TRACKER];
             Rules.SKILL_ZTRACKER_SMELL_BONUS = s.VALUE1;
-
-            return true;
         }
     }
 }

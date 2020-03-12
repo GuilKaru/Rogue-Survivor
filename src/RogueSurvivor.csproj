@@ -278,6 +278,7 @@
     <Compile Include="Gameplay\AI\SewersThingAI.cs" />
     <Compile Include="Gameplay\AI\SoldierAI.cs" />
     <Compile Include="Gameplay\GameGangs.cs" />
+    <Compile Include="Gameplay\GameLoader.cs" />
     <Compile Include="Gameplay\GameTips.cs" />
     <Compile Include="Gameplay\GameSounds.cs" />
     <Compile Include="Gameplay\GameActors.cs" />

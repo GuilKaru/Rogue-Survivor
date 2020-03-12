@@ -2399,7 +2399,7 @@ namespace RogueSurvivor.Gameplay.Generators
                 // i'm lazy and assume this never happens and throw an exception.
                 if (hasOutsideDoor == false)
                 {
-                    Logger.WriteLine(Logger.Stage.RUN_MAIN, "ERROR: house has no exit, should never happen; sector@" + map.District.WorldPosition + " house@" + b.BuildingRect);
+                    Logger.WriteLine(Logger.Stage.RUN, "ERROR: house has no exit, should never happen; sector@" + map.District.WorldPosition + " house@" + b.BuildingRect);
                     throw new Exception("house has not exit, should never happen. read the log.");
                 }
             }

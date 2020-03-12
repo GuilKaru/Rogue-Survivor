@@ -2,9 +2,6 @@
 using RogueSurvivor.Engine;
 using RogueSurvivor.Gameplay.AI;
 using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
 
 namespace RogueSurvivor.Gameplay
 {
@@ -917,89 +914,58 @@ namespace RogueSurvivor.Gameplay
             };
         }
 
-        public bool LoadFromCSV(IRogueUI ui, string path)
+        public void LoadFromCSV(string path)
         {
-            //////////////////////////
-            // Read & parse csv file.
-            //////////////////////////
-            Notify(ui, "loading file...");
-            // read the whole file.
-            List<string> allLines = new List<string>();
-            bool ignoreHeader = true;
-            using (StreamReader reader = File.OpenText(path))
-            {
-                while (!reader.EndOfStream)
-                {
-                    string inLine = reader.ReadLine();
-                    if (ignoreHeader)
-                    {
-                        ignoreHeader = false;
-                        continue;
-                    }
-                    allLines.Add(inLine);
-                }
-                reader.Close();
-            }
-            // parse all the lines read.
-            Notify(ui, "parsing CSV...");
             CSVParser parser = new CSVParser();
-            CSVTable table = parser.ParseToTable(allLines.ToArray(), ActorData.COUNT_FIELDS);
+            CSVTable table = parser.ParseToTableFromFile(path, ActorData.COUNT_FIELDS);
 
             /////////////
             // Set data.
             /////////////
-            Notify(ui, "reading data...");
+            DATA_SKELETON = GetDataFromCSVTable(table, IDs.UNDEAD_SKELETON);
+            DATA_RED_EYED_SKELETON = GetDataFromCSVTable(table, IDs.UNDEAD_RED_EYED_SKELETON);
+            DATA_RED_SKELETON = GetDataFromCSVTable(table, IDs.UNDEAD_RED_SKELETON);
 
-            DATA_SKELETON = GetDataFromCSVTable(ui, table, IDs.UNDEAD_SKELETON);
-            DATA_RED_EYED_SKELETON = GetDataFromCSVTable(ui, table, IDs.UNDEAD_RED_EYED_SKELETON);
-            DATA_RED_SKELETON = GetDataFromCSVTable(ui, table, IDs.UNDEAD_RED_SKELETON);
+            DATA_ZOMBIE = GetDataFromCSVTable(table, IDs.UNDEAD_ZOMBIE);
+            DATA_DARK_EYED_ZOMBIE = GetDataFromCSVTable(table, IDs.UNDEAD_DARK_EYED_ZOMBIE);
+            DATA_DARK_ZOMBIE = GetDataFromCSVTable(table, IDs.UNDEAD_DARK_ZOMBIE);
 
-            DATA_ZOMBIE = GetDataFromCSVTable(ui, table, IDs.UNDEAD_ZOMBIE);
-            DATA_DARK_EYED_ZOMBIE = GetDataFromCSVTable(ui, table, IDs.UNDEAD_DARK_EYED_ZOMBIE);
-            DATA_DARK_ZOMBIE = GetDataFromCSVTable(ui, table, IDs.UNDEAD_DARK_ZOMBIE);
+            DATA_MALE_ZOMBIFIED = GetDataFromCSVTable(table, IDs.UNDEAD_MALE_ZOMBIFIED);
+            DATA_FEMALE_ZOMBIFIED = GetDataFromCSVTable(table, IDs.UNDEAD_FEMALE_ZOMBIFIED);
+            DATA_MALE_NEOPHYTE = GetDataFromCSVTable(table, IDs.UNDEAD_MALE_NEOPHYTE);
+            DATA_FEMALE_NEOPHYTE = GetDataFromCSVTable(table, IDs.UNDEAD_FEMALE_NEOPHYTE);
+            DATA_MALE_DISCIPLE = GetDataFromCSVTable(table, IDs.UNDEAD_MALE_DISCIPLE);
+            DATA_FEMALE_DISCIPLE = GetDataFromCSVTable(table, IDs.UNDEAD_FEMALE_DISCIPLE);
 
-            DATA_MALE_ZOMBIFIED = GetDataFromCSVTable(ui, table, IDs.UNDEAD_MALE_ZOMBIFIED);
-            DATA_FEMALE_ZOMBIFIED = GetDataFromCSVTable(ui, table, IDs.UNDEAD_FEMALE_ZOMBIFIED);
-            DATA_MALE_NEOPHYTE = GetDataFromCSVTable(ui, table, IDs.UNDEAD_MALE_NEOPHYTE);
-            DATA_FEMALE_NEOPHYTE = GetDataFromCSVTable(ui, table, IDs.UNDEAD_FEMALE_NEOPHYTE);
-            DATA_MALE_DISCIPLE = GetDataFromCSVTable(ui, table, IDs.UNDEAD_MALE_DISCIPLE);
-            DATA_FEMALE_DISCIPLE = GetDataFromCSVTable(ui, table, IDs.UNDEAD_FEMALE_DISCIPLE);
+            DATA_ZM = GetDataFromCSVTable(table, IDs.UNDEAD_ZOMBIE_MASTER);
+            DATA_ZL = GetDataFromCSVTable(table, IDs.UNDEAD_ZOMBIE_LORD);
+            DATA_ZP = GetDataFromCSVTable(table, IDs.UNDEAD_ZOMBIE_PRINCE);
 
-            DATA_ZM = GetDataFromCSVTable(ui, table, IDs.UNDEAD_ZOMBIE_MASTER);
-            DATA_ZL = GetDataFromCSVTable(ui, table, IDs.UNDEAD_ZOMBIE_LORD);
-            DATA_ZP = GetDataFromCSVTable(ui, table, IDs.UNDEAD_ZOMBIE_PRINCE);
+            DATA_RAT_ZOMBIE = GetDataFromCSVTable(table, IDs.UNDEAD_RAT_ZOMBIE);
 
-            DATA_RAT_ZOMBIE = GetDataFromCSVTable(ui, table, IDs.UNDEAD_RAT_ZOMBIE);
+            DATA_SEWERS_THING = GetDataFromCSVTable(table, IDs.SEWERS_THING);
 
-            DATA_SEWERS_THING = GetDataFromCSVTable(ui, table, IDs.SEWERS_THING);
+            DATA_MALE_CIVILIAN = GetDataFromCSVTable(table, IDs.MALE_CIVILIAN);
+            DATA_FEMALE_CIVILIAN = GetDataFromCSVTable(table, IDs.FEMALE_CIVILIAN);
+            DATA_FERAL_DOG = GetDataFromCSVTable(table, IDs.FERAL_DOG);
 
-            DATA_MALE_CIVILIAN = GetDataFromCSVTable(ui, table, IDs.MALE_CIVILIAN);
-            DATA_FEMALE_CIVILIAN = GetDataFromCSVTable(ui, table, IDs.FEMALE_CIVILIAN);
-            DATA_FERAL_DOG = GetDataFromCSVTable(ui, table, IDs.FERAL_DOG);
+            DATA_POLICEMAN = GetDataFromCSVTable(table, IDs.POLICEMAN);
 
-            DATA_POLICEMAN = GetDataFromCSVTable(ui, table, IDs.POLICEMAN);
+            DATA_CHAR_GUARD = GetDataFromCSVTable(table, IDs.CHAR_GUARD);
 
-            DATA_CHAR_GUARD = GetDataFromCSVTable(ui, table, IDs.CHAR_GUARD);
+            DATA_NATGUARD = GetDataFromCSVTable(table, IDs.ARMY_NATIONAL_GUARD);
 
-            DATA_NATGUARD = GetDataFromCSVTable(ui, table, IDs.ARMY_NATIONAL_GUARD);
+            DATA_BIKER_MAN = GetDataFromCSVTable(table, IDs.BIKER_MAN);
+            DATA_GANGSTA_MAN = GetDataFromCSVTable(table, IDs.GANGSTA_MAN);
 
-            DATA_BIKER_MAN = GetDataFromCSVTable(ui, table, IDs.BIKER_MAN);
-            DATA_GANGSTA_MAN = GetDataFromCSVTable(ui, table, IDs.GANGSTA_MAN);
+            DATA_BLACKOPS_MAN = GetDataFromCSVTable(table, IDs.BLACKOPS_MAN);
 
-            DATA_BLACKOPS_MAN = GetDataFromCSVTable(ui, table, IDs.BLACKOPS_MAN);
-
-            DATA_JASON_MYERS = GetDataFromCSVTable(ui, table, IDs.JASON_MYERS);
+            DATA_JASON_MYERS = GetDataFromCSVTable(table, IDs.JASON_MYERS);
 
             /////////////////
             // Create models
             /////////////////
             CreateModels();
-
-            //////////////
-            // all fine.
-            /////////////
-            Notify(ui, "done!");
-            return true;
         }
 
         CSVLine FindLineForModel(CSVTable table, IDs modelID)
@@ -1013,10 +979,8 @@ namespace RogueSurvivor.Gameplay
             return null;
         }
 
-        ActorData GetDataFromCSVTable(IRogueUI ui, CSVTable table, IDs modelID)
+        ActorData GetDataFromCSVTable(CSVTable table, IDs modelID)
         {
-            //Notify(ui, String.Format("reading model {0}...", modelID.ToString()));
-
             // get line for model in table.
             CSVLine line = FindLineForModel(table, modelID);
             if (line == null)
@@ -1033,16 +997,7 @@ namespace RogueSurvivor.Gameplay
                 throw new InvalidOperationException(String.Format("invalid data format for model {0}; exception : {1}", modelID.ToString(), e.ToString()));
             }
 
-            // ok.
-            //Notify(ui, String.Format("reading model {0} done!", modelID.ToString()));
             return data;
-        }
-
-        void Notify(IRogueUI ui, string stage)
-        {
-            ui.UI_Clear(Color.Black);
-            ui.UI_DrawStringBold(Color.White, "Loading actors data : " + stage, 0, 0);
-            ui.UI_Repaint();
         }
 
         /* FIXME: branch = property of model */

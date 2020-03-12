@@ -22,6 +22,13 @@ namespace RogueSurvivor
 {
     public class RogueForm : Xna.Game, IRogueUI
     {
+        enum State
+        {
+            None,
+            Init,
+            Running
+        }
+
         class BreakException : Exception { }
         class KeyState
         {
@@ -33,7 +40,6 @@ namespace RogueSurvivor
         private Xna.GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
         private List<IDrawItem> drawItems = new List<IDrawItem>();
-        private int frame = 0;
         private Texture2D m_MinimapTexture;
         private Xna.Color[] m_MinimapColors = new Xna.Color[RogueGame.MAP_MAX_WIDTH * RogueGame.MAP_MAX_HEIGHT];
         private MouseState prevMouseState;
@@ -43,6 +49,8 @@ namespace RogueSurvivor
         private MethodInfo updateMouseState;
         private List<KeyState> keyStates = new List<KeyState>();
         private Stopwatch stopwatch;
+        private State state;
+        GameLoader loader = new GameLoader();
 
         RogueGame m_Game;
         SpriteFont m_NormalFont;
@@ -57,14 +65,14 @@ namespace RogueSurvivor
 
         public RogueForm()
         {
-            Logger.WriteLine(Logger.Stage.INIT_MAIN, "Creating main form...");
+            Logger.WriteLine(Logger.Stage.INIT, "Creating main form...");
 
             graphics = new Xna.GraphicsDeviceManager(this)
             {
                 PreferredBackBufferWidth = RogueGame.CANVAS_WIDTH,
                 PreferredBackBufferHeight = RogueGame.CANVAS_HEIGHT,
                 HardwareModeSwitch = false,
-                IsFullScreen = true
+                IsFullScreen = false // !FIXME
             };
         }
 
@@ -72,7 +80,7 @@ namespace RogueSurvivor
         {
             base.Initialize();
 
-            Logger.WriteLine(Logger.Stage.INIT_MAIN, "Initializing game...");
+            Logger.WriteLine(Logger.Stage.INIT, "Initializing game...");
 
             Window.Title = "Rogue Survivor Reanimated - " + SetupConfig.GAME_VERSION;
             IsMouseVisible = true;
@@ -104,38 +112,66 @@ namespace RogueSurvivor
 
             try
             {
-
-                switch (frame)
+                switch (state)
                 {
-                    case 0:
+                    case State.None:
                         // do nothing on first frame
+                        state = State.Init;
+                        Logger.WriteLine(Logger.Stage.INIT, "Preparing items to load...");
+                        GameImages.LoadResources(loader, GraphicsDevice);
+                        m_Game.Init(loader);
                         break;
-                    case 1:
-                        Logger.WriteLine(Logger.Stage.INIT_GFX, "loading images...");
-                        GameImages.LoadResources(this);
-                        Logger.WriteLine(Logger.Stage.INIT_GFX, "loading images done");
-
-                        m_Game.Init();
+                    case State.Init:
+                        if (loader.Process())
+                        {
+                            loader = null;
+                            state = State.Running;
+                        }
                         break;
                     default:
-                        if (!m_Game.Update())
-                            Exit();
+                        //if (!m_Game.Update())
+                        //    Exit();
                         break;
                 }
             }
             catch (BreakException)
             {
-                Logger.WriteLine(Logger.Stage.CLEAN_MAIN, "window closed, shutting down...");
+                Logger.WriteLine(Logger.Stage.CLEAN, "Window closed, shutting down...");
                 m_Game.Exit();
                 Exit();
             }
-
-            ++frame;
         }
 
-        protected override bool BeginDraw()
+        protected override void Draw(Xna.GameTime gameTime)
         {
-            return false;
+            base.Draw(gameTime);
+
+            Xna.Matrix matrix;
+            if (graphics.IsFullScreen)
+            {
+                matrix = Xna.Matrix.CreateScale(new Xna.Vector3(
+                    (float)Graphics.GraphicsDevice.DisplayMode.Width / RogueGame.CANVAS_WIDTH,
+                    (float)Graphics.GraphicsDevice.DisplayMode.Height / RogueGame.CANVAS_HEIGHT,
+                    1f));
+            }
+            else
+                matrix = Xna.Matrix.Identity;
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, transformMatrix: matrix);
+
+            switch (state)
+            {
+                case State.None:
+                    UI_Clear(Color.Black);
+                    break;
+                case State.Init:
+                    loader.Draw(this);
+                    break;
+                case State.Running:
+                    UI_Clear(Color.Red);
+                    break;
+            }
+
+            spriteBatch.End();
         }
 
         public Key UI_WaitKey()
@@ -447,10 +483,10 @@ namespace RogueSurvivor
 
         public void UI_Clear(Color clearColor)
         {
-            clearCalled = true;
-            lastClearColor = clearColor;
+            //clearCalled = true;
+            //lastClearColor = clearColor;
             graphics.GraphicsDevice.Clear(clearColor.ToXna());
-            drawItems.Clear();
+            //drawItems.Clear();
         }
 
         public void UI_DrawImage(string imageID, int gx, int gy)
@@ -520,26 +556,14 @@ namespace RogueSurvivor
 
         public void UI_DrawString(Color color, string text, int gx, int gy, Color? shadowColor)
         {
-            drawItems.Add(new DrawTextItem
-            {
-                color = color.ToXna(),
-                text = text,
-                font = m_NormalFont,
-                pos = new Xna.Vector2(gx, gy),
-                shadowColor = shadowColor.ToXna()
-            });
+            spriteBatch.DrawString(m_NormalFont, text, new Xna.Vector2(gx, gy), color.ToXna());
         }
 
         public void UI_DrawStringBold(Color color, string text, int gx, int gy, Color? shadowColor)
         {
-            drawItems.Add(new DrawTextItem
-            {
-                color = color.ToXna(),
-                text = text,
-                font = m_BoldFont,
-                pos = new Xna.Vector2(gx, gy),
-                shadowColor = shadowColor.ToXna()
-            });
+            if (shadowColor.HasValue)
+                spriteBatch.DrawString(m_BoldFont, text, new Xna.Vector2(gx + 1, gy + 1), shadowColor.Value.ToXna());
+            spriteBatch.DrawString(m_BoldFont, text, new Xna.Vector2(gx, gy), color.ToXna());
         }
 
         public void UI_DrawRect(Color color, Rectangle rect)
@@ -774,7 +798,7 @@ namespace RogueSurvivor
             }
             catch (Exception ex)
             {
-                Logger.WriteLine(Logger.Stage.RUN_GFX, String.Format("exception when taking screenshot : {0}", ex.ToString()));
+                Logger.WriteLine(Logger.Stage.RUN, String.Format("exception when taking screenshot : {0}", ex.ToString()));
                 return false;
             }
             finally

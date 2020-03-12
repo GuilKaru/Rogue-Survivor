@@ -58,7 +58,6 @@ namespace RogueSurvivor.Engine
         public bool Load(string musicname, string filename)
         {
             filename = FullName(filename);
-            Logger.WriteLine(Logger.Stage.INIT_SOUND, String.Format("loading music {0} file {1}", musicname, filename));
             try
             {
                 Song song = Song.FromUri(musicname, new Uri(filename));
@@ -66,7 +65,7 @@ namespace RogueSurvivor.Engine
             }
             catch (Exception e)
             {
-                Logger.WriteLine(Logger.Stage.INIT_SOUND, String.Format("failed to load music file {0} exception {1}.", filename, e.ToString()));
+                Logger.WriteLine(Logger.Stage.INIT, String.Format("Failed to load music file {0} exception {1}.", filename, e.ToString()));
             }
 
             return true;
@@ -84,7 +83,7 @@ namespace RogueSurvivor.Engine
             Song music;
             if (m_Musics.TryGetValue(musicname, out music))
             {
-                Logger.WriteLine(Logger.Stage.RUN_SOUND, String.Format("playing music {0}.", musicname));
+                Logger.WriteLine(Logger.Stage.RUN, String.Format("playing music {0}.", musicname));
                 MediaPlayer.Play(music);
                 MediaPlayer.IsRepeating = false;
                 Music = musicname;
@@ -105,7 +104,7 @@ namespace RogueSurvivor.Engine
             Song music;
             if (m_Musics.TryGetValue(musicname, out music))
             {
-                Logger.WriteLine(Logger.Stage.RUN_SOUND, String.Format("playing looping music {0}.", musicname));
+                Logger.WriteLine(Logger.Stage.RUN, String.Format("playing looping music {0}.", musicname));
                 MediaPlayer.Play(music);
                 MediaPlayer.IsRepeating = true;
                 Music = musicname;

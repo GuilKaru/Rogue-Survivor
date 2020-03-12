@@ -120,7 +120,7 @@ namespace RogueSurvivor.Engine
             if (filepath == null)
                 throw new ArgumentNullException("filepath");
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table...");
+            Logger.WriteLine(Logger.Stage.RUN, "saving hiscore table...");
 
             IFormatter formatter = CreateFormatter();
             Stream stream = CreateStream(filepath, true);
@@ -129,7 +129,7 @@ namespace RogueSurvivor.Engine
             stream.Flush();
             stream.Close();
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table... done!");
+            Logger.WriteLine(Logger.Stage.RUN, "saving hiscore table... done!");
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace RogueSurvivor.Engine
             if (filepath == null)
                 throw new ArgumentNullException("filepath");
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hiscore table...");
+            Logger.WriteLine(Logger.Stage.RUN, "loading hiscore table...");
 
             HiScoreTable table;
             try
@@ -154,12 +154,12 @@ namespace RogueSurvivor.Engine
             }
             catch (Exception e)
             {
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load hiscore table (no hiscores?).");
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, String.Format("load exception : {0}.", e.ToString()));
+                Logger.WriteLine(Logger.Stage.RUN, "failed to load hiscore table (no hiscores?).");
+                Logger.WriteLine(Logger.Stage.RUN, String.Format("load exception : {0}.", e.ToString()));
                 return null;
             }
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hiscore table... done!");
+            Logger.WriteLine(Logger.Stage.RUN, "loading hiscore table... done!");
             return table;
         }
 

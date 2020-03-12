@@ -46,7 +46,7 @@ namespace RogueSurvivor.Engine
             if (filepath == null)
                 throw new ArgumentNullException("filepath");
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hints...");
+            Logger.WriteLine(Logger.Stage.RUN, "saving hints...");
 
             IFormatter formatter = CreateFormatter();
             Stream stream = CreateStream(filepath, true);
@@ -55,7 +55,7 @@ namespace RogueSurvivor.Engine
             stream.Flush();
             stream.Close();
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hints... done!");
+            Logger.WriteLine(Logger.Stage.RUN, "saving hints... done!");
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace RogueSurvivor.Engine
             if (filepath == null)
                 throw new ArgumentNullException("filepath");
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hints...");
+            Logger.WriteLine(Logger.Stage.RUN, "loading hints...");
 
             GameHintsStatus hints;
             try
@@ -80,14 +80,14 @@ namespace RogueSurvivor.Engine
             }
             catch (Exception e)
             {
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load hints (first run?).");
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, String.Format("load exception : {0}.", e.ToString()));
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, "resetting.");
+                Logger.WriteLine(Logger.Stage.RUN, "failed to load hints (first run?).");
+                Logger.WriteLine(Logger.Stage.RUN, String.Format("load exception : {0}.", e.ToString()));
+                Logger.WriteLine(Logger.Stage.RUN, "resetting.");
                 hints = new GameHintsStatus();
                 hints.ResetAllHints();
             }
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading options... done!");
+            Logger.WriteLine(Logger.Stage.RUN, "loading options... done!");
             return hints;
         }
 

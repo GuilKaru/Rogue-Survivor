@@ -8,17 +8,9 @@ namespace RogueSurvivor
     {
         public enum Stage
         {
-            INIT_MAIN,
-            RUN_MAIN,
-            CLEAN_MAIN,
-
-            INIT_GFX,
-            RUN_GFX,
-            CLEAN_GFX,
-
-            INIT_SOUND,
-            RUN_SOUND,
-            CLEAN_SOUND
+            INIT,
+            RUN,
+            CLEAN
         };
 
         static List<string> s_Lines = new List<string>();
@@ -59,7 +51,6 @@ namespace RogueSurvivor
             }
         }
 
-
         public static void WriteLine(Stage stage, string text)
         {
             lock (s_Mutex)
@@ -92,15 +83,9 @@ namespace RogueSurvivor
         {
             switch (s)
             {
-                case Stage.CLEAN_GFX: return "clean gfx";
-                case Stage.CLEAN_SOUND: return "clean sound";
-                case Stage.CLEAN_MAIN: return "clean main";
-                case Stage.INIT_GFX: return "init gfx";
-                case Stage.INIT_SOUND: return "init sound";
-                case Stage.INIT_MAIN: return "init main";
-                case Stage.RUN_GFX: return "run gfx";
-                case Stage.RUN_MAIN: return "run main";
-                case Stage.RUN_SOUND: return "run sound";
+                case Stage.INIT: return "init";
+                case Stage.CLEAN: return "clean";
+                case Stage.RUN: return "run";
                 default: return "misc";
             }
         }

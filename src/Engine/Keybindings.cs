@@ -151,7 +151,7 @@ namespace RogueSurvivor.Engine
             if (kb == null)
                 throw new ArgumentNullException("kb");
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving keybindings...");
+            Logger.WriteLine(Logger.Stage.RUN, "saving keybindings...");
 
             IFormatter formatter = CreateFormatter();
             Stream stream = CreateStream(filepath, true);
@@ -160,7 +160,7 @@ namespace RogueSurvivor.Engine
             stream.Flush();
             stream.Close();
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving keybindings... done!");
+            Logger.WriteLine(Logger.Stage.RUN, "saving keybindings... done!");
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace RogueSurvivor.Engine
         /// <returns></returns>
         public static Keybindings Load(string filepath)
         {
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading keybindings...");
+            Logger.WriteLine(Logger.Stage.RUN, "loading keybindings...");
 
             Keybindings kb;
 
@@ -183,13 +183,13 @@ namespace RogueSurvivor.Engine
             }
             catch (Exception e)
             {
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load keybindings (first run?), using defaults.");
-                Logger.WriteLine(Logger.Stage.RUN_MAIN, String.Format("load exception : {0}.", e.ToString()));
+                Logger.WriteLine(Logger.Stage.RUN, "failed to load keybindings (first run?), using defaults.");
+                Logger.WriteLine(Logger.Stage.RUN, String.Format("load exception : {0}.", e.ToString()));
                 kb = new Keybindings();
                 kb.ResetToDefaults();
             }
 
-            Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading keybindings... done!");
+            Logger.WriteLine(Logger.Stage.RUN, "loading keybindings... done!");
 
             return kb;
         }
