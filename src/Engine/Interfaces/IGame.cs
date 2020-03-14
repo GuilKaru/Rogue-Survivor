@@ -8,11 +8,13 @@ namespace RogueSurvivor.Engine.Interfaces
         GameActors Actors { get; }
         HiScoreTable HiScoreTable { get; }
         GameHintsStatus Hints { get; }
+        Keybindings KeyBindings { get; }
         TextFile Manual { get; }
         Session Session { get; }
 
         string SaveFilePath { get; }
         string HiScoreTextFilePath { get; }
+        string KeyBindingsPath { get; }
 
         void Init(IGameLoader gameLoader);
         void Draw();

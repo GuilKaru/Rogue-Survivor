@@ -146,17 +146,14 @@ namespace RogueSurvivor.Engine
             return false;
         }
 
-        public static void Save(Keybindings kb, string filepath)
+        public void Save(string filepath)
         {
-            if (kb == null)
-                throw new ArgumentNullException("kb");
-
             Logger.WriteLine(Logger.Stage.RUN, "saving keybindings...");
 
             IFormatter formatter = CreateFormatter();
             Stream stream = CreateStream(filepath, true);
 
-            formatter.Serialize(stream, kb);
+            formatter.Serialize(stream, this);
             stream.Flush();
             stream.Close();
 

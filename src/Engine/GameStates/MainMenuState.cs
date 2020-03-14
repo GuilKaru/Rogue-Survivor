@@ -112,7 +112,7 @@ namespace RogueSurvivor.Engine.GameStates
                             break;
 
                         case 2:
-                            //HandleRedefineKeys();
+                            game.PushState<RedefineKeysState>();
                             break;
 
                         case 3:

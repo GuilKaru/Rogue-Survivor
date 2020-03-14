@@ -185,6 +185,7 @@
     <Compile Include="Engine\GameStates\HelpState.cs" />
     <Compile Include="Engine\GameStates\HintsState.cs" />
     <Compile Include="Engine\GameStates\HiScoresState.cs" />
+    <Compile Include="Engine\GameStates\RedefineKeysState.cs" />
     <Compile Include="Engine\GameStates\SelectGameModeState.cs" />
     <Compile Include="Engine\GameStates\SelectGenderState.cs" />
     <Compile Include="Engine\GameStates\SelectRaceState.cs" />
