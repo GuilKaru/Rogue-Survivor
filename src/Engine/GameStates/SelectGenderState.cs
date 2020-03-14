@@ -1,26 +1,35 @@
-﻿using RogueSurvivor.Engine.Interfaces;
+﻿using RogueSurvivor.Data;
+using RogueSurvivor.Engine.Interfaces;
 using RogueSurvivor.UI;
 using System.Drawing;
 
 namespace RogueSurvivor.Engine.GameStates
 {
-    class SelectRaceState : GameState
+    class SelectGenderState : GameState
     {
         readonly string[] menuEntries = new string[]
         {
             "*Random*",
-            "Living",
-            "Undead"
+            "Male",
+            "Female"
         };
-        readonly string[] descs = new string[]
-        {
-            "(picks a race at random for you)",
-            "Try to survive.",
-            "Eat brains and die again."
-        };
+        string[] descs;
 
         int selected;
-        bool confirmChoice, confirmUndead;
+        bool confirmChoice, confirmMale;
+
+        public override void Init()
+        {
+            ActorModel maleModel = game.Actors.MaleCivilian;
+            ActorModel femaleModel = game.Actors.FemaleCivilian;
+
+            descs = new string[]
+            {
+                "(picks a gender at random for you)",
+                string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}", maleModel.StartingSheet.BaseHitPoints, maleModel.StartingSheet.BaseDefence.Value,  maleModel.StartingSheet.UnarmedAttack.DamageValue),
+                string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}", femaleModel.StartingSheet.BaseHitPoints, femaleModel.StartingSheet.BaseDefence.Value, femaleModel.StartingSheet.UnarmedAttack.DamageValue),
+            };
+        }
 
         public override void Enter()
         {
@@ -33,16 +42,15 @@ namespace RogueSurvivor.Engine.GameStates
             ui.Clear(Color.Black);
             int gx, gy;
             gx = gy = 0;
-            ui.DrawStringBold(Color.Yellow, string.Format("[{0}] New Character - Choose Race", Session.DescGameMode(game.Session.GameMode)), gx, gy);
+            ui.DrawStringBold(Color.Yellow, string.Format("[{0}] New Living - Choose Gender", Session.DescGameMode(game.Session.GameMode)), gx, gy);
             gy += 2 * Ui.BOLD_LINE_SPACING;
             ui.DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGray, descs, gx, ref gy);
-            gy += 2 * Ui.BOLD_LINE_SPACING;
             ui.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
 
             if (confirmChoice)
             {
                 gy += Ui.BOLD_LINE_SPACING;
-                ui.DrawStringBold(Color.White, string.Format("Race : {0}.", confirmUndead ? "Undead" : "Living"), gx, gy);
+                ui.DrawStringBold(Color.White, string.Format("Gender : {0}.", confirmMale ? "Male" : "Female"), gx, gy);
                 gy += Ui.BOLD_LINE_SPACING;
                 ui.DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy);
             }
@@ -55,7 +63,7 @@ namespace RogueSurvivor.Engine.GameStates
             if (confirmChoice)
             {
                 if (key == Key.Y)
-                    SelectRace(confirmUndead);
+                    SelectGender(confirmMale);
                 else if (key == Key.N || key == Key.Escape)
                     confirmChoice = false;
                 return;
@@ -82,30 +90,26 @@ namespace RogueSurvivor.Engine.GameStates
                     switch (selected)
                     {
                         case 0: // random
-                            confirmUndead = game.Session.charGenRoller.RollChance(50);
                             confirmChoice = true;
+                            confirmMale = game.Session.charGenRoller.RollChance(50);
                             break;
 
-                        case 1: // living
-                            SelectRace(false);
+                        case 1: // male
+                            SelectGender(true);
                             break;
 
-                        case 2: // undead
-                            SelectRace(true);
+                        case 2: // female
+                            SelectGender(false);
                             break;
                     }
                     break;
             }
         }
 
-        void SelectRace(bool isUndead)
+        void SelectGender(bool male)
         {
-            game.Session.charGen.IsUndead = isUndead;
+            game.Session.charGen.IsMale = male;
             game.PopState();
-            if (isUndead)
-                ;
-            else
-                game.PushState<SelectGenderState>();
         }
     }
 }

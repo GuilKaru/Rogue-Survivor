@@ -10,10 +10,6 @@ namespace RogueSurvivor.Engine.GameStates
     {
         int line;
 
-        public override void Enter()
-        {
-        }
-
         public override void Draw()
         {
             int gy = 0;

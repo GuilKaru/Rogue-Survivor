@@ -1,9 +1,11 @@
 ﻿using RogueSurvivor.Engine.GameStates;
+using RogueSurvivor.Gameplay;
 
 namespace RogueSurvivor.Engine.Interfaces
 {
     interface IGame
     {
+        GameActors Actors { get; }
         HiScoreTable HiScoreTable { get; }
         GameHintsStatus Hints { get; }
         TextFile Manual { get; }
