@@ -103,7 +103,7 @@ namespace RogueSurvivor.Engine.GameStates
             game.Session.charGen.IsUndead = isUndead;
             game.PopState();
             if (isUndead)
-                ;
+                game.PushState<SelectUndeadTypeState>();
             else
                 game.PushState<SelectGenderState>();
         }

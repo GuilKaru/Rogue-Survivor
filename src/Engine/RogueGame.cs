@@ -1166,30 +1166,10 @@ namespace RogueSurvivor.Engine
         {
             DiceRoller roller = new DiceRoller();
 
-            bool isUndead = false;
-
-            /////////////////////////////
-            // Choose gender/undead type
-            /////////////////////////////
-            /*if (isUndead)
-            {
-                GameActors.IDs modelID;
-                if (!HandleNewCharacterUndeadType(roller, out modelID))
-                    return false;
-                m_CharGen.UndeadModel = modelID;
-            }
-            else
-            {
-                bool isMale;
-                if (!HandleNewCharacterGender(roller, out isMale))
-                    return false;
-                m_CharGen.IsMale = isMale;
-            }
-
             /////////////////////////////
             // Choose skill (living only)
             /////////////////////////////
-            if (!isUndead)
+            /*if (!isUndead)
             {
                 Skills.IDs skID;
                 if (!HandleNewCharacterSkill(roller, out skID))
@@ -1205,146 +1185,6 @@ namespace RogueSurvivor.Engine
 
             // done
             return true;
-        }
-
-        string DescribeUndeadModelStatLine(ActorModel m)
-        {
-            return string.Format("HP:{0:D3}  Spd:{1:F2}  Atk:{2:D2}  Def:{3:D2}  Dmg:{4:D2}  FoV:{5:D1}  Sml:{6:F2}",
-                m.StartingSheet.BaseHitPoints, m.DollBody.Speed / 100f,
-                m.StartingSheet.UnarmedAttack.HitValue, m.StartingSheet.BaseDefence.Value, m.StartingSheet.UnarmedAttack.DamageValue,
-                m.StartingSheet.BaseViewRange, m.StartingSheet.BaseSmellRating);
-        }
-
-        bool HandleNewCharacterUndeadType(DiceRoller roller, out GameActors.IDs modelID)
-        {
-            ActorModel skeletonModel = GameActors.Skeleton;
-            ActorModel shamblerModel = GameActors.Zombie;
-            ActorModel maleModel = GameActors.MaleZombified;
-            ActorModel femaleModel = GameActors.FemaleZombified;
-            ActorModel masterModel = GameActors.ZombieMaster;
-
-            string[] menuEntries = new string[]
-            {
-                "*Random*",
-                skeletonModel.Name,
-                shamblerModel.Name,
-                maleModel.Name,
-                femaleModel.Name,
-                masterModel.Name,
-            };
-            string[] descs = new string[]
-            {
-                "(picks a type at random for you)",
-                DescribeUndeadModelStatLine(skeletonModel),
-                DescribeUndeadModelStatLine(shamblerModel),
-                DescribeUndeadModelStatLine(maleModel),
-                DescribeUndeadModelStatLine(femaleModel),
-                DescribeUndeadModelStatLine(masterModel)
-            };
-
-            modelID = GameActors.IDs.UNDEAD_MALE_ZOMBIFIED;
-            bool loop = true;
-            bool choiceDone = false;
-            int selected = 0;
-            do
-            {
-                // display.
-                m_UI.Clear(Color.Black);
-                int gx, gy;
-                gx = gy = 0;
-                m_UI.DrawStringBold(Color.Yellow, string.Format("[{0}] New Undead - Choose Type", Session.DescGameMode(m_Session.GameMode)), gx, gy);
-                gy += 2 * Ui.BOLD_LINE_SPACING;
-                m_UI.DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGray, descs, gx, ref gy);
-                m_UI.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
-                m_UI.UI_Repaint();
-
-                // get menu action.
-                Key key = m_UI.ReadKey();
-                switch (key)
-                {
-                    case Key.Up:       // move up
-                        if (selected > 0) --selected;
-                        else selected = menuEntries.Length - 1;
-                        break;
-                    case Key.Down:     // move down
-                        selected = (selected + 1) % menuEntries.Length;
-                        break;
-
-                    case Key.Escape:
-                        choiceDone = false;
-                        loop = false;
-                        break;
-
-                    case Key.Enter:    // validate
-                        {
-                            switch (selected)
-                            {
-                                case 0: // random
-                                    selected = roller.Roll(0, 5);
-                                    switch (selected)
-                                    {
-                                        case 0: modelID = GameActors.IDs.UNDEAD_SKELETON; break;
-                                        case 1: modelID = GameActors.IDs.UNDEAD_ZOMBIE; break;
-                                        case 2: modelID = GameActors.IDs.UNDEAD_MALE_ZOMBIFIED; break;
-                                        case 3: modelID = GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED; break;
-                                        case 4: modelID = GameActors.IDs.UNDEAD_ZOMBIE_MASTER; break;
-                                        default:
-                                            throw new ArgumentOutOfRangeException("unhandled select " + selected);
-                                    }
-
-                                    gy += Ui.BOLD_LINE_SPACING;
-                                    m_UI.DrawStringBold(Color.White, string.Format("Type : {0}.", GameActors[modelID].Name), gx, gy);
-                                    gy += Ui.BOLD_LINE_SPACING;
-                                    m_UI.DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy);
-                                    m_UI.UI_Repaint();
-                                    if (WaitYesOrNo())
-                                    {
-                                        choiceDone = true;
-                                        loop = false;
-                                    }
-                                    break;
-
-                                case 1: // skeleton
-                                    modelID = GameActors.IDs.UNDEAD_SKELETON;
-                                    choiceDone = true;
-                                    loop = false;
-                                    break;
-
-                                case 2: // shambler
-                                    modelID = GameActors.IDs.UNDEAD_ZOMBIE;
-                                    choiceDone = true;
-                                    loop = false;
-                                    break;
-
-                                case 3: // male zombified
-                                    modelID = GameActors.IDs.UNDEAD_MALE_ZOMBIFIED;
-                                    //m_CharGen.IsMale = true;
-                                    choiceDone = true;
-                                    loop = false;
-                                    break;
-
-                                case 4: // female zombified
-                                    modelID = GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED;
-                                    //m_CharGen.IsMale = false;
-                                    choiceDone = true;
-                                    loop = false;
-                                    break;
-
-                                case 5: // zm
-                                    modelID = GameActors.IDs.UNDEAD_ZOMBIE_MASTER;
-                                    choiceDone = true;
-                                    loop = false;
-                                    break;
-                            }
-                            break;
-                        }
-                }
-
-            }
-            while (loop);
-
-            // done.
-            return choiceDone;
         }
 
         bool HandleNewCharacterSkill(DiceRoller roller, out Skills.IDs skID)
