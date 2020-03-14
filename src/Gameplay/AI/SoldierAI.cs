@@ -281,13 +281,13 @@ namespace RogueSurvivor.Gameplay.AI
                     if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
                     {
                         if (target.IsSleeping)
-                            game.DoEmote(m_Actor, String.Format("patiently waits for {0} to wake up.", target.Name));
+                            game.DoEmote(m_Actor, string.Format("patiently waits for {0} to wake up.", target.Name));
                         else
                         {
                             if (m_LOSSensor.FOV.Contains(target.Location.Position))
-                                game.DoEmote(m_Actor, String.Format("{0}! Don't lag behind!", target.Name));
+                                game.DoEmote(m_Actor, string.Format("{0}! Don't lag behind!", target.Name));
                             else
-                                game.DoEmote(m_Actor, String.Format("Where the hell is {0}?", target.Name));
+                                game.DoEmote(m_Actor, string.Format("Where the hell is {0}?", target.Name));
                         }
                     }
 

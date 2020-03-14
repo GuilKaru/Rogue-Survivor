@@ -690,7 +690,7 @@ namespace RogueSurvivor
         public void DrawFootnote(Color color, string text)
         {
             Color shadowColor = Color.FromArgb(color.A, color.R / 2, color.G / 2, color.B / 2);
-            DrawStringBold(color, String.Format("<{0}>", text), 0, Ui.CANVAS_HEIGHT - Ui.BOLD_LINE_SPACING, shadowColor);
+            DrawStringBold(color, string.Format("<{0}>", text), 0, Ui.CANVAS_HEIGHT - Ui.BOLD_LINE_SPACING, shadowColor);
         }
 
         /// <summary>
@@ -716,16 +716,16 @@ namespace RogueSurvivor
             {
                 string choiceStr;
                 if (i == currentChoice)
-                    choiceStr = String.Format("---> {0}", entries[i]);
+                    choiceStr = string.Format("---> {0}", entries[i]);
                 else
-                    choiceStr = String.Format("     {0}", entries[i]);
+                    choiceStr = string.Format("     {0}", entries[i]);
                 DrawStringBold(entriesColor, choiceStr, gx, gy, entriesShadowColor);
 
                 if (values != null)
                 {
                     string valueStr;
                     if (i == currentChoice && !valuesOnNewLine)
-                        valueStr = String.Format("{0} <---", values[i]);
+                        valueStr = string.Format("{0} <---", values[i]);
                     else
                         valueStr = values[i];
 
@@ -792,7 +792,7 @@ namespace RogueSurvivor
             }
             catch (Exception ex)
             {
-                Logger.WriteLine(Logger.Stage.RUN, String.Format("exception when taking screenshot : {0}", ex.ToString()));
+                Logger.WriteLine(Logger.Stage.RUN, string.Format("exception when taking screenshot : {0}", ex.ToString()));
                 return false;
             }
             finally

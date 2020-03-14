@@ -1354,7 +1354,7 @@ namespace RogueSurvivor.Gameplay
             // get line for model in table.
             CSVLine line = FindLineForModel(table, modelID);
             if (line == null)
-                throw new InvalidOperationException(String.Format("model {0} not found", modelID.ToString()));
+                throw new InvalidOperationException(string.Format("model {0} not found", modelID.ToString()));
 
             // get data from line.
             DATA_TYPE data;
@@ -1364,7 +1364,7 @@ namespace RogueSurvivor.Gameplay
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException(String.Format("invalid data format for model {0}; exception : {1}", modelID.ToString(), e.ToString()));
+                throw new InvalidOperationException(string.Format("invalid data format for model {0}; exception : {1}", modelID.ToString(), e.ToString()));
             }
 
             // ok.

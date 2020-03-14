@@ -757,6 +757,10 @@ namespace RogueSurvivor.Engine
             states.RemoveAt(states.Count - 1);
         }
 
+        public HiScoreTable HiScoreTable => m_HiScoreTable;
+        public string SaveFilePath => GetUserSave();
+        public string HiScoreTextFilePath => GetUserHiScoreTextFilePath();
+
         //111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
 
         public RogueGame(IRogueUI UI)
@@ -808,7 +812,7 @@ namespace RogueSurvivor.Engine
                 m_MessageManager.Clear();
 
             // Format message: <turn> <Text>           
-            msg.Text = String.Format("{0} {1}", m_Session.WorldTime.TurnCounter, Capitalize(msg.Text));
+            msg.Text = string.Format("{0} {1}", m_Session.WorldTime.TurnCounter, Capitalize(msg.Text));
 
             // Add.
             m_MessageManager.Add(msg);
@@ -859,7 +863,7 @@ namespace RogueSurvivor.Engine
         Message MakePlayerCentricMessage(string eventText, Point position)
         {
             Point vDir = new Point(position.X - m_Player.Location.Position.X, position.Y - m_Player.Location.Position.Y);
-            string text = String.Format("{0} {1} tiles to the {2}.", eventText, (int)m_Rules.StdDistance(vDir), Direction.ApproximateFromVector(vDir));
+            string text = string.Format("{0} {1} tiles to the {2}.", eventText, (int)m_Rules.StdDistance(vDir), Direction.ApproximateFromVector(vDir));
             return new Message(text, m_Session.WorldTime.TurnCounter);
         }
 
@@ -870,7 +874,7 @@ namespace RogueSurvivor.Engine
 
         Message MakeYesNoMessage(string question)
         {
-            return new Message(String.Format("{0}? Y to confirm, N to cancel", question), m_Session.WorldTime.TurnCounter, Color.Yellow);
+            return new Message(string.Format("{0}? Y to confirm, N to cancel", question), m_Session.WorldTime.TurnCounter, Color.Yellow);
         }
 
         /// <summary>
@@ -1031,9 +1035,9 @@ namespace RogueSurvivor.Engine
             if (text == null)
                 return "";
             if (text.Length == 1)
-                return String.Format("{0}", Char.ToUpper(text[0]));
+                return string.Format("{0}", Char.ToUpper(text[0]));
 
-            return String.Format("{0}{1}", Char.ToUpper(text[0]), text.Substring(1));
+            return string.Format("{0}{1}", Char.ToUpper(text[0]), text.Substring(1));
         }
 
         string HisOrHer(Actor actor)
@@ -1064,11 +1068,6 @@ namespace RogueSurvivor.Engine
         {
             char c = name[0];
             return (c == 'a' || c == 'e' || c == 'i' || c == 'u' ? "an " : "a ") + name;
-        }
-
-        string TruncateString(string s, int maxLength)
-        {
-            return s.Length <= maxLength ? s : s.Substring(0, maxLength);
         }
 
         void AnimDelay(int msecs)
@@ -1362,7 +1361,7 @@ namespace RogueSurvivor.Engine
                         };
                         break;
                 }
-                foreach (String str in descMode)
+                foreach (string str in descMode)
                 {
                     m_UI.DrawStringBold(Color.Gray, str, gx, gy);
                     gy += Ui.BOLD_LINE_SPACING;
@@ -1455,7 +1454,7 @@ namespace RogueSurvivor.Engine
                 m_UI.Clear(Color.Black);
                 int gx, gy;
                 gx = gy = 0;
-                m_UI.DrawStringBold(Color.Yellow, String.Format("[{0}] New Character - Choose Race", Session.DescGameMode(m_Session.GameMode)), gx, gy);
+                m_UI.DrawStringBold(Color.Yellow, string.Format("[{0}] New Character - Choose Race", Session.DescGameMode(m_Session.GameMode)), gx, gy);
                 gy += 2 * Ui.BOLD_LINE_SPACING;
                 m_UI.DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGray, descs, gx, ref gy);
                 gy += 2 * Ui.BOLD_LINE_SPACING;
@@ -1488,7 +1487,7 @@ namespace RogueSurvivor.Engine
                                     isUndead = roller.RollChance(50);
 
                                     gy += Ui.BOLD_LINE_SPACING;
-                                    m_UI.DrawStringBold(Color.White, String.Format("Race : {0}.", isUndead ? "Undead" : "Living"), gx, gy);
+                                    m_UI.DrawStringBold(Color.White, string.Format("Race : {0}.", isUndead ? "Undead" : "Living"), gx, gy);
                                     gy += Ui.BOLD_LINE_SPACING;
                                     m_UI.DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy);
                                     m_UI.UI_Repaint();
@@ -1536,8 +1535,8 @@ namespace RogueSurvivor.Engine
             string[] descs = new string[]
             {
                 "(picks a gender at random for you)",
-                String.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}", maleModel.StartingSheet.BaseHitPoints, maleModel.StartingSheet.BaseDefence.Value,  maleModel.StartingSheet.UnarmedAttack.DamageValue),
-                String.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}", femaleModel.StartingSheet.BaseHitPoints, femaleModel.StartingSheet.BaseDefence.Value, femaleModel.StartingSheet.UnarmedAttack.DamageValue),
+                string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}", maleModel.StartingSheet.BaseHitPoints, maleModel.StartingSheet.BaseDefence.Value,  maleModel.StartingSheet.UnarmedAttack.DamageValue),
+                string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}", femaleModel.StartingSheet.BaseHitPoints, femaleModel.StartingSheet.BaseDefence.Value, femaleModel.StartingSheet.UnarmedAttack.DamageValue),
             };
 
             isMale = true;
@@ -1550,7 +1549,7 @@ namespace RogueSurvivor.Engine
                 m_UI.Clear(Color.Black);
                 int gx, gy;
                 gx = gy = 0;
-                m_UI.DrawStringBold(Color.Yellow, String.Format("[{0}] New Living - Choose Gender", Session.DescGameMode(m_Session.GameMode)), gx, gy);
+                m_UI.DrawStringBold(Color.Yellow, string.Format("[{0}] New Living - Choose Gender", Session.DescGameMode(m_Session.GameMode)), gx, gy);
                 gy += 2 * Ui.BOLD_LINE_SPACING;
                 m_UI.DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGray, descs, gx, ref gy);
                 m_UI.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
@@ -1581,7 +1580,7 @@ namespace RogueSurvivor.Engine
                                     isMale = roller.RollChance(50);
 
                                     gy += Ui.BOLD_LINE_SPACING;
-                                    m_UI.DrawStringBold(Color.White, String.Format("Gender : {0}.", isMale ? "Male" : "Female"), gx, gy);
+                                    m_UI.DrawStringBold(Color.White, string.Format("Gender : {0}.", isMale ? "Male" : "Female"), gx, gy);
                                     gy += Ui.BOLD_LINE_SPACING;
                                     m_UI.DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy);
                                     m_UI.UI_Repaint();
@@ -1617,7 +1616,7 @@ namespace RogueSurvivor.Engine
 
         string DescribeUndeadModelStatLine(ActorModel m)
         {
-            return String.Format("HP:{0:D3}  Spd:{1:F2}  Atk:{2:D2}  Def:{3:D2}  Dmg:{4:D2}  FoV:{5:D1}  Sml:{6:F2}",
+            return string.Format("HP:{0:D3}  Spd:{1:F2}  Atk:{2:D2}  Def:{3:D2}  Dmg:{4:D2}  FoV:{5:D1}  Sml:{6:F2}",
                 m.StartingSheet.BaseHitPoints, m.DollBody.Speed / 100f,
                 m.StartingSheet.UnarmedAttack.HitValue, m.StartingSheet.BaseDefence.Value, m.StartingSheet.UnarmedAttack.DamageValue,
                 m.StartingSheet.BaseViewRange, m.StartingSheet.BaseSmellRating);
@@ -1660,7 +1659,7 @@ namespace RogueSurvivor.Engine
                 m_UI.Clear(Color.Black);
                 int gx, gy;
                 gx = gy = 0;
-                m_UI.DrawStringBold(Color.Yellow, String.Format("[{0}] New Undead - Choose Type", Session.DescGameMode(m_Session.GameMode)), gx, gy);
+                m_UI.DrawStringBold(Color.Yellow, string.Format("[{0}] New Undead - Choose Type", Session.DescGameMode(m_Session.GameMode)), gx, gy);
                 gy += 2 * Ui.BOLD_LINE_SPACING;
                 m_UI.DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGray, descs, gx, ref gy);
                 m_UI.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
@@ -1701,7 +1700,7 @@ namespace RogueSurvivor.Engine
                                     }
 
                                     gy += Ui.BOLD_LINE_SPACING;
-                                    m_UI.DrawStringBold(Color.White, String.Format("Type : {0}.", GameActors[modelID].Name), gx, gy);
+                                    m_UI.DrawStringBold(Color.White, string.Format("Type : {0}.", GameActors[modelID].Name), gx, gy);
                                     gy += Ui.BOLD_LINE_SPACING;
                                     m_UI.DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy);
                                     m_UI.UI_Repaint();
@@ -1769,7 +1768,7 @@ namespace RogueSurvivor.Engine
             {
                 allSkills[i] = (Skills.IDs)i;
                 menuEntries[i + 1] = Skills.Name(allSkills[i]);
-                skillDesc[i + 1] = String.Format("{0} max - {1}", Skills.MaxSkillLevel(i), DescribeSkillShort(allSkills[i]));
+                skillDesc[i + 1] = string.Format("{0} max - {1}", Skills.MaxSkillLevel(i), DescribeSkillShort(allSkills[i]));
             }
 
             //////////////////////////
@@ -1785,7 +1784,7 @@ namespace RogueSurvivor.Engine
                 m_UI.Clear(Color.Black);
                 int gx, gy;
                 gx = gy = 0;
-                m_UI.DrawStringBold(Color.Yellow, String.Format("[{0}] New {1} Character - Choose Starting Skill",
+                m_UI.DrawStringBold(Color.Yellow, string.Format("[{0}] New {1} Character - Choose Starting Skill",
                     Session.DescGameMode(m_Session.GameMode),
                     m_CharGen.IsMale ? "Male" : "Female"), gx, gy);
                 gy += 2 * Ui.BOLD_LINE_SPACING;
@@ -1817,7 +1816,7 @@ namespace RogueSurvivor.Engine
                             skID = (Skills.IDs)(selected - 1 + (int)Skills.IDs._FIRST);
 
                         gy += Ui.BOLD_LINE_SPACING;
-                        m_UI.DrawStringBold(Color.White, String.Format("Skill : {0}.", Skills.Name(skID)), gx, gy);
+                        m_UI.DrawStringBold(Color.White, string.Format("Skill : {0}.", Skills.Name(skID)), gx, gy);
                         gy += Ui.BOLD_LINE_SPACING;
                         m_UI.DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy);
                         m_UI.UI_Repaint();
@@ -1843,80 +1842,6 @@ namespace RogueSurvivor.Engine
                 m_Manual.FormatLines(TEXTFILE_CHARS_PER_LINE);
             else
                 m_Manual = null;
-        }
-
-        void HandleHiScores(bool saveToTextfile)
-        {
-            TextFile file = null;
-            if (saveToTextfile)
-                file = new TextFile();
-
-            m_UI.Clear(Color.Black);
-            int gy = 0;
-            m_UI.DrawHeader();
-            gy += Ui.BOLD_LINE_SPACING;
-            m_UI.DrawStringBold(Color.Yellow, "Hi Scores", 0, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-            m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-
-            // display.
-            m_UI.DrawStringBold(Color.White, "Rank | Name, Skills, Death       |  Score |Difficulty|Survival|  Kills |Achievm.|      Game Time | Playing time", 0, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-
-            // text.
-            if (saveToTextfile)
-            {
-                file.Append(String.Format("ROGUE SURVIVOR REANIMATED {0}", SetupConfig.GAME_VERSION));
-                file.Append("Hi Scores");
-                file.Append("Rank | Name, Skills, Death       |  Score |Difficulty|Survival|  Kills |Achievm.|      Game Time | Playing time");
-            }
-
-            // individual entries.
-            for (int i = 0; i < m_HiScoreTable.Count; i++)
-            {
-                // display.
-                Color rankColor = (i == 0 ? Color.LightYellow : i == 1 ? Color.LightCyan : i == 2 ? Color.LightGreen : Color.DimGray);
-                m_UI.DrawStringBold(rankColor, "------------------------------------------------------------------------------------------------------------------------", 0, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-                HiScore hi = m_HiScoreTable[i];
-                string line = String.Format("{0,3}. | {1,-25} | {2,6} |     {3,3}% | {4,6} | {5,6} | {6,6} | {7,14} | {8}",
-                    i + 1, TruncateString(hi.Name, 25),
-                    hi.TotalPoints, hi.DifficultyPercent, hi.SurvivalPoints, hi.KillPoints, hi.AchievementPoints,
-                    new WorldTime(hi.TurnSurvived).ToString(), TimeSpanToString(hi.PlayingTime));
-                m_UI.DrawStringBold(rankColor, line, 0, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-                m_UI.DrawStringBold(rankColor, String.Format("     | {0}.", hi.SkillsDescription), 0, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-                m_UI.DrawStringBold(rankColor, String.Format("     | {0}.", hi.Death), 0, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-
-                // text.
-                if (saveToTextfile)
-                {
-                    file.Append("------------------------------------------------------------------------------------------------------------------------");
-                    file.Append(line);
-                    file.Append(String.Format("     | {0}", hi.SkillsDescription));
-                    file.Append(String.Format("     | {0}", hi.Death));
-                }
-            }
-
-            // save.
-            string textfilePath = GetUserHiScoreTextFilePath();
-            if (saveToTextfile)
-                file.Save(textfilePath);
-
-            // display.
-            m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-            if (saveToTextfile)
-            {
-                m_UI.DrawStringBold(Color.White, textfilePath, 0, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-            }
-            m_UI.DrawFootnote(Color.White, "press ESC to leave");
-            m_UI.UI_Repaint();
-            WaitEscape();
         }
 
         void LoadHiScoreTable()
@@ -1951,7 +1876,7 @@ namespace RogueSurvivor.Engine
 
             // scoring : hello there.
             m_Session.Scoring.AddVisit(m_Session.WorldTime.TurnCounter, m_Player.Location.Map);
-            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, String.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", m_Player.Location.Map.Name));
+            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", m_Player.Location.Map.Name));
 
             // setup proper scoring mode.
             m_Session.Scoring.Side = (isUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR);
@@ -1976,7 +1901,7 @@ namespace RogueSurvivor.Engine
                     AddMessage(new Message("The hints help a beginner learning the basic controls.", 0, Color.LightGreen));
                     AddMessage(new Message("You can disable the Advisor by going to the Options screen.", 0, Color.LightGreen));
                 }
-                AddMessage(new Message(String.Format("Press {0} during the game to change the options.", s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE)), 0, Color.LightGreen));
+                AddMessage(new Message(string.Format("Press {0} during the game to change the options.", s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE)), 0, Color.LightGreen));
                 AddMessage(new Message("<press ENTER>", 0, Color.Yellow));
                 RedrawPlayScreen();
                 WaitEnter();
@@ -1989,8 +1914,8 @@ namespace RogueSurvivor.Engine
             AddMessage(new Message("* Welcome to Rogue Survivor *", 0, Color.LightGreen));
             AddMessage(new Message("* We hope you like Zombies  *", 0, Color.LightGreen));
             AddMessage(new Message("*****************************", 0, Color.LightGreen));
-            AddMessage(new Message(String.Format("Press {0} for help", s_KeyBindings.Get(PlayerCommand.HELP_MODE)), 0, Color.LightGreen));
-            AddMessage(new Message(String.Format("Press {0} to redefine keys", s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE)), 0, Color.LightGreen));
+            AddMessage(new Message(string.Format("Press {0} for help", s_KeyBindings.Get(PlayerCommand.HELP_MODE)), 0, Color.LightGreen));
+            AddMessage(new Message(string.Format("Press {0} to redefine keys", s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE)), 0, Color.LightGreen));
             AddMessage(new Message("<press ENTER>", 0, Color.Yellow));
             RefreshPlayer();
             RedrawPlayScreen();
@@ -1998,7 +1923,7 @@ namespace RogueSurvivor.Engine
 
             // wake up!
             ClearMessages();
-            AddMessage(new Message(String.Format(isUndead ? "{0} rises..." : "{0} wakes up.", m_Player.Name), 0, Color.White));
+            AddMessage(new Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", m_Player.Name), 0, Color.White));
             RedrawPlayScreen();
 
             // reset/cleanup bot from previous session
@@ -2130,7 +2055,7 @@ namespace RogueSurvivor.Engine
                 gy += Ui.BOLD_LINE_SPACING;
                 int diffForSurvivor = (int)(100 * Scoring.ComputeDifficultyRating(s_Options, DifficultySide.FOR_SURVIVOR, 0));
                 int diffforUndead = (int)(100 * Scoring.ComputeDifficultyRating(s_Options, DifficultySide.FOR_UNDEAD, 0));
-                m_UI.DrawStringBold(Color.Yellow, String.Format("Difficulty Rating : {0}% as survivor / {1}% as undead.", diffForSurvivor, diffforUndead), gx, gy);
+                m_UI.DrawStringBold(Color.Yellow, string.Format("Difficulty Rating : {0}% as survivor / {1}% as undead.", diffForSurvivor, diffforUndead), gx, gy);
                 gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.White, "Difficulty used for scoring automatically decrease with each reincarnation.", gx, gy);
                 gy += 2 * Ui.BOLD_LINE_SPACING;
@@ -2495,7 +2420,7 @@ namespace RogueSurvivor.Engine
 
                     case Key.Enter: // rebind
                         // say.
-                        m_UI.DrawStringBold(Color.Yellow, String.Format("rebinding {0}, press the new key.", menuEntries[selected]), gx, gy);
+                        m_UI.DrawStringBold(Color.Yellow, string.Format("rebinding {0}, press the new key.", menuEntries[selected]), gx, gy);
                         m_UI.UI_Repaint();
 
                         // read new key.
@@ -2640,7 +2565,7 @@ namespace RogueSurvivor.Engine
                     }
                     else if (prevPhase != newPhase)
                     {
-                        if (canSeeSky) AddMessage(new Message(String.Format("Time passes, it is now {0}...", DescribeDayPhase(newPhase)), m_Session.WorldTime.TurnCounter, isNight ? NIGHT_COLOR : DAY_COLOR));
+                        if (canSeeSky) AddMessage(new Message(string.Format("Time passes, it is now {0}...", DescribeDayPhase(newPhase)), m_Session.WorldTime.TurnCounter, isNight ? NIGHT_COLOR : DAY_COLOR));
                     }
 
 
@@ -2927,7 +2852,7 @@ namespace RogueSurvivor.Engine
 
                                     if (IsVisibleToPlayer(map, c.Position))
                                     {
-                                        AddMessage(new Message(String.Format("The corpse of {0} rise again!!", c.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Red));
+                                        AddMessage(new Message(string.Format("The corpse of {0} rise again!!", c.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Red));
                                         // FIXME -- 
                                         // alpha10 this will be a sfx not music
                                         m_MusicManager.Play(GameSounds.UNDEAD_RISE, MusicPriority.PRIORITY_EVENT);
@@ -2944,7 +2869,7 @@ namespace RogueSurvivor.Engine
                             {
                                 DestroyCorpse(c, map);
                                 if (IsVisibleToPlayer(map, c.Position))
-                                    AddMessage(new Message(String.Format("The corpse of {0} turns into dust.", c.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Purple));
+                                    AddMessage(new Message(string.Format("The corpse of {0} turns into dust.", c.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Purple));
                             }
                         }
                     }
@@ -2981,7 +2906,7 @@ namespace RogueSurvivor.Engine
                                         if (isVisible)
                                         {
                                             if (isPlayer) ClearMessages();
-                                            AddMessage(MakeMessage(a, String.Format("{0} blood.", Conjugate(a, VERB_VOMIT)), Color.Purple));
+                                            AddMessage(MakeMessage(a, string.Format("{0} blood.", Conjugate(a, VERB_VOMIT)), Color.Purple));
                                             if (isPlayer && !isBot)
                                             {
                                                 AddMessagePressEnter();
@@ -2997,7 +2922,7 @@ namespace RogueSurvivor.Engine
                                         if (isVisible)
                                         {
                                             if (isPlayer) ClearMessages();
-                                            AddMessage(MakeMessage(a, String.Format("{0}.", Conjugate(a, VERB_VOMIT)), Color.Purple));
+                                            AddMessage(MakeMessage(a, string.Format("{0}.", Conjugate(a, VERB_VOMIT)), Color.Purple));
                                             if (isPlayer && !isBot)
                                             {
                                                 AddMessagePressEnter();
@@ -3013,7 +2938,7 @@ namespace RogueSurvivor.Engine
                                         if (isVisible)
                                         {
                                             if (isPlayer) ClearMessages();
-                                            AddMessage(MakeMessage(a, String.Format("{0} sick and tired.", Conjugate(a, VERB_FEEL)), Color.Purple));
+                                            AddMessage(MakeMessage(a, string.Format("{0} sick and tired.", Conjugate(a, VERB_FEEL)), Color.Purple));
                                             if (isPlayer && !isBot)
                                             {
                                                 AddMessagePressEnter();
@@ -3027,7 +2952,7 @@ namespace RogueSurvivor.Engine
                                         if (isVisible)
                                         {
                                             if (isPlayer) ClearMessages();
-                                            AddMessage(MakeMessage(a, String.Format("{0} sick and weak.", Conjugate(a, VERB_FEEL)), Color.Purple));
+                                            AddMessage(MakeMessage(a, string.Format("{0} sick and weak.", Conjugate(a, VERB_FEEL)), Color.Purple));
                                             if (isPlayer && !isBot)
                                             {
                                                 AddMessagePressEnter();
@@ -3052,7 +2977,7 @@ namespace RogueSurvivor.Engine
                             foreach (Actor a in infectedToKill)
                             {
                                 if (IsVisibleToPlayer(a))
-                                    AddMessage(MakeMessage(a, String.Format("{0} of infection!", Conjugate(a, VERB_DIE))));
+                                    AddMessage(MakeMessage(a, string.Format("{0} of infection!", Conjugate(a, VERB_DIE))));
                                 KillActor(null, a, "infection");
                                 // if player, force zombify NOW.
                                 if (a.IsPlayer)
@@ -3130,7 +3055,7 @@ namespace RogueSurvivor.Engine
                             actor.IsRunning = false;
                             if (actor == m_Player)
                             {
-                                AddMessage(MakeMessage(actor, String.Format("{0} too tired to continue running!", Conjugate(actor, VERB_BE))));
+                                AddMessage(MakeMessage(actor, string.Format("{0} too tired to continue running!", Conjugate(actor, VERB_BE))));
                                 RedrawPlayScreen();
                             }
                         }
@@ -3214,7 +3139,7 @@ namespace RogueSurvivor.Engine
                                 SpendActorStaminaPoints(actor, Rules.SANITY_NIGHTMARE_STA_LOSS);
                                 // msg.
                                 if (IsVisibleToPlayer(actor))
-                                    AddMessage(MakeMessage(actor, String.Format("{0} from a horrible nightmare!", Conjugate(actor, VERB_WAKE_UP))));
+                                    AddMessage(MakeMessage(actor, string.Format("{0} from a horrible nightmare!", Conjugate(actor, VERB_WAKE_UP))));
                                 // if player, sfx.
                                 if (actor.IsPlayer)
                                 {
@@ -3281,7 +3206,7 @@ namespace RogueSurvivor.Engine
                                 }
                                 else if (m_Rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE) && IsVisibleToPlayer(actor))
                                 {
-                                    AddMessage(MakeMessage(actor, String.Format("{0}.", Conjugate(actor, VERB_SNORE))));
+                                    AddMessage(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_SNORE))));
                                     RedrawPlayScreen();
                                 }
                             }
@@ -3298,7 +3223,7 @@ namespace RogueSurvivor.Engine
                                 // message.
                                 if (IsVisibleToPlayer(actor))
                                 {
-                                    AddMessage(MakeMessage(actor, String.Format("{0} from exhaustion !!", Conjugate(actor, VERB_COLLAPSE))));
+                                    AddMessage(MakeMessage(actor, string.Format("{0} from exhaustion !!", Conjugate(actor, VERB_COLLAPSE))));
                                     RedrawPlayScreen();
                                 }
 
@@ -3331,10 +3256,10 @@ namespace RogueSurvivor.Engine
                             RegenActorSanity(actor, Rules.SANITY_RECOVER_BOND);
                             RegenActorSanity(actor.Leader, Rules.SANITY_RECOVER_BOND);
                             if (IsVisibleToPlayer(actor))
-                                AddMessage(MakeMessage(actor, String.Format("{0} reassured knowing {1} is with {2}.",
+                                AddMessage(MakeMessage(actor, string.Format("{0} reassured knowing {1} is with {2}.",
                                             Conjugate(actor, VERB_FEEL), actor.Leader.Name, HimOrHer(actor))));
                             if (IsVisibleToPlayer(actor.Leader))
-                                AddMessage(MakeMessage(actor.Leader, String.Format("{0} reassured knowing {1} is with {2}.",
+                                AddMessage(MakeMessage(actor.Leader, string.Format("{0} reassured knowing {1} is with {2}.",
                                             Conjugate(actor.Leader, VERB_FEEL), actor.Name, HimOrHer(actor.Leader))));
                         }
                     }
@@ -3347,7 +3272,7 @@ namespace RogueSurvivor.Engine
                         // message.
                         if (IsVisibleToPlayer(actor))
                         {
-                            AddMessage(MakeMessage(actor, String.Format("{0} !!", Conjugate(actor, VERB_DIE_FROM_STARVATION))));
+                            AddMessage(MakeMessage(actor, string.Format("{0} !!", Conjugate(actor, VERB_DIE_FROM_STARVATION))));
                             RedrawPlayScreen();
                         }
 
@@ -3364,7 +3289,7 @@ namespace RogueSurvivor.Engine
                             // show.
                             if (IsVisibleToPlayer(actor))
                             {
-                                AddMessage(MakeMessage(actor, String.Format("{0} into a Zombie!", Conjugate(actor, "turn"))));
+                                AddMessage(MakeMessage(actor, string.Format("{0} into a Zombie!", Conjugate(actor, "turn"))));
                                 RedrawPlayScreen();
                                 AnimDelay(DELAY_LONG);
                             }
@@ -3390,7 +3315,7 @@ namespace RogueSurvivor.Engine
                             {
                                 if (IsVisibleToPlayer(actor))
                                 {
-                                    AddMessage(MakeMessage(actor, String.Format(": {0} light goes off.", light.TheName)));
+                                    AddMessage(MakeMessage(actor, string.Format(": {0} light goes off.", light.TheName)));
                                 }
                             }
                         }
@@ -3408,7 +3333,7 @@ namespace RogueSurvivor.Engine
                             {
                                 if (IsVisibleToPlayer(actor))
                                 {
-                                    AddMessage(MakeMessage(actor, String.Format(": {0} goes off.", tracker.TheName)));
+                                    AddMessage(MakeMessage(actor, string.Format(": {0} goes off.", tracker.TheName)));
                                 }
                             }
                         }
@@ -3630,7 +3555,7 @@ namespace RogueSurvivor.Engine
 
             // if leader is player, message.
             if (addMessage && a.Leader.IsPlayer)
-                AddMessage(new Message(String.Format("({0} trust with {1})", mod, a.TheName), m_Session.WorldTime.TurnCounter, Color.White));
+                AddMessage(new Message(string.Format("({0} trust with {1})", mod, a.TheName), m_Session.WorldTime.TurnCounter, Color.White));
         }
 
         int CountLivings(Map map)
@@ -5639,7 +5564,7 @@ namespace RogueSurvivor.Engine
             }
             else
             {
-                AddMessage(new Message(String.Format("screenshot {0} saved.", shotname), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new Message(string.Format("screenshot {0} saved.", shotname), m_Session.WorldTime.TurnCounter, Color.Yellow));
             }
 
             // refresh.
@@ -5789,7 +5714,7 @@ namespace RogueSurvivor.Engine
                 GetAdvisorHintText((AdvisorHint)i, out title, out body);
                 if (s_Hints.IsAdvisorHintGiven((AdvisorHint)i)) title += " (hint already given)"; // alpha10
 
-                lines.Add(String.Format("HINT {0} : {1}", i, title));
+                lines.Add(string.Format("HINT {0} : {1}", i, title));
                 lines.AddRange(body);
                 lines.Add("~~~~");
                 lines.Add("");
@@ -5939,7 +5864,7 @@ namespace RogueSurvivor.Engine
                 for (int x = 0; x < m_Session.World.Size; x++)
                 {
                     Color color = (x == m_Player.Location.Map.District.WorldPosition.X ? Color.LightGreen : Color.White);
-                    m_UI.DrawStringBold(color, String.Format("..{0}..", (char)('A' + x)), 32 + x * 48, gy);
+                    m_UI.DrawStringBold(color, string.Format("..{0}..", (char)('A' + x)), 32 + x * 48, gy);
                 }
                 // districts.
                 gy += Ui.BOLD_LINE_SPACING;
@@ -6011,7 +5936,7 @@ namespace RogueSurvivor.Engine
                         Zone subwayZone;
                         if ((subwayZone = map.GetZoneByPartialName(NAME_SUBWAY_STATION)) != null)
                         {
-                            m_UI.DrawStringBold(Color.Blue, String.Format("at {0} : {1}.", World.CoordToString(x, y), subwayZone.Name), gx, gy);
+                            m_UI.DrawStringBold(Color.Blue, string.Format("at {0} : {1}.", World.CoordToString(x, y), subwayZone.Name), gx, gy);
                             gy += Ui.BOLD_LINE_SPACING;
                             if (gy >= Ui.CANVAS_HEIGHT - 2 * Ui.BOLD_LINE_SPACING)
                             {
@@ -6023,7 +5948,7 @@ namespace RogueSurvivor.Engine
                         // Police station?
                         if (map == m_Session.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap)
                         {
-                            m_UI.DrawStringBold(Color.CadetBlue, String.Format("at {0} : Police Station.", World.CoordToString(x, y)), gx, gy);
+                            m_UI.DrawStringBold(Color.CadetBlue, string.Format("at {0} : Police Station.", World.CoordToString(x, y)), gx, gy);
                             gy += Ui.BOLD_LINE_SPACING;
                             if (gy >= Ui.CANVAS_HEIGHT - 2 * Ui.BOLD_LINE_SPACING)
                             {
@@ -6035,7 +5960,7 @@ namespace RogueSurvivor.Engine
                         // Hospital?
                         if (map == m_Session.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap)
                         {
-                            m_UI.DrawStringBold(Color.White, String.Format("at {0} : Hospital.", World.CoordToString(x, y)), gx, gy);
+                            m_UI.DrawStringBold(Color.White, string.Format("at {0} : Hospital.", World.CoordToString(x, y)), gx, gy);
                             gy += Ui.BOLD_LINE_SPACING;
                             if (gy >= Ui.CANVAS_HEIGHT - 2 * Ui.BOLD_LINE_SPACING)
                             {
@@ -6048,7 +5973,7 @@ namespace RogueSurvivor.Engine
                         // - CHAR Underground Facility?
                         if (m_Session.PlayerKnows_CHARUndergroundFacilityLocation && map == m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.District.EntryMap)
                         {
-                            m_UI.DrawStringBold(Color.Red, String.Format("at {0} : {1}.", World.CoordToString(x, y), m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.Name), gx, gy);
+                            m_UI.DrawStringBold(Color.Red, string.Format("at {0} : {1}.", World.CoordToString(x, y), m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.Name), gx, gy);
                             gy += Ui.BOLD_LINE_SPACING;
                             if (gy >= Ui.CANVAS_HEIGHT - 2 * Ui.BOLD_LINE_SPACING)
                             {
@@ -6061,7 +5986,7 @@ namespace RogueSurvivor.Engine
                             map == m_Session.UniqueActors.TheSewersThing.TheActor.Location.Map.District.EntryMap &&
                             !m_Session.UniqueActors.TheSewersThing.TheActor.IsDead)
                         {
-                            m_UI.DrawStringBold(Color.Red, String.Format("at {0} : The Sewers Thing lives down there.", World.CoordToString(x, y)), gx, gy);
+                            m_UI.DrawStringBold(Color.Red, string.Format("at {0} : The Sewers Thing lives down there.", World.CoordToString(x, y)), gx, gy);
                             gy += Ui.BOLD_LINE_SPACING;
                             if (gy >= Ui.CANVAS_HEIGHT - 2 * Ui.BOLD_LINE_SPACING)
                             {
@@ -6204,7 +6129,7 @@ namespace RogueSurvivor.Engine
                     }
                     else
                     {
-                        AddMessage(MakeErrorMessage(String.Format("Cannot unequip {0} : {1}.", it.TheName, reason)));
+                        AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", it.TheName, reason)));
                         return false;
                     }
                 }
@@ -6218,7 +6143,7 @@ namespace RogueSurvivor.Engine
                     }
                     else
                     {
-                        AddMessage(MakeErrorMessage(String.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
+                        AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
                         return false;
                     }
                 }
@@ -6233,7 +6158,7 @@ namespace RogueSurvivor.Engine
                     }
                     else
                     {
-                        AddMessage(MakeErrorMessage(String.Format("Cannot use {0} : {1}.", it.TheName, reason)));
+                        AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", it.TheName, reason)));
                     }
                 }
             }
@@ -6248,7 +6173,7 @@ namespace RogueSurvivor.Engine
                 }
                 else
                 {
-                    AddMessage(MakeErrorMessage(String.Format("Cannot take {0} : {1}.", it.TheName, reason)));
+                    AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", it.TheName, reason)));
                     return false;
                 }
             }
@@ -6268,7 +6193,7 @@ namespace RogueSurvivor.Engine
                 }
                 else
                 {
-                    AddMessage(MakeErrorMessage(String.Format("Cannot drop {0} : {1}.", it.TheName, reason)));
+                    AddMessage(MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", it.TheName, reason)));
                     return false;
                 }
             }
@@ -6346,7 +6271,7 @@ namespace RogueSurvivor.Engine
                 }
                 else
                 {
-                    AddMessage(MakeErrorMessage(String.Format("Cannot stop dragging {0} corpse : {1}.", c.DeadGuy.Name, reason)));
+                    AddMessage(MakeErrorMessage(string.Format("Cannot stop dragging {0} corpse : {1}.", c.DeadGuy.Name, reason)));
                     return false;
                 }
             }
@@ -6360,7 +6285,7 @@ namespace RogueSurvivor.Engine
                 }
                 else
                 {
-                    AddMessage(MakeErrorMessage(String.Format("Cannot start dragging {0} corpse : {1}.", c.DeadGuy.Name, reason)));
+                    AddMessage(MakeErrorMessage(string.Format("Cannot start dragging {0} corpse : {1}.", c.DeadGuy.Name, reason)));
                     return false;
                 }
             }
@@ -6378,7 +6303,7 @@ namespace RogueSurvivor.Engine
                 }
                 else
                 {
-                    AddMessage(MakeErrorMessage(String.Format("Cannot eat {0} corpse : {1}.", c.DeadGuy.Name, reason)));
+                    AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", c.DeadGuy.Name, reason)));
                     return false;
                 }
             }
@@ -6391,7 +6316,7 @@ namespace RogueSurvivor.Engine
                 }
                 else
                 {
-                    AddMessage(MakeErrorMessage(String.Format("Cannot butcher {0} corpse : {1}.", c.DeadGuy.Name, reason)));
+                    AddMessage(MakeErrorMessage(string.Format("Cannot butcher {0} corpse : {1}.", c.DeadGuy.Name, reason)));
                     return false;
                 }
             }
@@ -6409,7 +6334,7 @@ namespace RogueSurvivor.Engine
             string reason;
             if (!m_Rules.CanActorEatCorpse(player, corpse, out reason))
             {
-                AddMessage(MakeErrorMessage(String.Format("Cannot eat {0} corpse : {1}.", corpse.DeadGuy.Name, reason)));
+                AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", corpse.DeadGuy.Name, reason)));
                 return false;
             }
 
@@ -6430,7 +6355,7 @@ namespace RogueSurvivor.Engine
             string reason;
             if (!m_Rules.CanActorReviveCorpse(player, corpse, out reason))
             {
-                AddMessage(MakeErrorMessage(String.Format("Cannot revive {0} : {1}.", corpse.DeadGuy.Name, reason)));
+                AddMessage(MakeErrorMessage(string.Format("Cannot revive {0} : {1}.", corpse.DeadGuy.Name, reason)));
                 return false;
             }
 
@@ -6444,7 +6369,7 @@ namespace RogueSurvivor.Engine
             c.DraggedBy = a;
             a.DraggedCorpse = c;
             if (IsVisibleToPlayer(a))
-                AddMessage(MakeMessage(a, String.Format("{0} dragging {1} corpse.", Conjugate(a, VERB_START), c.DeadGuy.Name)));
+                AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", Conjugate(a, VERB_START), c.DeadGuy.Name)));
         }
 
         public void DoStopDragCorpse(Actor a, Corpse c)
@@ -6452,7 +6377,7 @@ namespace RogueSurvivor.Engine
             c.DraggedBy = null;
             a.DraggedCorpse = null;
             if (IsVisibleToPlayer(a))
-                AddMessage(MakeMessage(a, String.Format("{0} dragging {1} corpse.", Conjugate(a, VERB_STOP), c.DeadGuy.Name)));
+                AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", Conjugate(a, VERB_STOP), c.DeadGuy.Name)));
         }
 
         public void DoStopDraggingCorpses(Actor a)
@@ -6471,13 +6396,13 @@ namespace RogueSurvivor.Engine
             SpendActorActionPoints(a, Rules.BASE_ACTION_COST);
 
             // cause insanity.
-            SeeingCauseInsanity(a, a.Location, Rules.SANITY_HIT_BUTCHERING_CORPSE, String.Format("{0} butchering {1}", a.Name, c.DeadGuy.Name));
+            SeeingCauseInsanity(a, a.Location, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", a.Name, c.DeadGuy.Name));
 
             // damage.
             int dmg = m_Rules.ActorDamageVsCorpses(a);
 
             if (isVisible)
-                AddMessage(MakeMessage(a, String.Format("{0} {1} corpse for {2} damage.", Conjugate(a, VERB_BUTCHER), c.DeadGuy.Name, dmg)));
+                AddMessage(MakeMessage(a, string.Format("{0} {1} corpse for {2} damage.", Conjugate(a, VERB_BUTCHER), c.DeadGuy.Name, dmg)));
 
             InflictDamageToCorpse(c, dmg);
 
@@ -6486,7 +6411,7 @@ namespace RogueSurvivor.Engine
             {
                 DestroyCorpse(c, a.Location.Map);
                 if (isVisible)
-                    AddMessage(new Message(String.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
+                    AddMessage(new Message(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
             }
         }
 
@@ -6503,7 +6428,7 @@ namespace RogueSurvivor.Engine
             // msg.
             if (isVisible)
             {
-                AddMessage(MakeMessage(a, String.Format("{0} {1} corpse.", Conjugate(a, VERB_FEAST_ON), c.DeadGuy.Name, dmg)));
+                AddMessage(MakeMessage(a, string.Format("{0} {1} corpse.", Conjugate(a, VERB_FEAST_ON), c.DeadGuy.Name, dmg)));
                 // alpha10 replace with sfx
                 m_MusicManager.Stop();
                 m_MusicManager.Play(GameSounds.UNDEAD_EAT, MusicPriority.PRIORITY_EVENT);
@@ -6517,7 +6442,7 @@ namespace RogueSurvivor.Engine
             {
                 DestroyCorpse(c, a.Location.Map);
                 if (isVisible)
-                    AddMessage(new Message(String.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
+                    AddMessage(new Message(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
             }
 
             // heal if undead / food.
@@ -6536,7 +6461,7 @@ namespace RogueSurvivor.Engine
 
             // cause insanity.
             SeeingCauseInsanity(a, a.Location, a.Model.Abilities.IsUndead ? Rules.SANITY_HIT_UNDEAD_EATING_CORPSE : Rules.SANITY_HIT_LIVING_EATING_CORPSE,
-                String.Format("{0} eating {1}", a.Name, c.DeadGuy.Name));
+                string.Format("{0} eating {1}", a.Name, c.DeadGuy.Name));
         }
 
         public void DoReviveCorpse(Actor actor, Corpse corpse)
@@ -6558,7 +6483,7 @@ namespace RogueSurvivor.Engine
             if (revivePoints == null)
             {
                 if (visible)
-                    AddMessage(MakeMessage(actor, String.Format("{0} not enough room for reviving {1}.", Conjugate(actor, VERB_HAVE), corpse.DeadGuy.Name)));
+                    AddMessage(MakeMessage(actor, string.Format("{0} not enough room for reviving {1}.", Conjugate(actor, VERB_HAVE), corpse.DeadGuy.Name)));
                 return;
             }
             Point revivePt = revivePoints[m_Rules.Roll(0, revivePoints.Count)];
@@ -6591,7 +6516,7 @@ namespace RogueSurvivor.Engine
             {
                 // msg.
                 if (visible)
-                    AddMessage(MakeMessage(actor, String.Format("{0} to revive", Conjugate(actor, VERB_FAIL)), corpse.DeadGuy));
+                    AddMessage(MakeMessage(actor, string.Format("{0} to revive", Conjugate(actor, VERB_FAIL)), corpse.DeadGuy));
             }
         }
 
@@ -6636,7 +6561,7 @@ namespace RogueSurvivor.Engine
             // if no item, nothing to do.
             if (it == null)
             {
-                AddMessage(MakeErrorMessage(String.Format("No item at inventory slot {0}.", (slot + 1))));
+                AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", (slot + 1))));
                 return false;
             }
 
@@ -6653,7 +6578,7 @@ namespace RogueSurvivor.Engine
                 }
                 else
                 {
-                    AddMessage(MakeErrorMessage(String.Format("Cannot unequip {0} : {1}.", it.TheName, reason)));
+                    AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", it.TheName, reason)));
                     return false;
                 }
             }
@@ -6667,7 +6592,7 @@ namespace RogueSurvivor.Engine
                 }
                 else
                 {
-                    AddMessage(MakeErrorMessage(String.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
+                    AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
                     return false;
                 }
             }
@@ -6682,7 +6607,7 @@ namespace RogueSurvivor.Engine
                 }
                 else
                 {
-                    AddMessage(MakeErrorMessage(String.Format("Cannot use {0} : {1}.", it.TheName, reason)));
+                    AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", it.TheName, reason)));
                 }
             }
 
@@ -6705,7 +6630,7 @@ namespace RogueSurvivor.Engine
             Item it = inv[slot];
             if (it == null)
             {
-                AddMessage(MakeErrorMessage(String.Format("No item at ground slot {0}.", (slot + 1))));
+                AddMessage(MakeErrorMessage(string.Format("No item at ground slot {0}.", (slot + 1))));
                 return false;
             }
 
@@ -6718,7 +6643,7 @@ namespace RogueSurvivor.Engine
             }
             else
             {
-                AddMessage(MakeErrorMessage(String.Format("Cannot take {0} : {1}.", it.TheName, reason)));
+                AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", it.TheName, reason)));
                 return false;
             }
         }
@@ -6731,7 +6656,7 @@ namespace RogueSurvivor.Engine
             // if no item, nothing to do.
             if (it == null)
             {
-                AddMessage(MakeErrorMessage(String.Format("No item at inventory slot {0}.", (slot + 1))));
+                AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", (slot + 1))));
                 return false;
             }
 
@@ -6744,7 +6669,7 @@ namespace RogueSurvivor.Engine
             }
             else
             {
-                AddMessage(MakeErrorMessage(String.Format("Cannot drop {0} : {1}.", it.TheName, reason)));
+                AddMessage(MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", it.TheName, reason)));
                 return false;
             }
         }
@@ -6754,7 +6679,7 @@ namespace RogueSurvivor.Engine
             string reason;
             if (!m_Rules.CanActorShout(player, out reason))
             {
-                AddMessage(MakeErrorMessage(String.Format("Can't shout : {0}.", reason)));
+                AddMessage(MakeErrorMessage(string.Format("Can't shout : {0}.", reason)));
                 return false;
             }
 
@@ -6786,7 +6711,7 @@ namespace RogueSurvivor.Engine
                 ///////////////////
 
                 // 1. Redraw
-                AddMessage(new Message(String.Format("Giving {0} to...", gift.TheName), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new Message(string.Format("Giving {0} to...", gift.TheName), m_Session.WorldTime.TurnCounter, Color.Yellow));
                 RedrawPlayScreen();
 
                 // 2. Get input.
@@ -6815,7 +6740,7 @@ namespace RogueSurvivor.Engine
                             }
                             else
                             {
-                                AddMessage(MakeErrorMessage(String.Format("Can't give {0} to {1} : {2}.", gift.TheName, other.TheName, reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Can't give {0} to {1} : {2}.", gift.TheName, other.TheName, reason)));
                             }
                         }
                         else
@@ -6860,7 +6785,7 @@ namespace RogueSurvivor.Engine
             // loop
             bool loop = true;
             bool actionDone = false;
-            List<String> lines = new List<string>();
+            List<string> lines = new List<string>();
             List<Color> colors = new List<Color>();
 
             Color tradeToColor(TradeRating r)
@@ -7159,7 +7084,7 @@ namespace RogueSurvivor.Engine
                             }
                             else
                             {
-                                AddMessage(MakeErrorMessage(String.Format("Can't trade with {0} : {1}.", other.TheName, reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Can't trade with {0} : {1}.", other.TheName, reason)));
                             }
                         }
                         else
@@ -7181,13 +7106,13 @@ namespace RogueSurvivor.Engine
             string reason;
             if (!m_Rules.CanActorRun(player, out reason))
             {
-                AddMessage(MakeErrorMessage(String.Format("Cannot run now : {0}.", reason)));
+                AddMessage(MakeErrorMessage(string.Format("Cannot run now : {0}.", reason)));
                 return;
             }
 
             // ok.
             player.IsRunning = !player.IsRunning;
-            AddMessage(MakeMessage(player, String.Format("{0} running.", Conjugate(player, player.IsRunning ? VERB_START : VERB_STOP))));
+            AddMessage(MakeMessage(player, string.Format("{0} running.", Conjugate(player, player.IsRunning ? VERB_START : VERB_STOP))));
         }
 
         bool HandlePlayerCloseDoor(Actor player)
@@ -7236,7 +7161,7 @@ namespace RogueSurvivor.Engine
                             }
                             else
                             {
-                                AddMessage(MakeErrorMessage(String.Format("Can't close {0} : {1}.", door.TheName, reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Can't close {0} : {1}.", door.TheName, reason)));
                             }
                         }
                         else
@@ -7302,7 +7227,7 @@ namespace RogueSurvivor.Engine
                                 }
                                 else
                                 {
-                                    AddMessage(MakeErrorMessage(String.Format("Cannot barricade {0} : {1}.", door.TheName, reason)));
+                                    AddMessage(MakeErrorMessage(string.Format("Cannot barricade {0} : {1}.", door.TheName, reason)));
                                 }
                             }
                             // repairing a fortification.
@@ -7319,11 +7244,11 @@ namespace RogueSurvivor.Engine
                                 }
                                 else
                                 {
-                                    AddMessage(MakeErrorMessage(String.Format("Cannot repair {0} : {1}.", fort.TheName, reason)));
+                                    AddMessage(MakeErrorMessage(string.Format("Cannot repair {0} : {1}.", fort.TheName, reason)));
                                 }
                             }
                             else
-                                AddMessage(MakeErrorMessage(String.Format("{0} cannot be repaired or barricaded.", mapObj.TheName)));
+                                AddMessage(MakeErrorMessage(string.Format("{0} cannot be repaired or barricaded.", mapObj.TheName)));
                         }
                         else
                             AddMessage(MakeErrorMessage("Nothing to barricade there."));
@@ -7393,10 +7318,10 @@ namespace RogueSurvivor.Engine
                                         actionDone = true;
                                     }
                                     else
-                                        AddMessage(MakeErrorMessage(String.Format("Cannot attack {0} : {1}.", actorTo.Name, reason)));
+                                        AddMessage(MakeErrorMessage(string.Format("Cannot attack {0} : {1}.", actorTo.Name, reason)));
                                 }
                                 else
-                                    AddMessage(MakeErrorMessage(String.Format("{0} is not your enemy.", actorTo.Name)));
+                                    AddMessage(MakeErrorMessage(string.Format("{0} is not your enemy.", actorTo.Name)));
                             }
                             else
                             {
@@ -7412,7 +7337,7 @@ namespace RogueSurvivor.Engine
                                         actionDone = true;
                                     }
                                     else
-                                        AddMessage(MakeErrorMessage(String.Format("Cannot break {0} : {1}.", objTo.TheName, reason)));
+                                        AddMessage(MakeErrorMessage(string.Format("Cannot break {0} : {1}.", objTo.TheName, reason)));
                                 }
                                 else
                                     AddMessage(MakeErrorMessage("Nothing to break or attack on the other side."));
@@ -7439,7 +7364,7 @@ namespace RogueSurvivor.Engine
                                 }
                                 else
                                 {
-                                    AddMessage(MakeErrorMessage(String.Format("Cannot break {0} : {1}.", mapObj.TheName, reason)));
+                                    AddMessage(MakeErrorMessage(string.Format("Cannot break {0} : {1}.", mapObj.TheName, reason)));
                                 }
                             }
                             else
@@ -7514,7 +7439,7 @@ namespace RogueSurvivor.Engine
                         }
                         else
                         {
-                            AddMessage(MakeErrorMessage(String.Format("Cannot build here : {0}.", reason)));
+                            AddMessage(MakeErrorMessage(string.Format("Cannot build here : {0}.", reason)));
                         }
                     }
                 }
@@ -7624,7 +7549,7 @@ namespace RogueSurvivor.Engine
                     // switch.
                     mode = (FireMode)(((int)mode + 1) % (int)FireMode._COUNT);
                     // tell.
-                    AddMessage(new Message(String.Format("Switched to {0} fire mode.", mode.ToString()), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                    AddMessage(new Message(string.Format("Switched to {0} fire mode.", mode.ToString()), m_Session.WorldTime.TurnCounter, Color.Yellow));
                     // alpha10
                     // save preference to session
                     m_Session.Player_CurrentFireMode = mode;
@@ -7640,7 +7565,7 @@ namespace RogueSurvivor.Engine
                     }
                     else
                     {
-                        AddMessage(MakeErrorMessage(String.Format("Can't fire at {0} : {1}.", currentTarget.TheName, reason)));
+                        AddMessage(MakeErrorMessage(string.Format("Can't fire at {0} : {1}.", currentTarget.TheName, reason)));
                     }
                 }
             }
@@ -7738,7 +7663,7 @@ namespace RogueSurvivor.Engine
                     // do it?
                     if (allowed)
                     {
-                        AddMessage(new Message(String.Format("{0} is now a personal enemy.", currentActor.TheName), m_Session.WorldTime.TurnCounter, Color.Orange));
+                        AddMessage(new Message(string.Format("{0} is now a personal enemy.", currentActor.TheName), m_Session.WorldTime.TurnCounter, Color.Orange));
                         DoMakeAggression(player, currentActor);
                     }
                 }
@@ -7841,7 +7766,7 @@ namespace RogueSurvivor.Engine
                     }
                     else
                     {
-                        AddMessage(MakeErrorMessage(String.Format("Can't throw there : {0}.", reason)));
+                        AddMessage(MakeErrorMessage(string.Format("Can't throw there : {0}.", reason)));
                     }
                 }
                 else
@@ -7871,7 +7796,7 @@ namespace RogueSurvivor.Engine
             string reason;
             if (!m_Rules.CanActorSleep(player, out reason))
             {
-                AddMessage(MakeErrorMessage(String.Format("Cannot sleep now : {0}.", reason)));
+                AddMessage(MakeErrorMessage(string.Format("Cannot sleep now : {0}.", reason)));
                 return false;
             }
 
@@ -7943,7 +7868,7 @@ namespace RogueSurvivor.Engine
                             }
                             else
                             {
-                                AddMessage(MakeErrorMessage(String.Format("Can't switch place : {0}", reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Can't switch place : {0}", reason)));
                             }
                         }
                         else
@@ -8009,11 +7934,11 @@ namespace RogueSurvivor.Engine
                                     DoTakeLead(player, other);
 
                                 // scoring.
-                                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, String.Format("Recruited {0}.", other.TheName));
+                                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Recruited {0}.", other.TheName));
 
                                 // help message.
                                 AddMessage(new Message("(you can now set directives and orders for your new follower).", m_Session.WorldTime.TurnCounter, Color.White));
-                                AddMessage(new Message(String.Format("(to give order : press <{0}>).", s_KeyBindings.Get(PlayerCommand.ORDER_MODE).ToString()), m_Session.WorldTime.TurnCounter, Color.White));
+                                AddMessage(new Message(string.Format("(to give order : press <{0}>).", s_KeyBindings.Get(PlayerCommand.ORDER_MODE).ToString()), m_Session.WorldTime.TurnCounter, Color.White));
 
                             }
                             else if (other.Leader == player)
@@ -8021,7 +7946,7 @@ namespace RogueSurvivor.Engine
                                 if (m_Rules.CanActorCancelLead(player, other, out reason))
                                 {
                                     // ask for confirmation.
-                                    AddMessage(MakeYesNoMessage(String.Format("Really ask {0} to leave", other.TheName)));
+                                    AddMessage(MakeYesNoMessage(string.Format("Really ask {0} to leave", other.TheName)));
                                     RedrawPlayScreen();
                                     bool confirm = WaitYesOrNo();
                                     if (confirm)
@@ -8032,19 +7957,19 @@ namespace RogueSurvivor.Engine
                                         DoCancelLead(player, other);
 
                                         // scoring.
-                                        m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, String.Format("Fired {0}.", other.TheName));
+                                        m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Fired {0}.", other.TheName));
                                     }
                                     else
                                         AddMessage(new Message("Good, together you are strong.", m_Session.WorldTime.TurnCounter, Color.Yellow));
                                 }
                                 else
                                 {
-                                    AddMessage(MakeErrorMessage(String.Format("{0} can't leave : {1}.", other.TheName, reason)));
+                                    AddMessage(MakeErrorMessage(string.Format("{0} can't leave : {1}.", other.TheName, reason)));
                                 }
                             }
                             else
                             {
-                                AddMessage(MakeErrorMessage(String.Format("Can't lead {0} : {1}.", other.TheName, reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Can't lead {0} : {1}.", other.TheName, reason)));
                             }
                         }
                         else
@@ -8122,7 +8047,7 @@ namespace RogueSurvivor.Engine
                                 }
                             }
                             else
-                                AddMessage(MakeErrorMessage(String.Format("Cannot shove {0} : {1}.", other.TheName, reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} : {1}.", other.TheName, reason)));
 
                         }
                         else if (mapObj != null)
@@ -8138,7 +8063,7 @@ namespace RogueSurvivor.Engine
                             }
                             else
                             {
-                                AddMessage(MakeErrorMessage(String.Format("Cannot move {0} : {1}.", mapObj.TheName, reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Cannot move {0} : {1}.", mapObj.TheName, reason)));
                             }
                         }
                         else
@@ -8164,7 +8089,7 @@ namespace RogueSurvivor.Engine
             bool actionDone = false;
 
             ClearOverlays();
-            AddOverlay(new OverlayPopup(new string[] { String.Format(PUSH_OBJECT_MODE_TEXT, mapObj.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+            AddOverlay(new OverlayPopup(new string[] { string.Format(PUSH_OBJECT_MODE_TEXT, mapObj.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
             AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(mapObj.Location.Position), new Size(TILE_SIZE, TILE_SIZE))));
 
             do
@@ -8200,7 +8125,7 @@ namespace RogueSurvivor.Engine
                         }
                         else
                         {
-                            AddMessage(MakeErrorMessage(String.Format("Cannot move {0} there : {1}.", mapObj.TheName, reason)));
+                            AddMessage(MakeErrorMessage(string.Format("Cannot move {0} there : {1}.", mapObj.TheName, reason)));
                         }
                     }
                 }
@@ -8220,7 +8145,7 @@ namespace RogueSurvivor.Engine
             bool actionDone = false;
 
             ClearOverlays();
-            AddOverlay(new OverlayPopup(new string[] { String.Format(SHOVE_ACTOR_MODE_TEXT, other.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+            AddOverlay(new OverlayPopup(new string[] { string.Format(SHOVE_ACTOR_MODE_TEXT, other.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
             AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(other.Location.Position), new Size(TILE_SIZE, TILE_SIZE))));
 
             do
@@ -8256,7 +8181,7 @@ namespace RogueSurvivor.Engine
                         }
                         else
                         {
-                            AddMessage(MakeErrorMessage(String.Format("Cannot shove {0} there : {1}.", other.TheName, reason)));
+                            AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} there : {1}.", other.TheName, reason)));
                         }
                     }
                 }
@@ -8337,7 +8262,7 @@ namespace RogueSurvivor.Engine
                                 }
                             }
                             else
-                                AddMessage(MakeErrorMessage(String.Format("Cannot pull {0} : {1}.", other.TheName, reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Cannot pull {0} : {1}.", other.TheName, reason)));
                         }
                         else if (mapObj != null)
                         {
@@ -8352,7 +8277,7 @@ namespace RogueSurvivor.Engine
                             }
                             else
                             {
-                                AddMessage(MakeErrorMessage(String.Format("Cannot move {0} : {1}.", mapObj.TheName, reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Cannot move {0} : {1}.", mapObj.TheName, reason)));
                             }
                         }
                         else
@@ -8379,7 +8304,7 @@ namespace RogueSurvivor.Engine
             bool actionDone = false;
 
             ClearOverlays();
-            AddOverlay(new OverlayPopup(new string[] { String.Format(PULL_OBJECT_MODE_TEXT, mapObj.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+            AddOverlay(new OverlayPopup(new string[] { string.Format(PULL_OBJECT_MODE_TEXT, mapObj.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
             AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(mapObj.Location.Position), new Size(TILE_SIZE, TILE_SIZE))));
 
             do
@@ -8415,7 +8340,7 @@ namespace RogueSurvivor.Engine
                         }
                         else
                         {
-                            AddMessage(MakeErrorMessage(String.Format("Cannot pull there : {0}.", reason)));
+                            AddMessage(MakeErrorMessage(string.Format("Cannot pull there : {0}.", reason)));
                         }
                     }
                 }
@@ -8436,7 +8361,7 @@ namespace RogueSurvivor.Engine
             bool actionDone = false;
 
             ClearOverlays();
-            AddOverlay(new OverlayPopup(new string[] { String.Format(PULL_ACTOR_MODE_TEXT, other.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+            AddOverlay(new OverlayPopup(new string[] { string.Format(PULL_ACTOR_MODE_TEXT, other.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
             AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(other.Location.Position), new Size(TILE_SIZE, TILE_SIZE))));
 
             do
@@ -8472,7 +8397,7 @@ namespace RogueSurvivor.Engine
                         }
                         else
                         {
-                            AddMessage(MakeErrorMessage(String.Format("Cannot pull there : {0}.", reason)));
+                            AddMessage(MakeErrorMessage(string.Format("Cannot pull there : {0}.", reason)));
                         }
                     }
                 }
@@ -8578,7 +8503,7 @@ namespace RogueSurvivor.Engine
                         }
                         else
                         {
-                            AddMessage(MakeErrorMessage(String.Format("Can't tag there : {0}.", reason)));
+                            AddMessage(MakeErrorMessage(string.Format("Can't tag there : {0}.", reason)));
                             RedrawPlayScreen();
                         }
 
@@ -8703,7 +8628,7 @@ namespace RogueSurvivor.Engine
                         }
                         else
                         {
-                            AddMessage(MakeErrorMessage(String.Format("Can't spray here : {0}.", reason)));
+                            AddMessage(MakeErrorMessage(string.Format("Can't spray here : {0}.", reason)));
                             RedrawPlayScreen();
                         }
 
@@ -8730,7 +8655,7 @@ namespace RogueSurvivor.Engine
             m_PlayerLongWaitEnd = new WorldTime(m_Session.WorldTime.TurnCounter + WorldTime.TURNS_PER_HOUR);
 
             // message.
-            AddMessage(MakeMessage(player, String.Format("{0} waiting.", Conjugate(player, VERB_START))));
+            AddMessage(MakeMessage(player, string.Format("{0} waiting.", Conjugate(player, VERB_START))));
             RedrawPlayScreen();
         }
 
@@ -8835,9 +8760,9 @@ namespace RogueSurvivor.Engine
                     string desc = DescribePlayerFollowerStatus(f);
 
                     if (hasLinkWith[iFo])
-                        AddMessage(new Message(String.Format("{0}. {1}/{2} {3}... {4}.", (1 + foShown), iFo + 1, followers.Length, f.Name, desc), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                        AddMessage(new Message(string.Format("{0}. {1}/{2} {3}... {4}.", (1 + foShown), iFo + 1, followers.Length, f.Name, desc), m_Session.WorldTime.TurnCounter, Color.LightGreen));
                     else
-                        AddMessage(new Message(String.Format("{0}. {1}/{2} ({3}) {4}.", (1 + foShown), iFo + 1, followers.Length, f.Name, desc), m_Session.WorldTime.TurnCounter, Color.DarkGray));
+                        AddMessage(new Message(string.Format("{0}. {1}/{2} ({3}) {4}.", (1 + foShown), iFo + 1, followers.Length, f.Name, desc), m_Session.WorldTime.TurnCounter, Color.DarkGray));
                 }
                 if (foShown < followers.Length)
                 {
@@ -8907,13 +8832,13 @@ namespace RogueSurvivor.Engine
                 ClearOverlays();
                 AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
                 ClearMessages();
-                AddMessage(new Message(String.Format("{0} directives...", follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
-                AddMessage(new Message(String.Format("1. {0} items.", directives.CanTakeItems ? "Take" : "Don't take"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
-                AddMessage(new Message(String.Format("2. {0} weapons.", directives.CanFireWeapons ? "Fire" : "Don't fire"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
-                AddMessage(new Message(String.Format("3. {0} grenades.", directives.CanThrowGrenades ? "Throw" : "Don't throw"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
-                AddMessage(new Message(String.Format("4. {0}.", directives.CanSleep ? "Sleep" : "Don't sleep"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
-                AddMessage(new Message(String.Format("5. {0}.", directives.CanTrade ? "Trade" : "Don't trade"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
-                AddMessage(new Message(String.Format("6. {0}.", ActorDirective.CourageString(directives.Courage)), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(new Message(string.Format("{0} directives...", follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new Message(string.Format("1. {0} items.", directives.CanTakeItems ? "Take" : "Don't take"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(new Message(string.Format("2. {0} weapons.", directives.CanFireWeapons ? "Fire" : "Don't fire"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(new Message(string.Format("3. {0} grenades.", directives.CanThrowGrenades ? "Throw" : "Don't throw"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(new Message(string.Format("4. {0}.", directives.CanSleep ? "Sleep" : "Don't sleep"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(new Message(string.Format("5. {0}.", directives.CanTrade ? "Trade" : "Don't trade"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(new Message(string.Format("6. {0}.", ActorDirective.CourageString(directives.Courage)), m_Session.WorldTime.TurnCounter, Color.LightGreen));
                 RedrawPlayScreen();
 
                 // 2. Get input.
@@ -9006,12 +8931,12 @@ namespace RogueSurvivor.Engine
                 ClearOverlays();
                 AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
                 ClearMessages();
-                AddMessage(new Message(String.Format("Order {0} to...", follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
-                AddMessage(new Message(String.Format("0. Cancel current order {0}.", desc), m_Session.WorldTime.TurnCounter, Color.Green));
+                AddMessage(new Message(string.Format("Order {0} to...", follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new Message(string.Format("0. Cancel current order {0}.", desc), m_Session.WorldTime.TurnCounter, Color.Green));
                 AddMessage(new Message("1. Set directives...", m_Session.WorldTime.TurnCounter, Color.Cyan));
                 AddMessage(new Message("2. Barricade (one)...    6. Drop all items.      A. Give me...", m_Session.WorldTime.TurnCounter, Color.LightGreen));
                 AddMessage(new Message("3. Barricade (max)...    7. Build small fort.    B. Sleep now.", m_Session.WorldTime.TurnCounter, Color.LightGreen));
-                AddMessage(new Message(String.Format("4. Guard...              8. Build large fort.    C. {0} following me.   ", startStopFollow), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(new Message(string.Format("4. Guard...              8. Build large fort.    C. {0} following me.   ", startStopFollow), m_Session.WorldTime.TurnCounter, Color.LightGreen));
                 AddMessage(new Message("5. Patrol...             9. Report events.       D. Where are you?", m_Session.WorldTime.TurnCounter, Color.LightGreen));
                 RedrawPlayScreen();
 
@@ -9171,7 +9096,7 @@ namespace RogueSurvivor.Engine
                 if (highlightedTile != null)
                     AddOverlay(new OverlayRect(highlightColor, new Rectangle(MapToScreen(highlightedTile.Value.X, highlightedTile.Value.Y), new Size(TILE_SIZE, TILE_SIZE))));
                 ClearMessages();
-                AddMessage(new Message(String.Format("Ordering {0} to build {1} fortification...", follower.Name, isLarge ? "large" : "small"), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new Message(string.Format("Ordering {0} to build {1} fortification...", follower.Name, isLarge ? "large" : "small"), m_Session.WorldTime.TurnCounter, Color.Yellow));
                 AddMessage(new Message("<LMB> on a map object.", m_Session.WorldTime.TurnCounter, Color.LightGreen));
                 RedrawPlayScreen();
 
@@ -9219,7 +9144,7 @@ namespace RogueSurvivor.Engine
                                 // if mouse down, illegal.
                                 if (mouseButton == MouseButton.Left)
                                 {
-                                    AddMessage(MakeErrorMessage(String.Format("Can't build {0} fortification : {1}.", isLarge ? "large" : "small", reason)));
+                                    AddMessage(MakeErrorMessage(string.Format("Can't build {0} fortification : {1}.", isLarge ? "large" : "small", reason)));
                                     AddMessagePressEnter();
                                 }
                             }
@@ -9262,7 +9187,7 @@ namespace RogueSurvivor.Engine
                 if (highlightedTile != null)
                     AddOverlay(new OverlayRect(highlightColor, new Rectangle(MapToScreen(highlightedTile.Value.X, highlightedTile.Value.Y), new Size(TILE_SIZE, TILE_SIZE))));
                 ClearMessages();
-                AddMessage(new Message(String.Format("Ordering {0} to barricade...", follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new Message(string.Format("Ordering {0} to barricade...", follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
                 AddMessage(new Message("<LMB> on a map object.", m_Session.WorldTime.TurnCounter, Color.LightGreen));
                 RedrawPlayScreen();
 
@@ -9314,7 +9239,7 @@ namespace RogueSurvivor.Engine
                                     // if mouse down, illegal.
                                     if (mouseButton == MouseButton.Left)
                                     {
-                                        AddMessage(MakeErrorMessage(String.Format("Can't barricade {0} : {1}.", door.TheName, reason)));
+                                        AddMessage(MakeErrorMessage(string.Format("Can't barricade {0} : {1}.", door.TheName, reason)));
                                         AddMessagePressEnter();
                                     }
                                 }
@@ -9364,7 +9289,7 @@ namespace RogueSurvivor.Engine
                 if (highlightedTile != null)
                     AddOverlay(new OverlayRect(highlightColor, new Rectangle(MapToScreen(highlightedTile.Value.X, highlightedTile.Value.Y), new Size(TILE_SIZE, TILE_SIZE))));
                 ClearMessages();
-                AddMessage(new Message(String.Format("Ordering {0} to guard...", follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new Message(string.Format("Ordering {0} to guard...", follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
                 AddMessage(new Message("<LMB> on a map position.", m_Session.WorldTime.TurnCounter, Color.LightGreen));
                 RedrawPlayScreen();
 
@@ -9411,7 +9336,7 @@ namespace RogueSurvivor.Engine
                                 // if mouse down, illegal.
                                 if (mouseButton == MouseButton.Left)
                                 {
-                                    AddMessage(MakeErrorMessage(String.Format("Can't guard here : {0}", reason)));
+                                    AddMessage(MakeErrorMessage(string.Format("Can't guard here : {0}", reason)));
                                     AddMessagePressEnter();
                                 }
                             }
@@ -9462,13 +9387,13 @@ namespace RogueSurvivor.Engine
                         zonesNames[0] = "Zone(s) here :";
                         for (int i = 0; i < zonesHere.Count; i++)
                         {
-                            zonesNames[i + 1] = String.Format("- {0}", zonesHere[i].Name);
+                            zonesNames[i + 1] = string.Format("- {0}", zonesHere[i].Name);
                         }
                         AddOverlay(new OverlayPopup(zonesNames, Color.White, Color.White, POPUP_FILLCOLOR, MapToScreen(highlightedTile.Value.X + 1, highlightedTile.Value.Y + 1)));
                     }
                 }
                 ClearMessages();
-                AddMessage(new Message(String.Format("Ordering {0} to patrol...", follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new Message(string.Format("Ordering {0} to patrol...", follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
                 AddMessage(new Message("<LMB> on a map position.", m_Session.WorldTime.TurnCounter, Color.LightGreen));
                 RedrawPlayScreen();
 
@@ -9528,7 +9453,7 @@ namespace RogueSurvivor.Engine
                                 // if mouse down, illegal.
                                 if (mouseButton == MouseButton.Left)
                                 {
-                                    AddMessage(MakeErrorMessage(String.Format("Can't patrol here : {0}", reason)));
+                                    AddMessage(MakeErrorMessage(string.Format("Can't patrol here : {0}", reason)));
                                     AddMessagePressEnter();
                                 }
                             }
@@ -9609,7 +9534,7 @@ namespace RogueSurvivor.Engine
             if (follower.Inventory == null || follower.Inventory.IsEmpty)
             {
                 ClearMessages();
-                AddMessage(MakeErrorMessage(String.Format("{0} has no items to give.", follower.TheName)));
+                AddMessage(MakeErrorMessage(string.Format("{0} has no items to give.", follower.TheName)));
                 AddMessagePressEnter();
                 return false;
             }
@@ -9617,7 +9542,7 @@ namespace RogueSurvivor.Engine
             if (player.Location.Map != follower.Location.Map || !m_Rules.IsAdjacent(player.Location.Position, follower.Location.Position))
             {
                 ClearMessages();
-                AddMessage(MakeErrorMessage(String.Format("{0} is not next to you.", follower.TheName)));
+                AddMessage(MakeErrorMessage(string.Format("{0} is not next to you.", follower.TheName)));
                 AddMessagePressEnter();
                 return false;
             }
@@ -9641,13 +9566,13 @@ namespace RogueSurvivor.Engine
                 ClearOverlays();
                 AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
                 ClearMessages();
-                AddMessage(new Message(String.Format("Ordering {0} to give...", follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new Message(string.Format("Ordering {0} to give...", follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
 
                 int itShown;
                 for (itShown = 0; itShown < maxItOnPage && (iFirstItem + itShown < foInventory.CountItems); itShown++)
                 {
                     int iIt = iFirstItem + itShown;
-                    AddMessage(new Message(String.Format("{0}. {1}/{2} {3}.", (1 + itShown), iIt + 1, foInventory.CountItems, DescribeItemShort(foInventory[iIt])), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                    AddMessage(new Message(string.Format("{0}. {1}/{2} {3}.", (1 + itShown), iIt + 1, foInventory.CountItems, DescribeItemShort(foInventory[iIt])), m_Session.WorldTime.TurnCounter, Color.LightGreen));
                 }
                 if (itShown < foInventory.CountItems)
                 {
@@ -9687,7 +9612,7 @@ namespace RogueSurvivor.Engine
                     else
                     {
                         ClearMessages();
-                        AddMessage(MakeErrorMessage(String.Format("{0} cannot give {1} : {2}.", follower.TheName, DescribeItemShort(it), reason)));
+                        AddMessage(MakeErrorMessage(string.Format("{0} cannot give {1} : {2}.", follower.TheName, DescribeItemShort(it), reason)));
                         AddMessagePressEnter();
                     }
                 }
@@ -9725,7 +9650,7 @@ namespace RogueSurvivor.Engine
                     // in debug build, throw exception.
                     // in release build just complain and do a wait action instead.
 #if DEBUG
-                    throw new InvalidOperationException(String.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.",
+                    throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.",
                         desiredAction.GetType().ToString(), aiActor.Controller.GetType().ToString(), desiredAction.FailReason));
 #else
                     DoWait(aiActor);
@@ -9751,9 +9676,9 @@ namespace RogueSurvivor.Engine
                         "You can disable the advisor in the options.",
                         "Read the manual or discover the rest of the game by yourself.",
                         "Good luck and have fun!",
-                        String.Format("To REDEFINE THE KEYS : <{0}>.", s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE).ToString()),
-                        String.Format("To CHANGE OPTIONS    : <{0}>.", s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()),
-                        String.Format("To READ THE MANUAL   : <{0}>.", s_KeyBindings.Get(PlayerCommand.HELP_MODE).ToString())
+                        string.Format("To REDEFINE THE KEYS : <{0}>.", s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE).ToString()),
+                        string.Format("To CHANGE OPTIONS    : <{0}>.", s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()),
+                        string.Format("To READ THE MANUAL   : <{0}>.", s_KeyBindings.Get(PlayerCommand.HELP_MODE).ToString())
                     });
                 return;
             }
@@ -9778,9 +9703,9 @@ namespace RogueSurvivor.Engine
                 new string[] {
                     "The Advisor has now new hint for you in this situation.",
                     "You will see a popup when he has something to say.",
-                    String.Format("To REDEFINE THE KEYS : <{0}>.", s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE).ToString()),
-                    String.Format("To CHANGE OPTIONS    : <{0}>.", s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()),
-                    String.Format("To READ THE MANUAL   : <{0}>.", s_KeyBindings.Get(PlayerCommand.HELP_MODE).ToString())
+                    string.Format("To REDEFINE THE KEYS : <{0}>.", s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE).ToString()),
+                    string.Format("To CHANGE OPTIONS    : <{0}>.", s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()),
+                    string.Format("To READ THE MANUAL   : <{0}>.", s_KeyBindings.Get(PlayerCommand.HELP_MODE).ToString())
                 });
         }
 
@@ -10162,7 +10087,7 @@ namespace RogueSurvivor.Engine
                     body = new string[] {
                             "You can barricade an adjacent door or window.",
                             "Barricading uses material such as planks.",
-                            String.Format("To BARRICADE : <{0}>.", s_KeyBindings.Get(PlayerCommand.BARRICADE_MODE).ToString())
+                            string.Format("To BARRICADE : <{0}>.", s_KeyBindings.Get(PlayerCommand.BARRICADE_MODE).ToString())
                         };
                     break;
 
@@ -10171,8 +10096,8 @@ namespace RogueSurvivor.Engine
                     body = new string[] {
                             "You can now build fortifications thanks to the carpentry skill.",
                             "You need enough barricading materials.",
-                            String.Format("To BUILD SMALL FORTIFICATIONS : <{0}>.", s_KeyBindings.Get(PlayerCommand.BUILD_SMALL_FORTIFICATION).ToString()),
-                            String.Format("To BUILD LARGE FORTIFICATIONS : <{0}>.", s_KeyBindings.Get(PlayerCommand.BUILD_LARGE_FORTIFICATION).ToString())
+                            string.Format("To BUILD SMALL FORTIFICATIONS : <{0}>.", s_KeyBindings.Get(PlayerCommand.BUILD_SMALL_FORTIFICATION).ToString()),
+                            string.Format("To BUILD LARGE FORTIFICATIONS : <{0}>.", s_KeyBindings.Get(PlayerCommand.BUILD_LARGE_FORTIFICATION).ToString())
                         };
                     break;
 
@@ -10191,7 +10116,7 @@ namespace RogueSurvivor.Engine
                     body = new string[] {
                             "You know the layout of your town.",
                             "You aso know the most notable locations.",
-                            String.Format("To VIEW THE CITY INFORMATION : <{0}>.", s_KeyBindings.Get(PlayerCommand.CITY_INFO).ToString())
+                            string.Format("To VIEW THE CITY INFORMATION : <{0}>.", s_KeyBindings.Get(PlayerCommand.CITY_INFO).ToString())
                         };
                     break;
 
@@ -10217,7 +10142,7 @@ namespace RogueSurvivor.Engine
                     title = "EATING CORPSES";
                     body = new string[] {
                             "You can eat a corpse to regain health.",
-                            String.Format("TO EAT A CORPSE : <RMB> on it in the corpse list.")
+                            string.Format("TO EAT A CORPSE : <RMB> on it in the corpse list.")
                     };
                     break;
 
@@ -10233,7 +10158,7 @@ namespace RogueSurvivor.Engine
                     title = "CLOSING A DOOR/WINDOW";
                     body = new string[] {
                             "You are next to an open door or window.",
-                            String.Format("To CLOSE : <{0}>.", s_KeyBindings.Get(PlayerCommand.CLOSE_DOOR).ToString())
+                            string.Format("To CLOSE : <{0}>.", s_KeyBindings.Get(PlayerCommand.CLOSE_DOOR).ToString())
                         };
                     break;
 
@@ -10242,7 +10167,7 @@ namespace RogueSurvivor.Engine
                     body = new string[] {
                             "You are standing on stairs or a ladder.",
                             "You can use this exit to go on another map.",
-                            String.Format("To USE THE EXIT : <{0}>.", s_KeyBindings.Get(PlayerCommand.USE_EXIT).ToString())
+                            string.Format("To USE THE EXIT : <{0}>.", s_KeyBindings.Get(PlayerCommand.USE_EXIT).ToString())
                         };
                     break;
 
@@ -10261,8 +10186,8 @@ namespace RogueSurvivor.Engine
                     body = new string[] {
                             "Now could be a good time to save your game.",
                             "You can have only one save game active.",
-                            String.Format("To SAVE THE GAME : <{0}>.", s_KeyBindings.Get(PlayerCommand.SAVE_GAME).ToString()),
-                            String.Format("To LOAD THE GAME : <{0}>.", s_KeyBindings.Get(PlayerCommand.LOAD_GAME).ToString()),
+                            string.Format("To SAVE THE GAME : <{0}>.", s_KeyBindings.Get(PlayerCommand.SAVE_GAME).ToString()),
+                            string.Format("To LOAD THE GAME : <{0}>.", s_KeyBindings.Get(PlayerCommand.LOAD_GAME).ToString()),
                             "You can also load the game from the main menu.",
                             "Saving or loading can take a bit of time, please be patient.",
                             "Or consider turning some game options to lower settings."
@@ -10282,7 +10207,7 @@ namespace RogueSurvivor.Engine
                     body = new string[] {
                             "You have found a grenade.",
                             "To THROW a GRENADE, EQUIP it and FIRE it.",
-                            String.Format("To FIRE : <{0}>.", s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString())
+                            string.Format("To FIRE : <{0}>.", s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString())
                         };
                     break;
 
@@ -10355,8 +10280,8 @@ namespace RogueSurvivor.Engine
                 case AdvisorHint.KEYS_OPTIONS:
                     title = "KEYS & OPTIONS";
                     body = new string[] {
-                            String.Format("You can view and redefine the KEYS by pressing <{0}>.", s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE).ToString()),
-                            String.Format("You can change OPTIONS by pressing <{0}>.", s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()),
+                            string.Format("You can view and redefine the KEYS by pressing <{0}>.", s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE).ToString()),
+                            string.Format("You can change OPTIONS by pressing <{0}>.", s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()),
                             "Some option changes will only take effect when starting a new game.",
                             "Key and Options are saved."
                         };
@@ -10366,7 +10291,7 @@ namespace RogueSurvivor.Engine
                     title = "LEADING - RECRUITING";
                     body = new string[] {
                             "You can recruit a follower next to you!",
-                            String.Format("To RECRUIT : <{0}>.", s_KeyBindings.Get(PlayerCommand.LEAD_MODE).ToString())
+                            string.Format("To RECRUIT : <{0}>.", s_KeyBindings.Get(PlayerCommand.LEAD_MODE).ToString())
                         };
                     break;
 
@@ -10375,8 +10300,8 @@ namespace RogueSurvivor.Engine
                     body = new string[] {
                             "You can give orders and directives to your follower.",
                             "You can also fire your followers.",
-                            String.Format("To GIVE ORDERS : <{0}>.", s_KeyBindings.Get(PlayerCommand.ORDER_MODE).ToString()),
-                            String.Format("To FIRE YOUR FOLLOWER : <{0}>.", s_KeyBindings.Get(PlayerCommand.LEAD_MODE).ToString())
+                            string.Format("To GIVE ORDERS : <{0}>.", s_KeyBindings.Get(PlayerCommand.ORDER_MODE).ToString()),
+                            string.Format("To FIRE YOUR FOLLOWER : <{0}>.", s_KeyBindings.Get(PlayerCommand.LEAD_MODE).ToString())
                         };
                     break;
 
@@ -10392,7 +10317,7 @@ namespace RogueSurvivor.Engine
                     title = "LEADING - SWITCHING PLACE";
                     body = new string[] {
                             "You can switch place with followers next to you.",
-                            String.Format("To SWITCH PLACE : <{0}>.", s_KeyBindings.Get(PlayerCommand.SWITCH_PLACE).ToString())
+                            string.Format("To SWITCH PLACE : <{0}>.", s_KeyBindings.Get(PlayerCommand.SWITCH_PLACE).ToString())
                         };
                     break;
 
@@ -10441,7 +10366,7 @@ namespace RogueSurvivor.Engine
                     body = new string[] {
                             "You can RUN to move faster.",
                             "Running is tiring and spend stamina.",
-                            String.Format("To TOGGLE RUNNING : <{0}>.", s_KeyBindings.Get(PlayerCommand.RUN_TOGGLE).ToString())
+                            string.Format("To TOGGLE RUNNING : <{0}>.", s_KeyBindings.Get(PlayerCommand.RUN_TOGGLE).ToString())
                         };
                     break;
 
@@ -10454,7 +10379,7 @@ namespace RogueSurvivor.Engine
                             "You can't do tiring activities such as running, fighting and jumping.",
                             "You always recover a bit of stamina each turn.",
                             "But you can REST to recover stamina faster.",
-                            String.Format("To REST/WAIT : <{0}>.", s_KeyBindings.Get(PlayerCommand.WAIT_OR_SELF).ToString())
+                            string.Format("To REST/WAIT : <{0}>.", s_KeyBindings.Get(PlayerCommand.WAIT_OR_SELF).ToString())
                         };
                     break;
 
@@ -10471,7 +10396,7 @@ namespace RogueSurvivor.Engine
                     title = "GIVING ITEMS";
                     body = new string[] {
                             "You can GIVE ITEMS to other actors.",
-                            String.Format("To GIVE AN ITEM : move the mouse over your item and press <{0}>.", s_KeyBindings.Get(PlayerCommand.GIVE_ITEM).ToString())
+                            string.Format("To GIVE AN ITEM : move the mouse over your item and press <{0}>.", s_KeyBindings.Get(PlayerCommand.GIVE_ITEM).ToString())
                         };
                     break;
 
@@ -10481,7 +10406,7 @@ namespace RogueSurvivor.Engine
                             "Someone is sleeping near you.",
                             "You can SHOUT to try to wake him or her up.",
                             "Other actors can also shout to wake their friends up when they see danger.",
-                            String.Format("To SHOUT : <{0}>.", s_KeyBindings.Get(PlayerCommand.SHOUT).ToString())
+                            string.Format("To SHOUT : <{0}>.", s_KeyBindings.Get(PlayerCommand.SHOUT).ToString())
                         };
                     break;
 
@@ -10493,7 +10418,7 @@ namespace RogueSurvivor.Engine
                             "Trading means exhanging items.",
                             "To ask for a TRADE offer, just try to MOVE into the actor and accept or refuse the offer.",
                             "You can also initiate a more detailled trade negociation.",
-                            String.Format("To NEGOCIATE A TRADE : press <{0}> and select an npc with the directions.", s_KeyBindings.Get(PlayerCommand.NEGOCIATE_TRADE).ToString())
+                            string.Format("To NEGOCIATE A TRADE : press <{0}> and select an npc with the directions.", s_KeyBindings.Get(PlayerCommand.NEGOCIATE_TRADE).ToString())
                         };
                     break;
 
@@ -10502,7 +10427,7 @@ namespace RogueSurvivor.Engine
                     body = new string[] {
                             "You can try to BREAK an object around you.",
                             "Typical breakable objects are furnitures, doors and windows.",
-                            String.Format("To BREAK : <{0}>.", s_KeyBindings.Get(PlayerCommand.BREAK_MODE).ToString())
+                            string.Format("To BREAK : <{0}>.", s_KeyBindings.Get(PlayerCommand.BREAK_MODE).ToString())
                         };
                     break;
 
@@ -10513,8 +10438,8 @@ namespace RogueSurvivor.Engine
                             "Only MOVABLE objects can be pushed/pulled.",
                             "Movable objects will be described as 'Can be moved'",
                             "You can also PUSH/PULL ACTORS around you.",
-                            String.Format("To PUSH : <{0}>.", s_KeyBindings.Get(PlayerCommand.PUSH_MODE).ToString()),
-                            String.Format("To PULL : <{0}>.", s_KeyBindings.Get(PlayerCommand.PULL_MODE).ToString())
+                            string.Format("To PUSH : <{0}>.", s_KeyBindings.Get(PlayerCommand.PUSH_MODE).ToString()),
+                            string.Format("To PULL : <{0}>.", s_KeyBindings.Get(PlayerCommand.PULL_MODE).ToString())
                         };
                     break;
 
@@ -10534,7 +10459,7 @@ namespace RogueSurvivor.Engine
                             "You have found a can of spraypaint.",
                             "You can tag a symbol on walls and floors.",
                             "This is useful to mark some places and locations.",
-                            String.Format("To SPRAY : equip the spray and press <{0}>.", s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString())
+                            string.Format("To SPRAY : equip the spray and press <{0}>.", s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString())
                         };
                     break;
 
@@ -10544,7 +10469,7 @@ namespace RogueSurvivor.Engine
                             "You have found a scent spray.",
                             "You can spray some perfurme on yourself or another adjacent actor.",
                             "This is useful to confuse the undeads because they hunt using their smell.",
-                            String.Format("To SPRAY : equip the spray and press <{0}>.", s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString())
+                            string.Format("To SPRAY : equip the spray and press <{0}>.", s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString())
                         };
                     break;
 
@@ -10567,7 +10492,7 @@ namespace RogueSurvivor.Engine
                             "You have a number of penalties.",
                             "You should find a place to SLEEP.",
                             "Couches are good places to sleep.",
-                            String.Format("To SLEEP : <{0}>.", s_KeyBindings.Get(PlayerCommand.SLEEP).ToString()),
+                            string.Format("To SLEEP : <{0}>.", s_KeyBindings.Get(PlayerCommand.SLEEP).ToString()),
                             "Read the manual for more explanations on sleep."
                         };
                     break;
@@ -10580,7 +10505,7 @@ namespace RogueSurvivor.Engine
                             "To fire on a target you need ammunitions and a clear line of fine.",
                             "The target must be within the weapon range.",
                             "The closer the target is, the easier it is to hit and it does slightly more damage.",
-                            String.Format("To FIRE : <{0}>.", s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString()),
+                            string.Format("To FIRE : <{0}>.", s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString()),
                             "When firing you can switch to rapid fire mode : you will shoot twice but at reduced accuracy.",
                             "Remember you need to have visible enemies to fire at.",
                             "Read the manual for more explanation about firing and ranged weapons."
@@ -10661,13 +10586,13 @@ namespace RogueSurvivor.Engine
             string[] text = new string[lines.Length + 2];
             text[0] = "HINT : " + title;
             Array.Copy(lines, 0, text, 1, lines.Length);
-            text[lines.Length + 1] = String.Format("(hint {0}/{1})", s_Hints.CountAdvisorHintsGiven(), (int)AdvisorHint._COUNT);
+            text[lines.Length + 1] = string.Format("(hint {0}/{1})", s_Hints.CountAdvisorHintsGiven(), (int)AdvisorHint._COUNT);
             AddOverlay(new OverlayPopup(text, Color.White, Color.White, Color.Black, new Point(0, 0)));
 
             // wait.
             ClearMessages();
             AddMessage(new Message("You can disable the advisor in the options screen.", m_Session.WorldTime.TurnCounter, Color.White));
-            AddMessage(new Message(String.Format("To show the options screen : <{0}>.", s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()), m_Session.WorldTime.TurnCounter, Color.White));
+            AddMessage(new Message(string.Format("To show the options screen : <{0}>.", s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()), m_Session.WorldTime.TurnCounter, Color.White));
             AddMessagePressEnter();
 
             // clear.
@@ -10853,30 +10778,30 @@ namespace RogueSurvivor.Engine
             if (actor.Faction != null)
             {
                 if (actor.IsInAGang)
-                    lines.Add(String.Format("{0}, {1}-{2}.", Capitalize(actor.Name), actor.Faction.MemberName, GameGangs.NAMES[actor.GangID]));
+                    lines.Add(string.Format("{0}, {1}-{2}.", Capitalize(actor.Name), actor.Faction.MemberName, GameGangs.NAMES[actor.GangID]));
                 else
-                    lines.Add(String.Format("{0}, {1}.", Capitalize(actor.Name), actor.Faction.MemberName));
+                    lines.Add(string.Format("{0}, {1}.", Capitalize(actor.Name), actor.Faction.MemberName));
             }
             else
-                lines.Add(String.Format("{0}.", Capitalize(actor.Name)));
-            lines.Add(String.Format("{0}.", Capitalize(actor.Model.Name)));
+                lines.Add(string.Format("{0}.", Capitalize(actor.Name)));
+            lines.Add(string.Format("{0}.", Capitalize(actor.Model.Name)));
 
-            lines.Add(String.Format("{0} since {1}.", actor.Model.Abilities.IsUndead ? "Undead" : "Staying alive", new WorldTime(actor.SpawnTime).ToString()));
+            lines.Add(string.Format("{0} since {1}.", actor.Model.Abilities.IsUndead ? "Undead" : "Staying alive", new WorldTime(actor.SpawnTime).ToString()));
             AIController ai = actor.Controller as AIController;
             if (ai != null && ai.Order != null)
             {
-                lines.Add(String.Format("Order : {0}.", ai.Order.ToString()));
+                lines.Add(string.Format("Order : {0}.", ai.Order.ToString()));
             }
             if (actor.HasLeader)
             {
                 if (actor.Leader.IsPlayer)
                 {
                     if (actor.TrustInLeader >= Rules.TRUST_BOND_THRESHOLD)
-                        lines.Add(String.Format("Trust : BOND."));
+                        lines.Add(string.Format("Trust : BOND."));
                     else if (actor.TrustInLeader >= Rules.TRUST_MAX)
                         lines.Add("Trust : MAX.");
                     else
-                        lines.Add(String.Format("Trust : {0}/T:{1}-B:{2}.", actor.TrustInLeader, Rules.TRUST_TRUSTING_THRESHOLD, Rules.TRUST_BOND_THRESHOLD));
+                        lines.Add(string.Format("Trust : {0}/T:{1}-B:{2}.", actor.TrustInLeader, Rules.TRUST_TRUSTING_THRESHOLD, Rules.TRUST_BOND_THRESHOLD));
                     OrderableAI orderAI = ai as OrderableAI;
                     if (orderAI != null)
                     {
@@ -10884,34 +10809,34 @@ namespace RogueSurvivor.Engine
                             lines.Add("Ordered to not follow you.");
                     }
                     // gauges.
-                    lines.Add(String.Format("Foo : {0} {1}h", actor.FoodPoints, FoodToHoursUntilHungry(actor.FoodPoints)));
-                    lines.Add(String.Format("Slp : {0} {1}h", actor.SleepPoints, m_Rules.SleepToHoursUntilSleepy(actor.SleepPoints, actor.Location.Map.LocalTime.IsNight)));
-                    lines.Add(String.Format("San : {0} {1}h", actor.Sanity, m_Rules.SanityToHoursUntilUnstable(actor)));
-                    lines.Add(String.Format("Inf : {0} {1}%", actor.Infection, m_Rules.ActorInfectionPercent(actor)));
+                    lines.Add(string.Format("Foo : {0} {1}h", actor.FoodPoints, FoodToHoursUntilHungry(actor.FoodPoints)));
+                    lines.Add(string.Format("Slp : {0} {1}h", actor.SleepPoints, m_Rules.SleepToHoursUntilSleepy(actor.SleepPoints, actor.Location.Map.LocalTime.IsNight)));
+                    lines.Add(string.Format("San : {0} {1}h", actor.Sanity, m_Rules.SanityToHoursUntilUnstable(actor)));
+                    lines.Add(string.Format("Inf : {0} {1}%", actor.Infection, m_Rules.ActorInfectionPercent(actor)));
                 }
                 else
-                    lines.Add(String.Format("Leader : {0}.", Capitalize(actor.Leader.Name)));
+                    lines.Add(string.Format("Leader : {0}.", Capitalize(actor.Leader.Name)));
             }
 
             // show murder counter if trusting follower or player is a law enforcer.
             if (actor.MurdersCounter > 0 && m_Player.Model.Abilities.IsLawEnforcer)
             {
                 lines.Add("WANTED FOR MURDER!");
-                lines.Add(String.Format("{0} murder{1}!", actor.MurdersCounter, actor.MurdersCounter > 1 ? "s" : ""));
+                lines.Add(string.Format("{0} murder{1}!", actor.MurdersCounter, actor.MurdersCounter > 1 ? "s" : ""));
             }
             else if (actor.HasLeader && actor.Leader.IsPlayer && m_Rules.IsActorTrustingLeader(actor))
             {
                 if (actor.MurdersCounter > 0)
-                    lines.Add(String.Format("* Confess {0} murder{1}! *", actor.MurdersCounter, actor.MurdersCounter > 1 ? "s" : ""));
+                    lines.Add(string.Format("* Confess {0} murder{1}! *", actor.MurdersCounter, actor.MurdersCounter > 1 ? "s" : ""));
                 else
                     lines.Add("Has committed no murders.");
             }
             if (actor.IsAggressorOf(m_Player))
                 lines.Add("Aggressed you.");
             if (m_Player.IsSelfDefenceFrom(actor))
-                lines.Add(String.Format("You can kill {0} in self-defence.", HimOrHer(actor)));
+                lines.Add(string.Format("You can kill {0} in self-defence.", HimOrHer(actor)));
             if (m_Player.IsAggressorOf(actor))
-                lines.Add(String.Format("You aggressed {0}.", HimOrHer(actor)));
+                lines.Add(string.Format("You aggressed {0}.", HimOrHer(actor)));
             if (actor.IsSelfDefenceFrom(m_Player))
                 lines.Add("Killing you would be self-defence.");
             if (!m_Player.Faction.IsEnemyOf(actor.Faction) && m_Rules.AreGroupEnemies(m_Player, actor)) // alpha10
@@ -10955,20 +10880,20 @@ namespace RogueSurvivor.Engine
             }
 
             // 3. Speed
-            lines.Add(String.Format("Spd : {0:F2}", (float)m_Rules.ActorSpeed(actor) / (float)Rules.BASE_SPEED));
+            lines.Add(string.Format("Spd : {0:F2}", (float)m_Rules.ActorSpeed(actor) / (float)Rules.BASE_SPEED));
 
             // 4. HP & STA.
             StringBuilder sb = new StringBuilder();
             int maxHP = m_Rules.ActorMaxHPs(actor);
             if (actor.HitPoints != maxHP)
-                sb.Append(String.Format("HP  : {0:D2}/{1:D2}", actor.HitPoints, maxHP));
+                sb.Append(string.Format("HP  : {0:D2}/{1:D2}", actor.HitPoints, maxHP));
             else
-                sb.Append(String.Format("HP  : {0:D2} MAX", actor.HitPoints));
+                sb.Append(string.Format("HP  : {0:D2} MAX", actor.HitPoints));
             if (actor.Model.Abilities.CanTire)
             {
                 int maxSTA = m_Rules.ActorMaxSTA(actor);
                 if (actor.StaminaPoints != maxSTA)
-                    sb.Append(String.Format("   STA : {0}/{1}", actor.StaminaPoints, maxSTA));
+                    sb.Append(string.Format("   STA : {0}/{1}", actor.StaminaPoints, maxSTA));
                 else
                     sb.Append(string.Format("   STA : {0} MAX", actor.StaminaPoints));
             }
@@ -10976,10 +10901,10 @@ namespace RogueSurvivor.Engine
 
             // 5. Attack, Dmg, Defence.
             Attack attack = m_Rules.ActorMeleeAttack(actor, actor.CurrentMeleeAttack, null);
-            lines.Add(String.Format("Atk : {0:D2} Dmg : {1:D2}", attack.HitValue, attack.DamageValue));
+            lines.Add(string.Format("Atk : {0:D2} Dmg : {1:D2}", attack.HitValue, attack.DamageValue));
             Defence defence = m_Rules.ActorDefence(actor, actor.CurrentDefence);
-            lines.Add(String.Format("Def : {0:D2}", defence.Value));
-            lines.Add(String.Format("Arm : {0}/{1}", defence.Protection_Hit, defence.Protection_Shot));
+            lines.Add(string.Format("Def : {0:D2}", defence.Value));
+            lines.Add(string.Format("Arm : {0}/{1}", defence.Protection_Hit, defence.Protection_Shot));
             lines.Add(" ");
 
             // 6. Flavor
@@ -10990,7 +10915,7 @@ namespace RogueSurvivor.Engine
             if (actor.Sheet.SkillTable != null && actor.Sheet.SkillTable.CountSkills > 0)
             {
                 foreach (Skill sk in actor.Sheet.SkillTable.Skills)
-                    lines.Add(String.Format("{0}-{1}", sk.Level, Skills.Name(sk.ID)));
+                    lines.Add(string.Format("{0}-{1}", sk.Level, Skills.Name(sk.ID)));
                 lines.Add(" ");
             }
 
@@ -11040,7 +10965,7 @@ namespace RogueSurvivor.Engine
             // 9. Inventory.
             if (actor.Inventory != null && !actor.Inventory.IsEmpty)
             {
-                lines.Add(String.Format("Items {0}/{1} : ", actor.Inventory.CountItems, m_Rules.ActorMaxInv(actor)));
+                lines.Add(string.Format("Items {0}/{1} : ", actor.Inventory.CountItems, m_Rules.ActorMaxInv(actor)));
                 lines.AddRange(DescribeInventory(actor.Inventory));
             }
 
@@ -11062,13 +10987,13 @@ namespace RogueSurvivor.Engine
                     if (actor.TargetActor == null)
                         return "Chasing!";
                     else
-                        return String.Format("Chasing {0}!", actor.TargetActor.Name);
+                        return string.Format("Chasing {0}!", actor.TargetActor.Name);
 
                 case Activity.FIGHTING:
                     if (actor.TargetActor == null)
                         return "Fighting!";
                     else
-                        return String.Format("Fighting {0}!", actor.TargetActor.Name);
+                        return string.Format("Fighting {0}!", actor.TargetActor.Name);
 
                 case Activity.TRACKING:
                     return "Tracking!";
@@ -11110,7 +11035,7 @@ namespace RogueSurvivor.Engine
                 desc = "(no orders)";
             else
                 desc = foAI.Order.ToString();
-            desc += String.Format("(trust:{0})", follower.TrustInLeader);
+            desc += string.Format("(trust:{0})", follower.TrustInLeader);
 
             return desc;
         }
@@ -11120,7 +11045,7 @@ namespace RogueSurvivor.Engine
             List<string> lines = new List<string>(4);
 
             // 1. Name
-            lines.Add(String.Format("{0}.", obj.AName));
+            lines.Add(string.Format("{0}.", obj.AName));
 
             // 2. Special flags.
             if (obj.IsJumpable)
@@ -11152,7 +11077,7 @@ namespace RogueSurvivor.Engine
                 else
                     lines.Add("Currently OFF.");
                 float powerRatio = m_Rules.ComputeMapPowerRatio(obj.Location.Map);
-                lines.Add(String.Format("The power gauge reads {0}%.", (int)(100 * powerRatio)));
+                lines.Add(string.Format("The power gauge reads {0}%.", (int)(100 * powerRatio)));
             }
             else if (obj is Board)
             {
@@ -11164,24 +11089,24 @@ namespace RogueSurvivor.Engine
             if (obj.MaxHitPoints > 0)
             {
                 if (obj.HitPoints < obj.MaxHitPoints)
-                    lines.Add(String.Format("HP        : {0}/{1}", obj.HitPoints, obj.MaxHitPoints));
+                    lines.Add(string.Format("HP        : {0}/{1}", obj.HitPoints, obj.MaxHitPoints));
                 else
-                    lines.Add(String.Format("HP        : {0} MAX", obj.HitPoints));
+                    lines.Add(string.Format("HP        : {0} MAX", obj.HitPoints));
 
                 DoorWindow door = obj as DoorWindow;
                 if (door != null)
                 {
                     if (door.BarricadePoints < Rules.BARRICADING_MAX)
-                        lines.Add(String.Format("Barricades: {0}/{1}", door.BarricadePoints, Rules.BARRICADING_MAX));
+                        lines.Add(string.Format("Barricades: {0}/{1}", door.BarricadePoints, Rules.BARRICADING_MAX));
                     else
-                        lines.Add(String.Format("Barricades: {0} MAX", door.BarricadePoints));
+                        lines.Add(string.Format("Barricades: {0} MAX", door.BarricadePoints));
                 }
             }
 
             // 5. Weight?
             if (obj.Weight > 0)
             {
-                lines.Add(String.Format("Weight    : {0}", obj.Weight));
+                lines.Add(string.Format("Weight    : {0}", obj.Weight));
             }
 
             // 6. Items there
@@ -11201,9 +11126,9 @@ namespace RogueSurvivor.Engine
             foreach (Item it in inv.Items)
             {
                 if (it.IsEquipped)
-                    lines.Add(String.Format("- {0} (equipped)", DescribeItemShort(it)));
+                    lines.Add(string.Format("- {0} (equipped)", DescribeItemShort(it)));
                 else
-                    lines.Add(String.Format("- {0}", DescribeItemShort(it)));
+                    lines.Add(string.Format("- {0}", DescribeItemShort(it)));
             }
 
             return lines.ToArray();
@@ -11221,7 +11146,7 @@ namespace RogueSurvivor.Engine
 
             foreach (Corpse c in corpses)
             {
-                lines.Add(String.Format("- Corpse of {0}.", c.DeadGuy.Name));
+                lines.Add(string.Format("- Corpse of {0}.", c.DeadGuy.Name));
             }
             return lines.ToArray();
         }
@@ -11231,7 +11156,7 @@ namespace RogueSurvivor.Engine
             List<string> lines = new List<string>(10);
 
             // 1. Corpse of XXX
-            lines.Add(String.Format("Corpse of {0}.", c.DeadGuy.Name));
+            lines.Add(string.Format("Corpse of {0}.", c.DeadGuy.Name));
             lines.Add(" ");
 
             // 2. Necrology infos.
@@ -11240,7 +11165,7 @@ namespace RogueSurvivor.Engine
             string deadSince = "???";
             if (necrology > 0)
                 deadSince = WorldTime.MakeTimeDurationMessage(m_Session.WorldTime.TurnCounter - c.Turn);
-            lines.Add(String.Format("Death     : {0}.", deadSince));
+            lines.Add(string.Format("Death     : {0}.", deadSince));
 
             string infectionEst = "???";
             if (necrology >= Rules.SKILL_NECROLOGY_LEVEL_FOR_INFECTION)
@@ -11255,7 +11180,7 @@ namespace RogueSurvivor.Engine
                 else if (infectionP < 99) infectionEst = "6/7 - great";
                 else infectionEst = "7/7 - total";
             }
-            lines.Add(String.Format("Infection : {0}.", infectionEst));
+            lines.Add(string.Format("Infection : {0}.", infectionEst));
 
             string riseEst = "???";
             if (necrology >= Rules.SKILL_NECROLOGY_LEVEL_FOR_RISE)
@@ -11269,7 +11194,7 @@ namespace RogueSurvivor.Engine
                 else if (riseP < 99) riseEst = "5/6 - most likely";
                 else riseEst = "6/6 - certain";
             }
-            lines.Add(String.Format("Rise      : {0}.", riseEst));
+            lines.Add(string.Format("Rise      : {0}.", riseEst));
             lines.Add(" ");
 
             // 3. Decay
@@ -11300,7 +11225,7 @@ namespace RogueSurvivor.Engine
                 else if (reviveP < 99) reviveEst = "5/6 - most likely";
                 else reviveEst = "6/6 - certain";
             }
-            lines.Add(String.Format("Revive    : {0}.", reviveEst));
+            lines.Add(string.Format("Revive    : {0}.", reviveEst));
 
             // 5. Special keys.
             if (isInPlayerTile)
@@ -11308,11 +11233,11 @@ namespace RogueSurvivor.Engine
                 lines.Add(" ");
                 lines.Add("----");
                 lines.Add("LBM to start/stop dragging.");
-                lines.Add(String.Format("RBM to {0}.", m_Player.Model.Abilities.IsUndead ? "eat" : "butcher"));
+                lines.Add(string.Format("RBM to {0}.", m_Player.Model.Abilities.IsUndead ? "eat" : "butcher"));
                 if (!m_Player.Model.Abilities.IsUndead)
                 {
-                    lines.Add(String.Format("to eat: <{0}>", s_KeyBindings.Get(PlayerCommand.EAT_CORPSE).ToString()));
-                    lines.Add(String.Format("to revive : <{0}>", s_KeyBindings.Get(PlayerCommand.REVIVE_CORPSE).ToString()));
+                    lines.Add(string.Format("to eat: <{0}>", s_KeyBindings.Get(PlayerCommand.EAT_CORPSE).ToString()));
+                    lines.Add(string.Format("to revive : <{0}>", s_KeyBindings.Get(PlayerCommand.REVIVE_CORPSE).ToString()));
                 }
             }
 
@@ -11334,7 +11259,7 @@ namespace RogueSurvivor.Engine
             else if (it is ItemRangedWeapon)
             {
                 ItemRangedWeapon rw = it as ItemRangedWeapon;
-                name += String.Format(" ({0}/{1})", rw.Ammo, (rw.Model as ItemRangedWeaponModel).MaxAmmo);
+                name += string.Format(" ({0}/{1})", rw.Ammo, (rw.Model as ItemRangedWeaponModel).MaxAmmo);
             }
             else if (it is ItemTrap)
             {
@@ -11345,7 +11270,7 @@ namespace RogueSurvivor.Engine
             }
 
             if (it.Quantity > 1)
-                return String.Format("{0} {1}", it.Quantity, name);
+                return string.Format("{0} {1}", it.Quantity, name);
             else
                 return name;
         }
@@ -11358,7 +11283,7 @@ namespace RogueSurvivor.Engine
             // 1. Name & stacking.
             if (it.Model.IsStackable)
             {
-                lines.Add(String.Format("{0} {1}/{2}", DescribeItemShort(it), it.Quantity, it.Model.StackingLimit));
+                lines.Add(string.Format("{0} {1}/{2}", DescribeItemShort(it), it.Quantity, it.Model.StackingLimit));
             }
             else
                 lines.Add(DescribeItemShort(it));
@@ -11378,7 +11303,7 @@ namespace RogueSurvivor.Engine
                 if (it is ItemRangedWeapon)
                 {
                     isDefaultUse = false;
-                    inInvAdditionalDesc = String.Format("to fire : <{0}>", s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
+                    inInvAdditionalDesc = string.Format("to fire : <{0}>", s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
                 }
             }
             else if (it is ItemFood)
@@ -11393,7 +11318,7 @@ namespace RogueSurvivor.Engine
             {
                 lines.AddRange(DescribeItemBarricadeMaterial(it as ItemBarricadeMaterial));
                 isDefaultUse = false;
-                inInvAdditionalDesc = String.Format("to build : <{0}>/<{1}>/<{2}>",
+                inInvAdditionalDesc = string.Format("to build : <{0}>/<{1}>/<{2}>",
                     s_KeyBindings.Get(PlayerCommand.BARRICADE_MODE).ToString(), s_KeyBindings.Get(PlayerCommand.BUILD_SMALL_FORTIFICATION).ToString(),
                     s_KeyBindings.Get(PlayerCommand.BUILD_LARGE_FORTIFICATION).ToString());
             }
@@ -11405,13 +11330,13 @@ namespace RogueSurvivor.Engine
             {
                 lines.AddRange(DescribeItemSprayPaint(it as ItemSprayPaint));
                 isDefaultUse = false;
-                inInvAdditionalDesc = String.Format("to spray : <{0}>", s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
+                inInvAdditionalDesc = string.Format("to spray : <{0}>", s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
             }
             else if (it is ItemSprayScent)
             {
                 lines.AddRange(DescribeItemSprayScent(it as ItemSprayScent));
                 isDefaultUse = false;
-                inInvAdditionalDesc = String.Format("to spray : <{0}>", s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
+                inInvAdditionalDesc = string.Format("to spray : <{0}>", s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
             }
             else if (it is ItemLight)
             {
@@ -11430,7 +11355,7 @@ namespace RogueSurvivor.Engine
             else if (it is ItemExplosive)
             {
                 lines.AddRange(DescribeItemExplosive(it as ItemExplosive));
-                inInvAdditionalDesc = String.Format("to throw : <{0}>", s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
+                inInvAdditionalDesc = string.Format("to throw : <{0}>", s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
             }
             else if (it is ItemTrap)
             {
@@ -11462,7 +11387,7 @@ namespace RogueSurvivor.Engine
                     lines.Add(string.Format("to use : <LMB> or <Ctrl-{0}>", iSlot + 1));
                 if (!it.IsEquipped)
                     lines.Add("to drop : <RMB>");
-                lines.Add(String.Format("to give : <{0}>", s_KeyBindings.Get(PlayerCommand.GIVE_ITEM).ToString()));
+                lines.Add(string.Format("to give : <{0}>", s_KeyBindings.Get(PlayerCommand.GIVE_ITEM).ToString()));
                 if (inInvAdditionalDesc != null)
                     lines.Add(inInvAdditionalDesc);
             }
@@ -11493,18 +11418,18 @@ namespace RogueSurvivor.Engine
                 lines.Add("Can destroy walls.");
 
             if (primed != null)
-                lines.Add(String.Format("Fuse          : {0} turn(s) left!", primed.FuseTimeLeft));
+                lines.Add(string.Format("Fuse          : {0} turn(s) left!", primed.FuseTimeLeft));
             else
-                lines.Add(String.Format("Fuse          : {0} turn(s)", m.FuseDelay));
-            lines.Add(String.Format("Blast radius  : {0}", m.BlastAttack.Radius));
+                lines.Add(string.Format("Fuse          : {0} turn(s)", m.FuseDelay));
+            lines.Add(string.Format("Blast radius  : {0}", m.BlastAttack.Radius));
 
             // 2. Damage for each distance.
             StringBuilder sb = new StringBuilder();
             for (int blastRadius = 0; blastRadius <= m.BlastAttack.Radius; blastRadius++)
             {
-                sb.Append(String.Format("{0};", m_Rules.BlastDamage(blastRadius, m.BlastAttack)));
+                sb.Append(string.Format("{0};", m_Rules.BlastDamage(blastRadius, m.BlastAttack)));
             }
-            lines.Add(String.Format("Blast damages : {0}", sb.ToString()));
+            lines.Add(string.Format("Blast damages : {0}", sb.ToString()));
 
             // 3. Specialized explosives.
             // grenade?
@@ -11516,9 +11441,9 @@ namespace RogueSurvivor.Engine
                 ItemGrenadeModel greModel = grenade.Model as ItemGrenadeModel;
                 int rng = m_Rules.ActorMaxThrowRange(m_Player, greModel.MaxThrowDistance);
                 if (rng != greModel.MaxThrowDistance)
-                    lines.Add(String.Format("Throwing rng  : {0} ({1})", rng, greModel.MaxThrowDistance));
+                    lines.Add(string.Format("Throwing rng  : {0} ({1})", rng, greModel.MaxThrowDistance));
                 else
-                    lines.Add(String.Format("Throwing rng  : {0}", rng));
+                    lines.Add(string.Format("Throwing rng  : {0}", rng));
             }
 
             // 4. Primed?
@@ -11539,13 +11464,13 @@ namespace RogueSurvivor.Engine
             lines.Add("> weapon");
 
             // 1. Attack
-            lines.Add(String.Format("Atk : +{0}", m.Attack.HitValue));
-            lines.Add(String.Format("Dmg : +{0}", m.Attack.DamageValue));
+            lines.Add(string.Format("Atk : +{0}", m.Attack.HitValue));
+            lines.Add(string.Format("Dmg : +{0}", m.Attack.DamageValue));
             // alpha10
             if (m.Attack.StaminaPenalty != 0)
-                lines.Add(String.Format("Sta : -{0}", m.Attack.StaminaPenalty));
+                lines.Add(string.Format("Sta : -{0}", m.Attack.StaminaPenalty));
             if (m.Attack.DisarmChance != 0)
-                lines.Add(String.Format("Disarm : +{0}%", m.Attack.DisarmChance));
+                lines.Add(string.Format("Disarm : +{0}%", m.Attack.DisarmChance));
 
             // 2. Melee vs Ranged items
             ItemMeleeWeapon mw = w as ItemMeleeWeapon;
@@ -11638,7 +11563,7 @@ namespace RogueSurvivor.Engine
                     lines.Add("*Expired*");
                 else if (m_Rules.IsFoodSpoiled(f, m_Session.WorldTime.TurnCounter))
                     lines.Add("**SPOILED**");
-                lines.Add(String.Format("Best-Before : {0}", f.BestBefore.ToString()));
+                lines.Add(string.Format("Best-Before : {0}", f.BestBefore.ToString()));
             }
             else
                 lines.Add("Always fresh.");
@@ -11648,9 +11573,9 @@ namespace RogueSurvivor.Engine
             int nutrition = m_Rules.FoodItemNutrition(f, m_Session.WorldTime.TurnCounter);
             int nutritionForPlayer = (m_Player == null ? nutrition : m_Rules.ActorItemNutritionValue(m_Player, nutrition));
             if (nutritionForPlayer == m.Nutrition)
-                lines.Add(String.Format("Nutrition   : +{0}", nutrition));
+                lines.Add(string.Format("Nutrition   : +{0}", nutrition));
             else
-                lines.Add(String.Format("Nutrition   : +{0} (+{1})", nutritionForPlayer, nutrition));
+                lines.Add(string.Format("Nutrition   : +{0} (+{1})", nutritionForPlayer, nutrition));
 
             return lines.ToArray();
         }
@@ -11669,36 +11594,36 @@ namespace RogueSurvivor.Engine
             if (m.Healing != 0)
             {
                 if (healingForPlayer == m.Healing)
-                    lines.Add(String.Format("Healing : +{0}", m.Healing));
+                    lines.Add(string.Format("Healing : +{0}", m.Healing));
                 else
-                    lines.Add(String.Format("Healing : +{0} (+{1})", healingForPlayer, m.Healing));
+                    lines.Add(string.Format("Healing : +{0} (+{1})", healingForPlayer, m.Healing));
             }
 
             int staminaForPlayer = (m_Player == null ? m.StaminaBoost : m_Rules.ActorMedicineEffect(m_Player, m.StaminaBoost));
             if (m.StaminaBoost != 0)
             {
                 if (staminaForPlayer == m.StaminaBoost)
-                    lines.Add(String.Format("Stamina : +{0}", m.StaminaBoost));
+                    lines.Add(string.Format("Stamina : +{0}", m.StaminaBoost));
                 else
-                    lines.Add(String.Format("Stamina : +{0} (+{1})", staminaForPlayer, m.StaminaBoost));
+                    lines.Add(string.Format("Stamina : +{0} (+{1})", staminaForPlayer, m.StaminaBoost));
             }
 
             int sleepForPlayer = (m_Player == null ? m.SleepBoost : m_Rules.ActorMedicineEffect(m_Player, m.SleepBoost));
             if (m.SleepBoost != 0)
             {
                 if (sleepForPlayer == m.SleepBoost)
-                    lines.Add(String.Format("Sleep   : +{0}", m.SleepBoost));
+                    lines.Add(string.Format("Sleep   : +{0}", m.SleepBoost));
                 else
-                    lines.Add(String.Format("Sleep   : +{0} (+{1})", sleepForPlayer, m.SleepBoost));
+                    lines.Add(string.Format("Sleep   : +{0} (+{1})", sleepForPlayer, m.SleepBoost));
             }
 
             int sanForPlayer = (m_Player == null ? m.SanityCure : m_Rules.ActorMedicineEffect(m_Player, m.SanityCure));
             if (m.SanityCure != 0)
             {
                 if (sanForPlayer == m.SanityCure)
-                    lines.Add(String.Format("Sanity  : +{0}", m.SanityCure));
+                    lines.Add(string.Format("Sanity  : +{0}", m.SanityCure));
                 else
-                    lines.Add(String.Format("Sanity  : +{0} (+{1})", sanForPlayer, m.SanityCure));
+                    lines.Add(string.Format("Sanity  : +{0} (+{1})", sanForPlayer, m.SanityCure));
             }
 
             if (Rules.HasInfection(m_Session.GameMode))
@@ -11707,9 +11632,9 @@ namespace RogueSurvivor.Engine
                 if (m.InfectionCure != 0)
                 {
                     if (cureForPlayer == m.InfectionCure)
-                        lines.Add(String.Format("Cure    : +{0}", m.InfectionCure));
+                        lines.Add(string.Format("Cure    : +{0}", m.InfectionCure));
                     else
-                        lines.Add(String.Format("Cure    : +{0} (+{1})", cureForPlayer, m.InfectionCure));
+                        lines.Add(string.Format("Cure    : +{0} (+{1})", cureForPlayer, m.InfectionCure));
                 }
             }
 
@@ -11727,9 +11652,9 @@ namespace RogueSurvivor.Engine
             // 1. Barricading value.
             int barForPlayer = (m_Player == null ? m.BarricadingValue : m_Rules.ActorBarricadingPoints(m_Player, m.BarricadingValue));
             if (barForPlayer == m.BarricadingValue)
-                lines.Add(String.Format("Barricading : +{0}", m.BarricadingValue));
+                lines.Add(string.Format("Barricading : +{0}", m.BarricadingValue));
             else
-                lines.Add(String.Format("Barricading : +{0} (+{1})", barForPlayer, m.BarricadingValue));
+                lines.Add(string.Format("Barricading : +{0} (+{1})", barForPlayer, m.BarricadingValue));
 
             return lines.ToArray();
         }
@@ -11788,9 +11713,9 @@ namespace RogueSurvivor.Engine
 
             // 1. Paint
             if (sp.PaintQuantity < m.MaxPaintQuantity)
-                lines.Add(String.Format("Paint : {0}/{1}", sp.PaintQuantity, m.MaxPaintQuantity));
+                lines.Add(string.Format("Paint : {0}/{1}", sp.PaintQuantity, m.MaxPaintQuantity));
             else
-                lines.Add(String.Format("Paint : {0} MAX", sp.PaintQuantity));
+                lines.Add(string.Format("Paint : {0} MAX", sp.PaintQuantity));
 
             return lines.ToArray();
         }
@@ -11805,9 +11730,9 @@ namespace RogueSurvivor.Engine
 
             // 1. Spray.
             if (sp.SprayQuantity < m.MaxSprayQuantity)
-                lines.Add(String.Format("Spray    : {0}/{1}", sp.SprayQuantity, m.MaxSprayQuantity));
+                lines.Add(string.Format("Spray    : {0}/{1}", sp.SprayQuantity, m.MaxSprayQuantity));
             else
-                lines.Add(String.Format("Spray    : {0} MAX", sp.SprayQuantity));
+                lines.Add(string.Format("Spray    : {0} MAX", sp.SprayQuantity));
 
             // alpha10
             // 2. Odor & Strength
@@ -11830,7 +11755,7 @@ namespace RogueSurvivor.Engine
             lines.Add(DescribeBatteries(lt.Batteries, m.MaxBatteries));
 
             // 2. FoV
-            lines.Add(String.Format("FOV       : +{0}", lt.FovBonus));
+            lines.Add(string.Format("FOV       : +{0}", lt.FovBonus));
 
             return lines.ToArray();
         }
@@ -11904,23 +11829,23 @@ namespace RogueSurvivor.Engine
 
             // 2. Flags
             if (m.IsOneTimeUse) lines.Add("Desactives when triggered.");
-            if (m.IsNoisy) lines.Add(String.Format("Makes {0} noise.", m.NoiseName));
+            if (m.IsNoisy) lines.Add(string.Format("Makes {0} noise.", m.NoiseName));
             if (m.UseToActivate) lines.Add("Use to activate.");
             // if (m.IsFlammable) lines.Add("Can be put on fire.");
 
             // 3. Stats
-            lines.Add(String.Format("Damage  : {0} x{1} = {2}", m.Damage, tr.Quantity, tr.Quantity * m.Damage));  // alpha10
-            lines.Add(String.Format("Trigger : {0}% x{1} = {2}%", m.TriggerChance, tr.Quantity, tr.Quantity * m.TriggerChance));  // alpha10
-            lines.Add(String.Format("Break   : {0}%", m.BreakChance));
-            if (m.BlockChance > 0) lines.Add(String.Format("Block   : {0}%", m.BlockChance));
-            if (m.BreakChanceWhenEscape > 0) lines.Add(String.Format("{0}% to break on escape", m.BreakChanceWhenEscape));
+            lines.Add(string.Format("Damage  : {0} x{1} = {2}", m.Damage, tr.Quantity, tr.Quantity * m.Damage));  // alpha10
+            lines.Add(string.Format("Trigger : {0}% x{1} = {2}%", m.TriggerChance, tr.Quantity, tr.Quantity * m.TriggerChance));  // alpha10
+            lines.Add(string.Format("Break   : {0}%", m.BreakChance));
+            if (m.BlockChance > 0) lines.Add(string.Format("Block   : {0}%", m.BlockChance));
+            if (m.BreakChanceWhenEscape > 0) lines.Add(string.Format("{0}% to break on escape", m.BreakChanceWhenEscape));
 
             return lines.ToArray();
         }
 
         string[] DescribeItemEntertainment(ItemEntertainment ent)
         {
-            List<String> lines = new List<string>();
+            List<string> lines = new List<string>();
 
             ItemEntertainmentModel m = ent.EntertainmentModel;
 
@@ -11931,8 +11856,8 @@ namespace RogueSurvivor.Engine
                 lines.Add("* BORED OF IT! *");
 
             // San & Bore chance.
-            lines.Add(String.Format("Sanity : +{0}", m.Value));
-            lines.Add(String.Format("Boring : {0}%", m.BoreChance));
+            lines.Add(string.Format("Sanity : +{0}", m.Value));
+            lines.Add(string.Format("Boring : {0}%", m.BoreChance));
 
             return lines.ToArray();
         }
@@ -11941,9 +11866,9 @@ namespace RogueSurvivor.Engine
         {
             int hours = BatteriesToHours(batteries);
             if (batteries < maxBatteries)
-                return String.Format("Batteries : {0}/{1} ({2}h)", batteries, maxBatteries, hours);
+                return string.Format("Batteries : {0}/{1} ({2}h)", batteries, maxBatteries, hours);
             else
-                return String.Format("Batteries : {0} MAX ({1}h)", batteries, hours);
+                return string.Format("Batteries : {0} MAX ({1}h)", batteries, hours);
         }
 
         string DescribeSkillShort(Skills.IDs id)
@@ -11951,64 +11876,64 @@ namespace RogueSurvivor.Engine
             switch (id)
             {
                 case Skills.IDs.AGILE:
-                    return String.Format("+{0} melee ATK, +{1} DEF", Rules.SKILL_AGILE_ATK_BONUS, Rules.SKILL_AGILE_DEF_BONUS);
+                    return string.Format("+{0} melee ATK, +{1} DEF", Rules.SKILL_AGILE_ATK_BONUS, Rules.SKILL_AGILE_DEF_BONUS);
                 case Skills.IDs.AWAKE:
-                    return String.Format("+{0}% max SLP, +{1}% SLP regen ", (int)(100 * Rules.SKILL_AWAKE_SLEEP_BONUS), (int)(100 * Rules.SKILL_AWAKE_SLEEP_REGEN_BONUS));
+                    return string.Format("+{0}% max SLP, +{1}% SLP regen ", (int)(100 * Rules.SKILL_AWAKE_SLEEP_BONUS), (int)(100 * Rules.SKILL_AWAKE_SLEEP_REGEN_BONUS));
                 case Skills.IDs.BOWS:
-                    return String.Format("bows +{0} ATK, +{1} DMG", Rules.SKILL_BOWS_ATK_BONUS, Rules.SKILL_BOWS_DMG_BONUS);
+                    return string.Format("bows +{0} ATK, +{1} DMG", Rules.SKILL_BOWS_ATK_BONUS, Rules.SKILL_BOWS_DMG_BONUS);
                 case Skills.IDs.CARPENTRY:
-                    return String.Format("build, -{0} mat. at lvl 3, +{1}% barricading", Rules.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS, (int)(100 * Rules.SKILL_CARPENTRY_BARRICADING_BONUS));
+                    return string.Format("build, -{0} mat. at lvl 3, +{1}% barricading", Rules.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS, (int)(100 * Rules.SKILL_CARPENTRY_BARRICADING_BONUS));
                 case Skills.IDs.CHARISMATIC:
-                    return String.Format("+{0} trust per turn, +{1}% trade rolls, steal followers", Rules.SKILL_CHARISMATIC_TRUST_BONUS, Rules.SKILL_CHARISMATIC_TRADE_BONUS);  // alpha10.1 steal followers
+                    return string.Format("+{0} trust per turn, +{1}% trade rolls, steal followers", Rules.SKILL_CHARISMATIC_TRUST_BONUS, Rules.SKILL_CHARISMATIC_TRADE_BONUS);  // alpha10.1 steal followers
                 case Skills.IDs.FIREARMS:
-                    return String.Format("firearms +{0} ATK, +{1} DMG", Rules.SKILL_FIREARMS_ATK_BONUS, Rules.SKILL_FIREARMS_DMG_BONUS);
+                    return string.Format("firearms +{0} ATK, +{1} DMG", Rules.SKILL_FIREARMS_ATK_BONUS, Rules.SKILL_FIREARMS_DMG_BONUS);
                 case Skills.IDs.HARDY:
-                    return String.Format("sleeping anywhere heals, +{0}% chance to heal when sleeping", Rules.SKILL_HARDY_HEAL_CHANCE_BONUS);
+                    return string.Format("sleeping anywhere heals, +{0}% chance to heal when sleeping", Rules.SKILL_HARDY_HEAL_CHANCE_BONUS);
                 case Skills.IDs.HAULER:
-                    return String.Format("+{0} inventory slots", Rules.SKILL_HAULER_INV_BONUS);
+                    return string.Format("+{0} inventory slots", Rules.SKILL_HAULER_INV_BONUS);
                 case Skills.IDs.HIGH_STAMINA:
-                    return String.Format("+{0} STA", Rules.SKILL_HIGH_STAMINA_STA_BONUS);
+                    return string.Format("+{0} STA", Rules.SKILL_HIGH_STAMINA_STA_BONUS);
                 case Skills.IDs.LEADERSHIP:
-                    return String.Format("+{0} max Followers", Rules.SKILL_LEADERSHIP_FOLLOWER_BONUS);
+                    return string.Format("+{0} max Followers", Rules.SKILL_LEADERSHIP_FOLLOWER_BONUS);
                 case Skills.IDs.LIGHT_EATER:
-                    return String.Format("+{0}% max FOO, +{1}% items food points", (int)(100 * Rules.SKILL_LIGHT_EATER_MAXFOOD_BONUS), (int)(100 * Rules.SKILL_LIGHT_EATER_FOOD_BONUS));
+                    return string.Format("+{0}% max FOO, +{1}% items food points", (int)(100 * Rules.SKILL_LIGHT_EATER_MAXFOOD_BONUS), (int)(100 * Rules.SKILL_LIGHT_EATER_FOOD_BONUS));
                 case Skills.IDs.LIGHT_FEET:
-                    return String.Format("+{0}% to avoid and escape traps", Rules.SKILL_LIGHT_FEET_TRAP_BONUS);
+                    return string.Format("+{0}% to avoid and escape traps", Rules.SKILL_LIGHT_FEET_TRAP_BONUS);
                 case Skills.IDs.LIGHT_SLEEPER:
-                    return String.Format("+{0}% noise wake up chance", Rules.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS);
+                    return string.Format("+{0}% noise wake up chance", Rules.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS);
                 case Skills.IDs.MARTIAL_ARTS:
-                    return String.Format("unarmed only +{0} ATK, +{1} DMG, +{2}% disarm", Rules.SKILL_MARTIAL_ARTS_ATK_BONUS, Rules.SKILL_MARTIAL_ARTS_DMG_BONUS, Rules.SKILL_MARTIAL_ARTS_DISARM_BONUS);
+                    return string.Format("unarmed only +{0} ATK, +{1} DMG, +{2}% disarm", Rules.SKILL_MARTIAL_ARTS_ATK_BONUS, Rules.SKILL_MARTIAL_ARTS_DMG_BONUS, Rules.SKILL_MARTIAL_ARTS_DISARM_BONUS);
                 case Skills.IDs.MEDIC:
-                    return String.Format("+{0}% medicine items effects, +{1}% revive ", (int)(100 * Rules.SKILL_MEDIC_BONUS), Rules.SKILL_MEDIC_REVIVE_BONUS);
+                    return string.Format("+{0}% medicine items effects, +{1}% revive ", (int)(100 * Rules.SKILL_MEDIC_BONUS), Rules.SKILL_MEDIC_REVIVE_BONUS);
                 case Skills.IDs.NECROLOGY:
-                    return String.Format("+{0}/+{1} DMG vs undeads/corpses, data on corpses", Rules.SKILL_NECROLOGY_UNDEAD_BONUS, Rules.SKILL_NECROLOGY_CORPSE_BONUS);
+                    return string.Format("+{0}/+{1} DMG vs undeads/corpses, data on corpses", Rules.SKILL_NECROLOGY_UNDEAD_BONUS, Rules.SKILL_NECROLOGY_CORPSE_BONUS);
                 case Skills.IDs.STRONG:
-                    return String.Format("+{0} melee DMG, +{1}% resist disarming, +{2} throw range", Rules.SKILL_STRONG_DMG_BONUS, Rules.SKILL_STRONG_RESIST_DISARM_BONUS, Rules.SKILL_STRONG_THROW_BONUS);
+                    return string.Format("+{0} melee DMG, +{1}% resist disarming, +{2} throw range", Rules.SKILL_STRONG_DMG_BONUS, Rules.SKILL_STRONG_RESIST_DISARM_BONUS, Rules.SKILL_STRONG_THROW_BONUS);
                 case Skills.IDs.STRONG_PSYCHE:
-                    return String.Format("+{0}% SAN threshold", (int)(100 * Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS));
+                    return string.Format("+{0}% SAN threshold", (int)(100 * Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS));
                 case Skills.IDs.TOUGH:
-                    return String.Format("+{0} HP", Rules.SKILL_TOUGH_HP_BONUS);
+                    return string.Format("+{0} HP", Rules.SKILL_TOUGH_HP_BONUS);
                 case Skills.IDs.UNSUSPICIOUS:
-                    return String.Format("+{0}% unnoticed by law enforcers and gangs", Rules.SKILL_UNSUSPICIOUS_BONUS);
+                    return string.Format("+{0}% unnoticed by law enforcers and gangs", Rules.SKILL_UNSUSPICIOUS_BONUS);
 
                 case Skills.IDs.Z_AGILE:
-                    return String.Format("+{0} melee ATK, +{1} DEF, can jump", Rules.SKILL_ZAGILE_ATK_BONUS, Rules.SKILL_ZAGILE_DEF_BONUS);
+                    return string.Format("+{0} melee ATK, +{1} DEF, can jump", Rules.SKILL_ZAGILE_ATK_BONUS, Rules.SKILL_ZAGILE_DEF_BONUS);
                 case Skills.IDs.Z_EATER:
-                    return String.Format("+{0}% eating HP regen", (int)(100 * Rules.SKILL_ZEATER_REGEN_BONUS));
+                    return string.Format("+{0}% eating HP regen", (int)(100 * Rules.SKILL_ZEATER_REGEN_BONUS));
                 case Skills.IDs.Z_GRAB:
-                    return String.Format("can grab enemies, +{0}% per level", Rules.SKILL_ZGRAB_CHANCE);
+                    return string.Format("can grab enemies, +{0}% per level", Rules.SKILL_ZGRAB_CHANCE);
                 case Skills.IDs.Z_INFECTOR:
-                    return String.Format("+{0}% infection damage", (int)(100 * Rules.SKILL_ZINFECTOR_BONUS));
+                    return string.Format("+{0}% infection damage", (int)(100 * Rules.SKILL_ZINFECTOR_BONUS));
                 case Skills.IDs.Z_LIGHT_EATER:
-                    return String.Format("+{0}% max ROT, +{1}% from eating", (int)(100 * Rules.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS), (int)(100 * Rules.SKILL_ZLIGHT_EATER_FOOD_BONUS));
+                    return string.Format("+{0}% max ROT, +{1}% from eating", (int)(100 * Rules.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS), (int)(100 * Rules.SKILL_ZLIGHT_EATER_FOOD_BONUS));
                 case Skills.IDs.Z_LIGHT_FEET:
-                    return String.Format("+{0}% to avoid traps", Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS);
+                    return string.Format("+{0}% to avoid traps", Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS);
                 case Skills.IDs.Z_STRONG:
-                    return String.Format("+{0} melee DMG, can push", Rules.SKILL_ZSTRONG_DMG_BONUS);
+                    return string.Format("+{0} melee DMG, can push", Rules.SKILL_ZSTRONG_DMG_BONUS);
                 case Skills.IDs.Z_TOUGH:
-                    return String.Format("+{0} HP", Rules.SKILL_ZTOUGH_HP_BONUS);
+                    return string.Format("+{0} HP", Rules.SKILL_ZTOUGH_HP_BONUS);
                 case Skills.IDs.Z_TRACKER:
-                    return String.Format("+{0}% smell", (int)(100 * Rules.SKILL_ZTRACKER_SMELL_BONUS));
+                    return string.Format("+{0}% smell", (int)(100 * Rules.SKILL_ZTRACKER_SMELL_BONUS));
 
                 default:
                     throw new ArgumentOutOfRangeException("unhandled skill id");
@@ -12147,7 +12072,7 @@ namespace RogueSurvivor.Engine
             {
                 oldLocation.Map.MoveCorpseTo(draggedCorpse, newLocation.Position);
                 if (IsVisibleToPlayer(newLocation) || IsVisibleToPlayer(oldLocation))
-                    AddMessage(MakeMessage(actor, String.Format("{0} {1} corpse.", Conjugate(actor, VERB_DRAG), draggedCorpse.DeadGuy.TheName)));
+                    AddMessage(MakeMessage(actor, string.Format("{0} {1} corpse.", Conjugate(actor, VERB_DRAG), draggedCorpse.DeadGuy.TheName)));
             }
 
             // Spend AP & STA, check for running, jumping and dragging corpse.
@@ -12185,7 +12110,7 @@ namespace RogueSurvivor.Engine
 
                     // show.
                     if (IsVisibleToPlayer(actor))
-                        AddMessage(MakeMessage(actor, String.Format("{0}!", Conjugate(actor, VERB_STUMBLE))));
+                        AddMessage(MakeMessage(actor, string.Format("{0}!", Conjugate(actor, VERB_STUMBLE))));
                 }
             }
 
@@ -12350,7 +12275,7 @@ namespace RogueSurvivor.Engine
             else
             {
                 if (IsVisibleToPlayer(victim))
-                    AddMessage(MakeMessage(victim, String.Format("safely {0} {1}.", Conjugate(victim, VERB_AVOID), trap.TheName)));
+                    AddMessage(MakeMessage(victim, string.Format("safely {0} {1}.", Conjugate(victim, VERB_AVOID), trap.TheName)));
             }
             // destroy?
             return trap.Quantity == 0;
@@ -12384,13 +12309,13 @@ namespace RogueSurvivor.Engine
 
                 // tell
                 if (visible)
-                    AddMessage(MakeMessage(victim, String.Format("{0} {1}.", Conjugate(victim, VERB_ESCAPE), trap.TheName)));
+                    AddMessage(MakeMessage(victim, string.Format("{0} {1}.", Conjugate(victim, VERB_ESCAPE), trap.TheName)));
 
                 // then check break on escape chance.
                 if (m_Rules.CheckTrapEscapeBreaks(trap, victim))
                 {
                     if (visible)
-                        AddMessage(MakeMessage(victim, String.Format("{0} {1}.", Conjugate(victim, VERB_BREAK), trap.TheName)));
+                        AddMessage(MakeMessage(victim, string.Format("{0} {1}.", Conjugate(victim, VERB_BREAK), trap.TheName)));
                     --trap.Quantity;
                     isDestroyed = trap.Quantity <= 0;
                 }
@@ -12399,7 +12324,7 @@ namespace RogueSurvivor.Engine
             {
                 // tell
                 if (visible)
-                    AddMessage(MakeMessage(victim, String.Format("is trapped by {0}!", trap.TheName)));
+                    AddMessage(MakeMessage(victim, string.Format("is trapped by {0}!", trap.TheName)));
             }
 
             // escape?
@@ -12478,7 +12403,7 @@ namespace RogueSurvivor.Engine
                 InflictDamage(victim, damage);
                 if (visible)
                 {
-                    AddMessage(MakeMessage(victim, String.Format("is hurt by {0} for {1} damage!", trap.AName, damage)));
+                    AddMessage(MakeMessage(victim, string.Format("is hurt by {0} for {1} damage!", trap.AName, damage)));
                     AddOverlay(new OverlayImage(MapToScreen(victim.Location.Position), GameImages.ICON_MELEE_DAMAGE));
                     AddOverlay(new OverlayText(MapToScreen(victim.Location.Position).Add(DAMAGE_DX, DAMAGE_DY), Color.White, damage.ToString(), Color.Black));
                     RedrawPlayScreen();
@@ -12493,9 +12418,9 @@ namespace RogueSurvivor.Engine
                 if (visible)
                 {
                     if (victim != null)
-                        AddMessage(MakeMessage(victim, String.Format("stepping on {0} makes a bunch of noise!", trap.AName)));
+                        AddMessage(MakeMessage(victim, string.Format("stepping on {0} makes a bunch of noise!", trap.AName)));
                     else if (mobj != null)
-                        AddMessage(new Message(String.Format("{0} makes a lot of noise!", Capitalize(trap.TheName)), map.LocalTime.TurnCounter));
+                        AddMessage(new Message(string.Format("{0} makes a lot of noise!", Capitalize(trap.TheName)), map.LocalTime.TurnCounter));
                 }
                 OnLoudNoise(map, pos, model.NoiseName);
             }
@@ -12510,9 +12435,9 @@ namespace RogueSurvivor.Engine
                 if (visible)
                 {
                     if (victim != null)
-                        AddMessage(MakeMessage(victim, String.Format("{0} {1}.", Conjugate(victim, VERB_CRUSH), trap.TheName)));
+                        AddMessage(MakeMessage(victim, string.Format("{0} {1}.", Conjugate(victim, VERB_CRUSH), trap.TheName)));
                     else if (mobj != null)
-                        AddMessage(new Message(String.Format("{0} breaks the {1}.", Capitalize(mobj.TheName), trap.TheName), map.LocalTime.TurnCounter));
+                        AddMessage(new Message(string.Format("{0} breaks the {1}.", Capitalize(mobj.TheName), trap.TheName), map.LocalTime.TurnCounter));
                 }
                 --trap.Quantity;
             }
@@ -12540,7 +12465,7 @@ namespace RogueSurvivor.Engine
             if (isPlayer && askForConfirmation)
             {
                 ClearMessages();
-                AddMessage(MakeYesNoMessage(String.Format("REALLY LEAVE {0}", fromMap.Name)));
+                AddMessage(MakeYesNoMessage(string.Format("REALLY LEAVE {0}", fromMap.Name)));
                 RedrawPlayScreen();
                 bool confirm = WaitYesOrNo();
                 if (!confirm)
@@ -12589,7 +12514,7 @@ namespace RogueSurvivor.Engine
             {
                 if (isPlayer)
                 {
-                    AddMessage(MakeErrorMessage(String.Format("{0} is blocking your way.", other.Name)));
+                    AddMessage(MakeErrorMessage(string.Format("{0} is blocking your way.", other.Name)));
                 }
                 return true;
             }
@@ -12602,7 +12527,7 @@ namespace RogueSurvivor.Engine
                 {
                     if (isPlayer)
                     {
-                        AddMessage(MakeErrorMessage(String.Format("{0} is blocking your way.", blockingObj.AName)));
+                        AddMessage(MakeErrorMessage(string.Format("{0} is blocking your way.", blockingObj.AName)));
                     }
                     return true;
                 }
@@ -12611,7 +12536,7 @@ namespace RogueSurvivor.Engine
             // 2. Remove from previous map (+corpse)
             if (IsVisibleToPlayer(actor))
             {
-                AddMessage(MakeMessage(actor, String.Format("{0} {1}.", Conjugate(actor, VERB_LEAVE), fromMap.Name)));
+                AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_LEAVE), fromMap.Name)));
             }
             fromMap.RemoveActor(actor);
             if (actor.DraggedCorpse != null)
@@ -12630,14 +12555,14 @@ namespace RogueSurvivor.Engine
             }
             if (IsVisibleToPlayer(actor) || isPlayer)
             {
-                AddMessage(MakeMessage(actor, String.Format("{0} {1}.", Conjugate(actor, VERB_ENTER), exit.ToMap.Name)));
+                AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_ENTER), exit.ToMap.Name)));
             }
             if (isPlayer)
             {
                 // scoring event.
                 if (fromMap.District != exit.ToMap.District)
                 {
-                    m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, String.Format("Entered district {0}.", exit.ToMap.District.Name));
+                    m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Entered district {0}.", exit.ToMap.District.Name));
                 }
 
                 // change map.
@@ -12714,11 +12639,11 @@ namespace RogueSurvivor.Engine
                         if (isPlayer)
                         {
                             // scoring.
-                            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, String.Format("{0} was left behind.", leaveMe.TheName));
+                            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("{0} was left behind.", leaveMe.TheName));
 
                             // message.
                             ClearMessages();
-                            AddMessage(new Message(String.Format("{0} could not follow you out of the district and left you!", leaveMe.TheName), m_Session.WorldTime.TurnCounter, Color.Red));
+                            AddMessage(new Message(string.Format("{0} could not follow you out of the district and left you!", leaveMe.TheName), m_Session.WorldTime.TurnCounter, Color.Red));
                             AddMessagePressEnter();
                             ClearMessages();
                         }
@@ -12731,7 +12656,7 @@ namespace RogueSurvivor.Engine
                             {
                                 // message.
                                 ClearMessages();
-                                AddMessage(new Message(String.Format("{0} could not follow and is still in {1}.", leaveMe.TheName, fromMap.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                                AddMessage(new Message(string.Format("{0} could not follow and is still in {1}.", leaveMe.TheName, fromMap.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
                                 AddMessagePressEnter();
                                 ClearMessages();
                             }
@@ -12812,7 +12737,7 @@ namespace RogueSurvivor.Engine
             {
                 if (actor == m_Player)
                     ClearMessages();
-                AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PERSUADE), other, String.Format(" to leave {0} and join.", prevLeader.Name)));
+                AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PERSUADE), other, string.Format(" to leave {0} and join.", prevLeader.Name)));
                 if (prevTrust != 0)
                     DoSay(other, actor, "Ah yes I remember you.", Sayflags.IS_FREE_ACTION);
             }
@@ -12848,9 +12773,9 @@ namespace RogueSurvivor.Engine
             if (IsVisibleToPlayer(actor))
             {
                 if (actor.StaminaPoints < m_Rules.ActorMaxSTA(actor))
-                    AddMessage(MakeMessage(actor, String.Format("{0} {1} breath.", Conjugate(actor, VERB_CATCH), HisOrHer(actor))));
+                    AddMessage(MakeMessage(actor, string.Format("{0} {1} breath.", Conjugate(actor, VERB_CATCH), HisOrHer(actor))));
                 else
-                    AddMessage(MakeMessage(actor, String.Format("{0}.", Conjugate(actor, VERB_WAIT))));
+                    AddMessage(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_WAIT))));
             }
 
             // regen STA.
@@ -12931,7 +12856,7 @@ namespace RogueSurvivor.Engine
                 return true;
             }
 
-            AddMessage(MakeErrorMessage(String.Format("Cannot do that : {0}.", bump.FailReason)));
+            AddMessage(MakeErrorMessage(string.Format("Cannot do that : {0}.", bump.FailReason)));
             return false;
         }
 
@@ -12979,7 +12904,7 @@ namespace RogueSurvivor.Engine
         {
             // say.
             if (!wasAlreadyEnemy)
-                DoSay(cop, aggressor, String.Format("TO DISTRICT PATROLS : {0} MUST DIE!", aggressor.TheName), Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
+                DoSay(cop, aggressor, string.Format("TO DISTRICT PATROLS : {0} MUST DIE!", aggressor.TheName), Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
 
             // make enemy of all cops in the district.
             MakeEnemyOfTargetFactionInDistrict(aggressor, cop,
@@ -12990,8 +12915,8 @@ namespace RogueSurvivor.Engine
                         int turn = m_Session.WorldTime.TurnCounter;
                         ClearMessages();
                         AddMessage(new Message("You get a message from your police radio.", turn, Color.White));
-                        AddMessage(new Message(String.Format("{0} is armed and dangerous. Shoot on sight!", aggressor.TheName), turn, Color.White));
-                        AddMessage(new Message(String.Format("Current location : {0}@{1},{2}", aggressor.Location.Map.Name, aggressor.Location.Position.X, aggressor.Location.Position.Y), turn, Color.White));
+                        AddMessage(new Message(string.Format("{0} is armed and dangerous. Shoot on sight!", aggressor.TheName), turn, Color.White));
+                        AddMessage(new Message(string.Format("Current location : {0}@{1},{2}", aggressor.Location.Map.Name, aggressor.Location.Position.X, aggressor.Location.Position.Y), turn, Color.White));
                         if (!a.IsBotPlayer)
                             AddMessagePressEnter();
                     }
@@ -13003,7 +12928,7 @@ namespace RogueSurvivor.Engine
         {
             // say.
             if (!wasAlreadyEnemy)
-                DoSay(soldier, aggressor, String.Format("TO DISTRICT SQUADS : {0} MUST DIE!", aggressor.TheName), Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
+                DoSay(soldier, aggressor, string.Format("TO DISTRICT SQUADS : {0} MUST DIE!", aggressor.TheName), Sayflags.IS_FREE_ACTION | Sayflags.IS_DANGER);
 
             // make enemy of all cops in the district.
             MakeEnemyOfTargetFactionInDistrict(aggressor, soldier,
@@ -13014,8 +12939,8 @@ namespace RogueSurvivor.Engine
                         int turn = m_Session.WorldTime.TurnCounter;
                         ClearMessages();
                         AddMessage(new Message("You get a message from your army radio.", turn, Color.White));
-                        AddMessage(new Message(String.Format("{0} is armed and dangerous. Shoot on sight!", aggressor.Name), turn, Color.White));
-                        AddMessage(new Message(String.Format("Current location : {0}@{1},{2}", aggressor.Location.Map.Name, aggressor.Location.Position.X, aggressor.Location.Position.Y), turn, Color.White));
+                        AddMessage(new Message(string.Format("{0} is armed and dangerous. Shoot on sight!", aggressor.Name), turn, Color.White));
+                        AddMessage(new Message(string.Format("Current location : {0}@{1},{2}", aggressor.Location.Map.Name, aggressor.Location.Position.X, aggressor.Location.Position.Y), turn, Color.White));
                         if (!a.IsBotPlayer)
                             AddMessagePressEnter();
                     }
@@ -13170,7 +13095,7 @@ namespace RogueSurvivor.Engine
 
                         // cause insanity?
                         if (attacker.Model.Abilities.IsUndead && !defender.Model.Abilities.IsUndead)
-                            SeeingCauseInsanity(attacker, attacker.Location, Rules.SANITY_HIT_EATEN_ALIVE, String.Format("{0} eaten alive", defender.Name));
+                            SeeingCauseInsanity(attacker, attacker.Location, Rules.SANITY_HIT_EATEN_ALIVE, string.Format("{0} eaten alive", defender.Name));
 
                         // turn victim into zombie; always turn player into zombie NOW if killed by zombifier or if was infected.
                         if (Rules.HasImmediateZombification(m_Session.GameMode) || defender == m_Player)
@@ -13212,7 +13137,7 @@ namespace RogueSurvivor.Engine
                         // show
                         if (isAttVisible || isDefVisible)
                         {
-                            AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, String.Format(" for {0} damage.", dmgRoll)));
+                            AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", dmgRoll)));
                             AddOverlay(new OverlayImage(MapToScreen(defender.Location.Position), GameImages.ICON_MELEE_DAMAGE));
                             AddOverlay(new OverlayText(MapToScreen(defender.Location.Position).Add(DAMAGE_DX, DAMAGE_DY), Color.White, dmgRoll.ToString(), Color.Black));
                             RedrawPlayScreen();
@@ -13261,7 +13186,7 @@ namespace RogueSurvivor.Engine
                     // message.
                     if (isAttVisible)
                     {
-                        AddMessage(MakeMessage(attacker, String.Format(": {0} breaks and is now useless!", meleeWeapon.TheName)));
+                        AddMessage(MakeMessage(attacker, string.Format(": {0} breaks and is now useless!", meleeWeapon.TheName)));
                         RedrawPlayScreen();
                         AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
                     }
@@ -13309,7 +13234,7 @@ namespace RogueSurvivor.Engine
 
                         // shoot at nothing.
                         Attack attack = attacker.CurrentRangedAttack;
-                        AddMessage(MakeMessage(attacker, String.Format("{0} at nothing.", Conjugate(attacker, attack.Verb))));
+                        AddMessage(MakeMessage(attacker, string.Format("{0} at nothing.", Conjugate(attacker, attack.Verb))));
                     }
                     else if (w.Ammo <= 0)
                     {
@@ -13433,7 +13358,7 @@ namespace RogueSurvivor.Engine
                         // show
                         if (isDefVisible)
                         {
-                            AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, String.Format(" for {0} damage.", dmgRoll)));
+                            AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", dmgRoll)));
                             AddOverlay(new OverlayImage(MapToScreen(defender.Location.Position), GameImages.ICON_RANGED_DAMAGE));
                             AddOverlay(new OverlayText(MapToScreen(defender.Location.Position).Add(DAMAGE_DX, DAMAGE_DY), Color.White, dmgRoll.ToString(), Color.Black));
                             RedrawPlayScreen();
@@ -13534,7 +13459,7 @@ namespace RogueSurvivor.Engine
             {
                 AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), new Size(TILE_SIZE, TILE_SIZE))));
                 AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(targetPos), new Size(TILE_SIZE, TILE_SIZE))));
-                AddMessage(MakeMessage(actor, String.Format("{0} a {1}!", Conjugate(actor, VERB_THROW), grenade.Model.SingleName)));
+                AddMessage(MakeMessage(actor, string.Format("{0} a {1}!", Conjugate(actor, VERB_THROW), grenade.Model.SingleName)));
                 RedrawPlayScreen();
                 AnimDelay(DELAY_LONG);
                 ClearOverlays();
@@ -13564,7 +13489,7 @@ namespace RogueSurvivor.Engine
             {
                 AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), new Size(TILE_SIZE, TILE_SIZE))));
                 AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(targetPos), new Size(TILE_SIZE, TILE_SIZE))));
-                AddMessage(MakeMessage(actor, String.Format("{0} back a {1}!", Conjugate(actor, VERB_THROW), primedGrenade.Model.SingleName)));
+                AddMessage(MakeMessage(actor, string.Format("{0} back a {1}!", Conjugate(actor, VERB_THROW), primedGrenade.Model.SingleName)));
                 RedrawPlayScreen();
                 AnimDelay(DELAY_LONG);
                 ClearOverlays();
@@ -13734,24 +13659,24 @@ namespace RogueSurvivor.Engine
                     // message.
                     if (IsVisibleToPlayer(victim))
                     {
-                        AddMessage(new Message(String.Format("{0} is hit for {1} damage!", victim.Name, dmgToVictim), map.LocalTime.TurnCounter, Color.Crimson));
+                        AddMessage(new Message(string.Format("{0} is hit for {1} damage!", victim.Name, dmgToVictim), map.LocalTime.TurnCounter, Color.Crimson));
                     }
 
                     // die? do not kill someone who is already dead, this could happen because of multiple explosions in a single turn.
                     if (victim.HitPoints <= 0 && !victim.IsDead)
                     {
                         // kill him.
-                        KillActor(null, victim, String.Format("explosion {0} damage", dmgToVictim));
+                        KillActor(null, victim, string.Format("explosion {0} damage", dmgToVictim));
 
                         // message?
                         if (IsVisibleToPlayer(victim))
                         {
-                            AddMessage(new Message(String.Format("{0} dies in the explosion!", victim.Name), map.LocalTime.TurnCounter, Color.Crimson));
+                            AddMessage(new Message(string.Format("{0} dies in the explosion!", victim.Name), map.LocalTime.TurnCounter, Color.Crimson));
                         }
                     }
                 }
                 else
-                    AddMessage(new Message(String.Format("{0} is hit for no damage.", victim.Name), map.LocalTime.TurnCounter, Color.White));
+                    AddMessage(new Message(string.Format("{0} is hit for no damage.", victim.Name), map.LocalTime.TurnCounter, Color.White));
             }
 
             // destroy items / ground explosives chain reaction.
@@ -14181,8 +14106,8 @@ namespace RogueSurvivor.Engine
                 bool isImportant = (flags & Sayflags.IS_IMPORTANT) != 0;
                 if (isPlayer && isImportant)
                     ClearMessages();
-                AddMessage(MakeMessage(speaker, String.Format("to {0} : ", target.TheName), sayColor));
-                AddMessage(MakeMessage(speaker, String.Format("\"{0}\"", text), sayColor));
+                AddMessage(MakeMessage(speaker, string.Format("to {0} : ", target.TheName), sayColor));
+                AddMessage(MakeMessage(speaker, string.Format("\"{0}\"", text), sayColor));
                 if (isPlayer && isImportant && !isBot)
                 {
                     AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location.Position), new Size(TILE_SIZE, TILE_SIZE))));
@@ -14215,7 +14140,7 @@ namespace RogueSurvivor.Engine
                 {
                     ClearMessages();
                     AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location.Position), new Size(TILE_SIZE, TILE_SIZE))));
-                    AddMessage(MakeMessage(speaker, String.Format("{0}!!", Conjugate(speaker, VERB_RAISE_ALARM))));
+                    AddMessage(MakeMessage(speaker, string.Format("{0}!!", Conjugate(speaker, VERB_RAISE_ALARM))));
                     if (text != null)
                         DoEmote(speaker, text, true);
                     AddMessagePressEnter();
@@ -14225,9 +14150,9 @@ namespace RogueSurvivor.Engine
                 else
                 {
                     if (text == null)
-                        AddMessage(MakeMessage(speaker, String.Format("{0}!", Conjugate(speaker, VERB_SHOUT))));
+                        AddMessage(MakeMessage(speaker, string.Format("{0}!", Conjugate(speaker, VERB_SHOUT))));
                     else
-                        DoEmote(speaker, String.Format("{0} \"{1}\"", Conjugate(speaker, VERB_SHOUT), text), true);
+                        DoEmote(speaker, string.Format("{0} \"{1}\"", Conjugate(speaker, VERB_SHOUT), text), true);
                 }
             }
         }
@@ -14235,7 +14160,7 @@ namespace RogueSurvivor.Engine
         public void DoEmote(Actor actor, string text, bool isDanger = false)
         {
             if (IsVisibleToPlayer(actor))
-                AddMessage(new Message(String.Format("{0} : {1}", actor.Name, text), actor.Location.Map.LocalTime.TurnCounter, isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
+                AddMessage(new Message(string.Format("{0} : {1}", actor.Name, text), actor.Location.Map.LocalTime.TurnCounter, isDanger ? SAYOREMOTE_DANGER_COLOR : SAYOREMOTE_NORMAL_COLOR));
         }
 
         public void DoTakeFromContainer(Actor actor, Point position)
@@ -14325,7 +14250,7 @@ namespace RogueSurvivor.Engine
             // message.
             if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(target))
             {
-                AddMessage(MakeMessage(actor, String.Format("{0} {1} to", Conjugate(actor, VERB_GIVE), gift.TheName), target));
+                AddMessage(MakeMessage(actor, string.Format("{0} {1} to", Conjugate(actor, VERB_GIVE), gift.TheName), target));
             }
 
         }
@@ -14591,7 +14516,7 @@ namespace RogueSurvivor.Engine
                     // message.
                     if (isVisible)
                     {
-                        AddMessage(MakeMessage(actor, String.Format("{0} from eating spoiled food!", Conjugate(actor, VERB_VOMIT))));
+                        AddMessage(MakeMessage(actor, string.Format("{0} from eating spoiled food!", Conjugate(actor, VERB_VOMIT))));
                     }
                 }
             }
@@ -14641,7 +14566,7 @@ namespace RogueSurvivor.Engine
                     // message.
                     if (isVisible)
                     {
-                        AddMessage(MakeMessage(actor, String.Format("{0} from eating spoiled food!", Conjugate(actor, VERB_VOMIT))));
+                        AddMessage(MakeMessage(actor, string.Format("{0} from eating spoiled food!", Conjugate(actor, VERB_VOMIT))));
                     }
                 }
             }
@@ -14786,7 +14711,7 @@ namespace RogueSurvivor.Engine
             if (visible)
             {
                 if (bored)
-                    AddMessage(MakeMessage(actor, String.Format("{0} now bored of {1}.", Conjugate(actor, VERB_BE), ent.TheName)));
+                    AddMessage(MakeMessage(actor, string.Format("{0} now bored of {1}.", Conjugate(actor, VERB_BE), ent.TheName)));
                 if (discarded)
                     AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DISCARD), ent));
             }
@@ -14893,7 +14818,7 @@ namespace RogueSurvivor.Engine
             // message.
             if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(new Location(actor.Location.Map, buildPos)))
             {
-                AddMessage(MakeMessage(actor, String.Format("{0} a {1} fortification.", Conjugate(actor, VERB_BUILD), isLarge ? "large" : "small")));
+                AddMessage(MakeMessage(actor, string.Format("{0} a {1} fortification.", Conjugate(actor, VERB_BUILD), isLarge ? "large" : "small")));
             }
 
             // check traps.
@@ -15149,7 +15074,7 @@ namespace RogueSurvivor.Engine
                     SpendActorStaminaPoints(h, staCost);
                     // message.
                     if (isVisibleMobj || IsVisibleToPlayer(h))
-                        AddMessage(MakeMessage(h, String.Format("{0} {1} {2} {3}.", Conjugate(h, VERB_HELP), actor.Name, (isPulling ? "pulling" : "pushing"), mapObj.TheName)));
+                        AddMessage(MakeMessage(h, string.Format("{0} {1} {2} {3}.", Conjugate(h, VERB_HELP), actor.Name, (isPulling ? "pulling" : "pushing"), mapObj.TheName)));
                 }
             }
         }
@@ -15384,7 +15309,7 @@ namespace RogueSurvivor.Engine
             // message.
             if (IsVisibleToPlayer(actor))
             {
-                AddMessage(MakeMessage(actor, String.Format("{0}.", Conjugate(actor, VERB_WAKE_UP))));
+                AddMessage(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_WAKE_UP))));
             }
 
             // stop sleep music if player.
@@ -15407,7 +15332,7 @@ namespace RogueSurvivor.Engine
             // message.
             if (IsVisibleToPlayer(actor))
             {
-                AddMessage(MakeMessage(actor, String.Format("{0} a tag.", Conjugate(actor, VERB_SPRAY))));
+                AddMessage(MakeMessage(actor, string.Format("{0} a tag.", Conjugate(actor, VERB_SPRAY))));
             }
         }
 
@@ -15460,7 +15385,7 @@ namespace RogueSurvivor.Engine
             // message.
             if (IsVisibleToPlayer(master) || IsVisibleToPlayer(slave))
             {
-                AddMessage(MakeMessage(master, Conjugate(master, VERB_ORDER), slave, String.Format(" to {0}.", order.ToString())));
+                AddMessage(MakeMessage(master, Conjugate(master, VERB_ORDER), slave, string.Format(" to {0}.", order.ToString())));
             }
         }
 
@@ -15523,7 +15448,7 @@ namespace RogueSurvivor.Engine
                     DoWakeUp(actor);
                     if (IsVisibleToPlayer(actor))
                     {
-                        AddMessage(new Message(String.Format("{0} wakes {1} up!", noiseName, actor.TheName), map.LocalTime.TurnCounter, actor == m_Player ? Color.Red : Color.White));
+                        AddMessage(new Message(string.Format("{0} wakes {1} up!", noiseName, actor.TheName), map.LocalTime.TurnCounter, actor == m_Player ? Color.Red : Color.White));
                         RedrawPlayScreen();
                     }
                 }
@@ -15563,7 +15488,7 @@ namespace RogueSurvivor.Engine
                     // message.
                     if (IsVisibleToPlayer(actor))
                     {
-                        AddMessage(MakeMessage(actor, String.Format(": {0} breaks and is now useless!", torsoItem.TheName)));
+                        AddMessage(MakeMessage(actor, string.Format(": {0} breaks and is now useless!", torsoItem.TheName)));
                         RedrawPlayScreen();
                         AnimDelay(actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
                     }
@@ -15582,7 +15507,7 @@ namespace RogueSurvivor.Engine
 #if false
             for some reason, this can happen with starved actors. no f*****g idea why since this is the only place where we set the dead flag.
             if (deadGuy.IsDead)
-                throw new InvalidOperationException(String.Format("killing deadGuy that is already dead : killer={0} deadGuy={1} reason={2}", (
+                throw new InvalidOperationException(string.Format("killing deadGuy that is already dead : killer={0} deadGuy={1} reason={2}", (
                     killer == null ? "N/A" : killer.TheName), deadGuy.TheName, reason));
 #endif
 
@@ -15608,7 +15533,7 @@ namespace RogueSurvivor.Engine
                     if (IsVisibleToPlayer(deadGuy.Leader))
                     {
                         if (deadGuy.Leader.IsPlayer && !deadGuy.Leader.IsBotPlayer) ClearMessages();
-                        AddMessage(MakeMessage(deadGuy.Leader, String.Format("{0} deeply disturbed by {1} sudden death!",
+                        AddMessage(MakeMessage(deadGuy.Leader, string.Format("{0} deeply disturbed by {1} sudden death!",
                             Conjugate(deadGuy.Leader, VERB_BE), deadGuy.Name)));
                         if (deadGuy.Leader.IsPlayer && !deadGuy.Leader.IsBotPlayer) AddMessagePressEnter();
                     }
@@ -15624,7 +15549,7 @@ namespace RogueSurvivor.Engine
                         if (IsVisibleToPlayer(fo))
                         {
                             if (fo.IsPlayer && !fo.IsBotPlayer) ClearMessages();
-                            AddMessage(MakeMessage(fo, String.Format("{0} deeply disturbed by {1} sudden death!",
+                            AddMessage(MakeMessage(fo, string.Format("{0} deeply disturbed by {1} sudden death!",
                                 Conjugate(fo, VERB_BE), deadGuy.Name)));
                             if (fo.IsPlayer && !fo.IsBotPlayer) AddMessagePressEnter();
                         }
@@ -15637,10 +15562,10 @@ namespace RogueSurvivor.Engine
             {
                 if (killer != null)
                     m_Session.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter,
-                        String.Format("* {0} was killed by {1} {2}! *", deadGuy.TheName, killer.Model.Name, killer.TheName));
+                        string.Format("* {0} was killed by {1} {2}! *", deadGuy.TheName, killer.Model.Name, killer.TheName));
                 else
                     m_Session.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter,
-                        String.Format("* {0} died by {1}! *", deadGuy.TheName, reason));
+                        string.Format("* {0} died by {1}! *", deadGuy.TheName, reason));
             }
 
             // Player dead?
@@ -15659,9 +15584,9 @@ namespace RogueSurvivor.Engine
                 {
                     string deathEvent;
                     if (killer != null)
-                        deathEvent = String.Format("Follower {0} was killed by {1} {2}!", deadGuy.TheName, killer.Model.Name, killer.TheName);
+                        deathEvent = string.Format("Follower {0} was killed by {1} {2}!", deadGuy.TheName, killer.Model.Name, killer.TheName);
                     else
-                        deathEvent = String.Format("Follower {0} died by {1}!", deadGuy.TheName, reason);
+                        deathEvent = string.Format("Follower {0} died by {1}!", deadGuy.TheName, reason);
                     m_Session.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, deathEvent);
                 }
 
@@ -15756,7 +15681,7 @@ namespace RogueSurvivor.Engine
                         if (IsVisibleToPlayer(killer))
                         {
                             AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(killer.Location.Position), new Size(TILE_SIZE, TILE_SIZE))));
-                            AddMessage(MakeMessage(killer, String.Format("{0} a {1} horror!", Conjugate(killer, VERB_TRANSFORM_INTO), levelUpModel.Name)));
+                            AddMessage(MakeMessage(killer, string.Format("{0} a {1} horror!", Conjugate(killer, VERB_TRANSFORM_INTO), levelUpModel.Name)));
                             RedrawPlayScreen();
                             AnimDelay(DELAY_LONG);
                             ClearOverlays();
@@ -15790,10 +15715,10 @@ namespace RogueSurvivor.Engine
 
                 // if player, log.
                 if (killer.IsPlayer)
-                    m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, String.Format("Murdered {0} a {1}!", deadGuy.TheName, deadGuy.Model.Name));
+                    m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Murdered {0} a {1}!", deadGuy.TheName, deadGuy.Model.Name));
                 // message.
                 if (IsVisibleToPlayer(killer))
-                    AddMessage(MakeMessage(killer, String.Format("murdered {0}!!", deadGuy.Name)));
+                    AddMessage(MakeMessage(killer, string.Format("murdered {0}!!", deadGuy.Name)));
 
                 // check for npcs law enforcers witnessing the murder.
                 Map map = killer.Location.Map;
@@ -15817,7 +15742,7 @@ namespace RogueSurvivor.Engine
 
                     // we see the murderer!
                     // make enemy and emote.
-                    DoSay(a, killer, String.Format("MURDER! {0} HAS KILLED {1}!", killer.TheName, deadGuy.TheName), Sayflags.IS_FREE_ACTION | Sayflags.IS_IMPORTANT);
+                    DoSay(a, killer, string.Format("MURDER! {0} HAS KILLED {1}!", killer.TheName, deadGuy.TheName), Sayflags.IS_FREE_ACTION | Sayflags.IS_IMPORTANT);
                     DoMakeAggression(a, killer);
                 }
             }
@@ -16093,13 +16018,13 @@ namespace RogueSurvivor.Engine
             else
             {
                 string zoneName = zone[0].Name;
-                m_Session.Scoring.DeathPlace = String.Format("{0} at {1}", m_Player.Location.Map.Name, zoneName);
+                m_Session.Scoring.DeathPlace = string.Format("{0} at {1}", m_Player.Location.Map.Name, zoneName);
             }
             if (killer != null)
-                m_Session.Scoring.DeathReason = String.Format("{0} by {1} {2}",
+                m_Session.Scoring.DeathReason = string.Format("{0} by {1} {2}",
                     m_Rules.IsMurder(killer, m_Player) ? "Murdered" : "Killed", killer.Model.Name, killer.TheName);
             else
-                m_Session.Scoring.DeathReason = String.Format("Death by {0}", reason);
+                m_Session.Scoring.DeathReason = string.Format("Death by {0}", reason);
             m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "Died.");
 
             /////////////////////////////////////////
@@ -16111,8 +16036,8 @@ namespace RogueSurvivor.Engine
             ClearMessages();
             AddMessage(new Message("**** YOU DIED! ****", m_Session.WorldTime.TurnCounter, Color.Red));
             if (killer != null)
-                AddMessage(new Message(String.Format("Killer : {0}.", killer.TheName), m_Session.WorldTime.TurnCounter, Color.Red));
-            AddMessage(new Message(String.Format("Reason : {0}.", reason), m_Session.WorldTime.TurnCounter, Color.Red));
+                AddMessage(new Message(string.Format("Killer : {0}.", killer.TheName), m_Session.WorldTime.TurnCounter, Color.Red));
+            AddMessage(new Message(string.Format("Reason : {0}.", reason), m_Session.WorldTime.TurnCounter, Color.Red));
             if (m_Player.Model.Abilities.IsUndead)
                 AddMessage(new Message("You die one last time... Game over!", m_Session.WorldTime.TurnCounter, Color.Red));
             else
@@ -16130,7 +16055,7 @@ namespace RogueSurvivor.Engine
                 if (shotname == null)
                     AddMessage(MakeErrorMessage("could not save death screenshot."));
                 else
-                    AddMessage(new Message(String.Format("Death screenshot saved : {0}.", shotname), m_Session.WorldTime.TurnCounter, Color.Red));
+                    AddMessage(new Message(string.Format("Death screenshot saved : {0}.", shotname), m_Session.WorldTime.TurnCounter, Color.Red));
             }
 
             AddMessagePressEnter();
@@ -16147,16 +16072,6 @@ namespace RogueSurvivor.Engine
 #endif
         }
 
-        string TimeSpanToString(TimeSpan rt)
-        {
-            // alpha10 shortened
-            string timeDays = rt.Days == 0 ? "" : String.Format("{0} d ", rt.Days);
-            string timeHours = rt.Hours == 0 ? "" : String.Format("{0:D2} h ", rt.Hours);
-            string timeMinutes = rt.Minutes == 0 ? "" : String.Format("{0:D2} m ", rt.Minutes);
-            string timeSeconds = rt.Seconds == 0 ? "" : String.Format("{0:D2} s", rt.Seconds);
-            return String.Format("{0}{1}{2}{3}", timeDays, timeHours, timeMinutes, timeSeconds);
-        }
-
         void HandlePostMortem()
         {
             ////////////////
@@ -16170,7 +16085,7 @@ namespace RogueSurvivor.Engine
             string himOrHer = isMale ? "him" : "her";
             string name = m_Player.TheName.Replace("(YOU) ", "");
             TimeSpan rt = m_Session.Scoring.RealLifePlayingTime;
-            string realTimeString = TimeSpanToString(rt);
+            string realTimeString = rt.ToStringShort();
             m_Session.Scoring.Side = m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
             m_Session.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber);
 
@@ -16179,40 +16094,40 @@ namespace RogueSurvivor.Engine
             ///////////////////////////////////
             TextFile graveyard = new TextFile();
 
-            graveyard.Append(String.Format("ROGUE SURVIVOR REANIMATED {0}", SetupConfig.GAME_VERSION));
+            graveyard.Append(string.Format("ROGUE SURVIVOR REANIMATED {0}", SetupConfig.GAME_VERSION));
             graveyard.Append("POST MORTEM");
 
-            graveyard.Append(String.Format("{0} was {1} and {2}.", name, AorAn(m_Player.Model.Name), AorAn(m_Player.Faction.MemberName)));
-            graveyard.Append(String.Format("{0} survived to see {1}.", heOrShe, deathTime.ToString()));
-            graveyard.Append(String.Format("{0}'s spirit guided {1} for {2}.", name, himOrHer, realTimeString));
+            graveyard.Append(string.Format("{0} was {1} and {2}.", name, AorAn(m_Player.Model.Name), AorAn(m_Player.Faction.MemberName)));
+            graveyard.Append(string.Format("{0} survived to see {1}.", heOrShe, deathTime.ToString()));
+            graveyard.Append(string.Format("{0}'s spirit guided {1} for {2}.", name, himOrHer, realTimeString));
             if (m_Session.Scoring.ReincarnationNumber > 0)
-                graveyard.Append(String.Format("{0} was reincarnation {1}.", heOrShe, m_Session.Scoring.ReincarnationNumber));
+                graveyard.Append(string.Format("{0} was reincarnation {1}.", heOrShe, m_Session.Scoring.ReincarnationNumber));
             graveyard.Append(" ");
 
             graveyard.Append("> SCORING");
-            graveyard.Append(String.Format("{0} scored a total of {1} points.", heOrShe, m_Session.Scoring.TotalPoints));
-            graveyard.Append(String.Format("- difficulty rating of {0}%.", (int)(100 * m_Session.Scoring.DifficultyRating)));
-            graveyard.Append(String.Format("- {0} base points for survival.", m_Session.Scoring.SurvivalPoints));
-            graveyard.Append(String.Format("- {0} base points for kills.", m_Session.Scoring.KillPoints));
-            graveyard.Append(String.Format("- {0} base points for achievements.", m_Session.Scoring.AchievementPoints));
+            graveyard.Append(string.Format("{0} scored a total of {1} points.", heOrShe, m_Session.Scoring.TotalPoints));
+            graveyard.Append(string.Format("- difficulty rating of {0}%.", (int)(100 * m_Session.Scoring.DifficultyRating)));
+            graveyard.Append(string.Format("- {0} base points for survival.", m_Session.Scoring.SurvivalPoints));
+            graveyard.Append(string.Format("- {0} base points for kills.", m_Session.Scoring.KillPoints));
+            graveyard.Append(string.Format("- {0} base points for achievements.", m_Session.Scoring.AchievementPoints));
             graveyard.Append(" ");
 
             graveyard.Append("> ACHIEVEMENTS");
             foreach (Achievement ach in m_Session.Scoring.Achievements)
             {
                 if (ach.IsDone)
-                    graveyard.Append(String.Format("- {0} for {1} points!", ach.Name, ach.ScoreValue));
+                    graveyard.Append(string.Format("- {0} for {1} points!", ach.Name, ach.ScoreValue));
                 else
-                    graveyard.Append(String.Format("- Fail : {0}.", ach.TeaseName));
+                    graveyard.Append(string.Format("- Fail : {0}.", ach.TeaseName));
             }
             if (m_Session.Scoring.CompletedAchievementsCount == 0)
             {
                 graveyard.Append("Didn't achieve anything notable. And then died.");
-                graveyard.Append(String.Format("(unlock all the {0} achievements to win this game version)", Scoring.MAX_ACHIEVEMENTS));
+                graveyard.Append(string.Format("(unlock all the {0} achievements to win this game version)", Scoring.MAX_ACHIEVEMENTS));
             }
             else
             {
-                graveyard.Append(String.Format("Total : {0}/{1}.", m_Session.Scoring.CompletedAchievementsCount, Scoring.MAX_ACHIEVEMENTS));
+                graveyard.Append(string.Format("Total : {0}/{1}.", m_Session.Scoring.CompletedAchievementsCount, Scoring.MAX_ACHIEVEMENTS));
                 if (m_Session.Scoring.CompletedAchievementsCount >= Scoring.MAX_ACHIEVEMENTS)
                 {
                     graveyard.Append("*** You achieved everything! You can consider having won this version of the game! CONGRATULATIONS! ***");
@@ -16224,13 +16139,13 @@ namespace RogueSurvivor.Engine
             graveyard.Append(" ");
 
             graveyard.Append("> DEATH");
-            graveyard.Append(String.Format("{0} in {1}.", m_Session.Scoring.DeathReason, m_Session.Scoring.DeathPlace));
+            graveyard.Append(string.Format("{0} in {1}.", m_Session.Scoring.DeathReason, m_Session.Scoring.DeathPlace));
             graveyard.Append(" ");
 
             graveyard.Append("> KILLS");
             if (m_Session.Scoring.HasNoKills)
             {
-                graveyard.Append(String.Format("{0} was a pacifist. Or too scared to fight.", heOrShe));
+                graveyard.Append(string.Format("{0} was a pacifist. Or too scared to fight.", heOrShe));
             }
             else
             {
@@ -16238,7 +16153,7 @@ namespace RogueSurvivor.Engine
                 foreach (Scoring.KillData killData in m_Session.Scoring.Kills)
                 {
                     string modelName = killData.Amount > 1 ? Models.Actors[killData.ActorModelID].PluralName : Models.Actors[killData.ActorModelID].Name;
-                    graveyard.Append(String.Format("{0,4} {1}.", killData.Amount, modelName));
+                    graveyard.Append(string.Format("{0,4} {1}.", killData.Amount, modelName));
                 }
             }
             // murders? only livings.
@@ -16246,14 +16161,14 @@ namespace RogueSurvivor.Engine
             {
                 if (m_Player.MurdersCounter > 0)
                 {
-                    graveyard.Append(String.Format("{0} committed {1} murder{2}!", heOrShe, m_Player.MurdersCounter, m_Player.MurdersCounter > 1 ? "s" : ""));
+                    graveyard.Append(string.Format("{0} committed {1} murder{2}!", heOrShe, m_Player.MurdersCounter, m_Player.MurdersCounter > 1 ? "s" : ""));
                 }
             }
 
             graveyard.Append(" ");
 
             graveyard.Append("> FUN FACTS!");
-            graveyard.Append(String.Format("While {0} has died, others are still having fun!", name));
+            graveyard.Append(string.Format("While {0} has died, others are still having fun!", name));
             string[] funFacts = CompileDistrictFunFacts(m_Player.Location.Map.District);
             for (int i = 0; i < funFacts.Length; i++)
                 graveyard.Append(funFacts[i]);
@@ -16262,13 +16177,13 @@ namespace RogueSurvivor.Engine
             graveyard.Append("> SKILLS");
             if (m_Player.Sheet.SkillTable.Skills == null)
             {
-                graveyard.Append(String.Format("{0} was a jack of all trades. Or an incompetent.", heOrShe));
+                graveyard.Append(string.Format("{0} was a jack of all trades. Or an incompetent.", heOrShe));
             }
             else
             {
                 foreach (Skill sk in m_Player.Sheet.SkillTable.Skills)
                 {
-                    graveyard.Append(String.Format("{0}-{1}.", sk.Level, Skills.Name(sk.ID)));
+                    graveyard.Append(string.Format("{0}-{1}.", sk.Level, Skills.Name(sk.ID)));
                 }
             }
             graveyard.Append(" ");
@@ -16276,7 +16191,7 @@ namespace RogueSurvivor.Engine
             graveyard.Append("> INVENTORY");
             if (m_Player.Inventory.IsEmpty)
             {
-                graveyard.Append(String.Format("{0} was humble. Or dirt poor.", heOrShe));
+                graveyard.Append(string.Format("{0} was humble. Or dirt poor.", heOrShe));
             }
             else
             {
@@ -16284,9 +16199,9 @@ namespace RogueSurvivor.Engine
                 {
                     string desc = DescribeItemShort(it);
                     if (it.IsEquipped)
-                        graveyard.Append(String.Format("- {0} (equipped).", desc));
+                        graveyard.Append(string.Format("- {0} (equipped).", desc));
                     else
-                        graveyard.Append(String.Format("- {0}.", desc));
+                        graveyard.Append(string.Format("- {0}.", desc));
                 }
             }
             graveyard.Append(" ");
@@ -16294,12 +16209,12 @@ namespace RogueSurvivor.Engine
             graveyard.Append("> FOLLOWERS");
             if (m_Session.Scoring.FollowersWhendDied == null || m_Session.Scoring.FollowersWhendDied.Count == 0)
             {
-                graveyard.Append(String.Format("{0} was doing fine alone. Or everyone else was dead.", heOrShe));
+                graveyard.Append(string.Format("{0} was doing fine alone. Or everyone else was dead.", heOrShe));
             }
             else
             {
                 // names.
-                StringBuilder sb = new StringBuilder(String.Format("{0} was leading", heOrShe));
+                StringBuilder sb = new StringBuilder(string.Format("{0} was leading", heOrShe));
                 bool firstFo = true;
                 int i = 0;
                 int count = m_Session.Scoring.FollowersWhendDied.Count;
@@ -16326,12 +16241,12 @@ namespace RogueSurvivor.Engine
                 // skills.
                 foreach (Actor fo in m_Session.Scoring.FollowersWhendDied)
                 {
-                    graveyard.Append(String.Format("{0} skills : ", fo.Name));
+                    graveyard.Append(string.Format("{0} skills : ", fo.Name));
                     if (fo.Sheet.SkillTable != null && fo.Sheet.SkillTable.Skills != null)
                     {
                         foreach (Skill sk in fo.Sheet.SkillTable.Skills)
                         {
-                            graveyard.Append(String.Format("{0}-{1}.", sk.Level, Skills.Name(sk.ID)));
+                            graveyard.Append(string.Format("{0}-{1}.", sk.Level, Skills.Name(sk.ID)));
                         }
                     }
                 }
@@ -16341,7 +16256,7 @@ namespace RogueSurvivor.Engine
             graveyard.Append("> EVENTS");
             if (m_Session.Scoring.HasNoEvents)
             {
-                graveyard.Append(String.Format("{0} had a quiet life. Or dull and boring.", heOrShe));
+                graveyard.Append(string.Format("{0} had a quiet life. Or dull and boring.", heOrShe));
             }
             else
             {
@@ -16349,48 +16264,48 @@ namespace RogueSurvivor.Engine
                 {
                     WorldTime evTime = new WorldTime();
                     evTime.TurnCounter = ev.Turn;
-                    graveyard.Append(String.Format("- {0,13} : {1}", evTime.ToString(), ev.Text));
+                    graveyard.Append(string.Format("- {0,13} : {1}", evTime.ToString(), ev.Text));
                 }
             }
             graveyard.Append(" ");
 
             graveyard.Append("> CUSTOM OPTIONS");
-            graveyard.Append(String.Format("- difficulty rating of {0}%.", (int)(100 * m_Session.Scoring.DifficultyRating)));
+            graveyard.Append(string.Format("- difficulty rating of {0}%.", (int)(100 * m_Session.Scoring.DifficultyRating)));
             if (s_Options.IsPermadeathOn)
-                graveyard.Append(String.Format("- {0} : yes.", GameOptions.Name(GameOptions.IDs.GAME_PERMADEATH)));
+                graveyard.Append(string.Format("- {0} : yes.", GameOptions.Name(GameOptions.IDs.GAME_PERMADEATH)));
             if (!s_Options.AllowUndeadsEvolution && Rules.HasEvolution(m_Session.GameMode)) // alpha10 only if manually disabled
-                graveyard.Append(String.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION), s_Options.AllowUndeadsEvolution ? "yes" : "no"));
+                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION), s_Options.AllowUndeadsEvolution ? "yes" : "no"));
             if (s_Options.CitySize != GameOptions.DEFAULT_CITY_SIZE)
-                graveyard.Append(String.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_CITY_SIZE), s_Options.CitySize));
+                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_CITY_SIZE), s_Options.CitySize));
             if (s_Options.DayZeroUndeadsPercent != GameOptions.DEFAULT_DAY_ZERO_UNDEADS_PERCENT)
-                graveyard.Append(String.Format("- {0} : {1}%.", GameOptions.Name(GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT), s_Options.DayZeroUndeadsPercent));
+                graveyard.Append(string.Format("- {0} : {1}%.", GameOptions.Name(GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT), s_Options.DayZeroUndeadsPercent));
             if (s_Options.DistrictSize != GameOptions.DEFAULT_DISTRICT_SIZE)
-                graveyard.Append(String.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_DISTRICT_SIZE), s_Options.DistrictSize));
+                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_DISTRICT_SIZE), s_Options.DistrictSize));
             if (s_Options.MaxCivilians != GameOptions.DEFAULT_MAX_CIVILIANS)
-                graveyard.Append(String.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_MAX_CIVILIANS), s_Options.MaxCivilians));
+                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_MAX_CIVILIANS), s_Options.MaxCivilians));
             if (s_Options.MaxUndeads != GameOptions.DEFAULT_MAX_UNDEADS)
-                graveyard.Append(String.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_MAX_UNDEADS), s_Options.MaxUndeads));
+                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_MAX_UNDEADS), s_Options.MaxUndeads));
             if (!s_Options.NPCCanStarveToDeath)
-                graveyard.Append(String.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH), s_Options.NPCCanStarveToDeath ? "yes" : "no"));
+                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH), s_Options.NPCCanStarveToDeath ? "yes" : "no"));
             if (s_Options.StarvedZombificationChance != GameOptions.DEFAULT_STARVED_ZOMBIFICATION_CHANCE)
-                graveyard.Append(String.Format("- {0} : {1}%.", GameOptions.Name(GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE), s_Options.StarvedZombificationChance));
+                graveyard.Append(string.Format("- {0} : {1}%.", GameOptions.Name(GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE), s_Options.StarvedZombificationChance));
             if (!s_Options.RevealStartingDistrict)
-                graveyard.Append(String.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT), s_Options.RevealStartingDistrict ? "yes" : "no"));
+                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT), s_Options.RevealStartingDistrict ? "yes" : "no"));
             if (s_Options.SimulateDistricts != GameOptions.DEFAULT_SIM_DISTRICTS)
-                graveyard.Append(String.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_SIMULATE_DISTRICTS), GameOptions.Name(s_Options.SimulateDistricts)));
+                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_SIMULATE_DISTRICTS), GameOptions.Name(s_Options.SimulateDistricts)));
             if (s_Options.SimulateWhenSleeping)
-                graveyard.Append(String.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_SIMULATE_SLEEP), s_Options.SimulateWhenSleeping ? "yes" : "no"));
+                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_SIMULATE_SLEEP), s_Options.SimulateWhenSleeping ? "yes" : "no"));
             if (s_Options.ZombieInvasionDailyIncrease != GameOptions.DEFAULT_ZOMBIE_INVASION_DAILY_INCREASE)
-                graveyard.Append(String.Format("- {0} : {1}%.", GameOptions.Name(GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE), s_Options.ZombieInvasionDailyIncrease));
+                graveyard.Append(string.Format("- {0} : {1}%.", GameOptions.Name(GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE), s_Options.ZombieInvasionDailyIncrease));
             if (s_Options.ZombificationChance != GameOptions.DEFAULT_ZOMBIFICATION_CHANCE)
-                graveyard.Append(String.Format("- {0} : {1}%.", GameOptions.Name(GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE), s_Options.ZombificationChance));
+                graveyard.Append(string.Format("- {0} : {1}%.", GameOptions.Name(GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE), s_Options.ZombificationChance));
             if (s_Options.MaxReincarnations != GameOptions.DEFAULT_MAX_REINCARNATIONS)
-                graveyard.Append(String.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_MAX_REINCARNATIONS), s_Options.MaxReincarnations));
+                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_MAX_REINCARNATIONS), s_Options.MaxReincarnations));
             graveyard.Append(" ");
 
             graveyard.Append("> R.I.P");
-            graveyard.Append(String.Format("May {0} soul rest in peace.", HisOrHer(m_Player)));
-            graveyard.Append(String.Format("For {0} body is now a meal for evil.", HisOrHer(m_Player)));
+            graveyard.Append(string.Format("May {0} soul rest in peace.", HisOrHer(m_Player)));
+            graveyard.Append(string.Format("For {0} body is now a meal for evil.", HisOrHer(m_Player)));
             graveyard.Append("The End.");
 
             /////////////////////
@@ -16478,7 +16393,8 @@ namespace RogueSurvivor.Engine
             if (m_HiScoreTable.Register(newHiScore))
             {
                 SaveHiScoreTable();
-                HandleHiScores(true);
+                //HandleHiScores(true);
+                // !IFMXE
             }
         }
 
@@ -16707,13 +16623,13 @@ namespace RogueSurvivor.Engine
                         // message & scoring.
                         if (sk.Level == 1)
                         {
-                            AddMessage(new Message(String.Format("{0} learned skill {1}.", upgradeActor.Name, Skills.Name(sk.ID)), m_Session.WorldTime.TurnCounter, Color.LightGreen));
-                            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, String.Format("{0} learned skill {1}.", upgradeActor.Name, Skills.Name(sk.ID)));
+                            AddMessage(new Message(string.Format("{0} learned skill {1}.", upgradeActor.Name, Skills.Name(sk.ID)), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("{0} learned skill {1}.", upgradeActor.Name, Skills.Name(sk.ID)));
                         }
                         else
                         {
-                            AddMessage(new Message(String.Format("{0} improved skill {1} to level {2}.", upgradeActor.Name, Skills.Name(sk.ID), sk.Level), m_Session.WorldTime.TurnCounter, Color.LightGreen));
-                            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, String.Format("{0} improved skill {1} to level {2}.", upgradeActor.Name, Skills.Name(sk.ID), sk.Level));
+                            AddMessage(new Message(string.Format("{0} improved skill {1} to level {2}.", upgradeActor.Name, Skills.Name(sk.ID), sk.Level), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("{0} improved skill {1} to level {2}.", upgradeActor.Name, Skills.Name(sk.ID), sk.Level));
                         }
                         AddMessagePressEnter();
                         if (popup != null) RemoveOverlay(popup);
@@ -17032,7 +16948,7 @@ namespace RogueSurvivor.Engine
 
             // message.
             if (IsVisibleToPlayer(actor))
-                AddMessage(MakeMessage(actor, String.Format("regressed in {0}!", Skills.Name(lostSkill))));
+                AddMessage(MakeMessage(actor, string.Format("regressed in {0}!", Skills.Name(lostSkill))));
         }
 
         public Skill SkillUpgrade(Actor actor, Skills.IDs id)
@@ -17116,7 +17032,7 @@ namespace RogueSurvivor.Engine
                 AddMessage(new Message(desc, m_Session.WorldTime.TurnCounter, Color.White));
 
             // scoring.
-            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, String.Format("The weather changed to {0}.", DescribeWeather(m_Session.World.Weather)));
+            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("The weather changed to {0}.", DescribeWeather(m_Session.World.Weather)));
         }
 
         /// <summary>
@@ -17176,7 +17092,7 @@ namespace RogueSurvivor.Engine
 
             // cause insanity.
             if (!isStartingGame)
-                SeeingCauseInsanity(newZombie, newZombie.Location, Rules.SANITY_HIT_ZOMBIFY, String.Format("{0} turning into a zombie", deadVictim.Name));
+                SeeingCauseInsanity(newZombie, newZombie.Location, Rules.SANITY_HIT_ZOMBIFY, string.Format("{0} turning into a zombie", deadVictim.Name));
 
             // done.
             return newZombie;
@@ -17281,9 +17197,9 @@ namespace RogueSurvivor.Engine
                 m_UI.DrawLine(Color.DarkGray, LOCATIONPANEL_X, LOCATIONPANEL_Y, LOCATIONPANEL_X, Ui.CANVAS_HEIGHT);
                 m_UI.DrawString(Color.White, m_Session.CurrentMap.Name, X0, Y0);
                 m_UI.DrawString(Color.White, LocationText(m_Session.CurrentMap, m_Player), X0, Y1);
-                m_UI.DrawString(Color.White, String.Format("Day  {0}", m_Session.WorldTime.Day), X0, Y2);
+                m_UI.DrawString(Color.White, string.Format("Day  {0}", m_Session.WorldTime.Day), X0, Y2);
                 if (canKnowTime)
-                    m_UI.DrawString(Color.White, String.Format("Hour {0}", m_Session.WorldTime.Hour), X0, Y3);
+                    m_UI.DrawString(Color.White, string.Format("Hour {0}", m_Session.WorldTime.Hour), X0, Y3);
                 else
                     m_UI.DrawString(Color.White, "Hour ??", X0, Y3);
 
@@ -17337,11 +17253,11 @@ namespace RogueSurvivor.Engine
                         throw new ArgumentOutOfRangeException("unhandled lighting");
                 }
                 m_UI.DrawString(weatherOrLightingColor, weatherOrLightingString, X1, Y3);
-                m_UI.DrawString(Color.White, String.Format("Turn {0}", m_Session.WorldTime.TurnCounter), X0, Y4);
-                m_UI.DrawString(Color.White, String.Format("Score   {0}@{1}% {2}", m_Session.Scoring.TotalPoints, (int)(100 * Scoring.ComputeDifficultyRating(s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber)), Session.DescShortGameMode(m_Session.GameMode)), X1, Y4);
-                m_UI.DrawString(Color.White, String.Format("Avatar  {0}/{1}", (1 + m_Session.Scoring.ReincarnationNumber), (1 + s_Options.MaxReincarnations)), X1, Y5);
+                m_UI.DrawString(Color.White, string.Format("Turn {0}", m_Session.WorldTime.TurnCounter), X0, Y4);
+                m_UI.DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", m_Session.Scoring.TotalPoints, (int)(100 * Scoring.ComputeDifficultyRating(s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber)), Session.DescShortGameMode(m_Session.GameMode)), X1, Y4);
+                m_UI.DrawString(Color.White, string.Format("Avatar  {0}/{1}", (1 + m_Session.Scoring.ReincarnationNumber), (1 + s_Options.MaxReincarnations)), X1, Y5);
                 if (m_Player.MurdersCounter > 0)
-                    m_UI.DrawString(Color.White, String.Format("Murders {0}", m_Player.MurdersCounter), X1, Y6);
+                    m_UI.DrawString(Color.White, string.Format("Murders {0}", m_Player.MurdersCounter), X1, Y6);
 
                 // character status.
                 if (m_Player != null)
@@ -17373,7 +17289,7 @@ namespace RogueSurvivor.Engine
                     int countLiving, countUndead;
                     countLiving = CountLivings(m_Session.CurrentMap);
                     countUndead = CountUndeads(m_Session.CurrentMap);
-                    m_UI.DrawString(Color.White, String.Format("Living {0} vs {1} Undead", countLiving, countUndead), RIGHTPANEL_TEXT_X, SKILLTABLE_Y - 32);
+                    m_UI.DrawString(Color.White, string.Format("Living {0} vs {1} Undead", countLiving, countUndead), RIGHTPANEL_TEXT_X, SKILLTABLE_Y - 32);
                 }
 #endif
             }
@@ -17389,14 +17305,14 @@ namespace RogueSurvivor.Engine
             if (map == null || actor == null)
                 return "";
 
-            StringBuilder sb = new StringBuilder(String.Format("({0},{1}) ", actor.Location.Position.X, actor.Location.Position.Y));
+            StringBuilder sb = new StringBuilder(string.Format("({0},{1}) ", actor.Location.Position.X, actor.Location.Position.Y));
 
             List<Zone> zones = map.GetZonesAt(actor.Location.Position.X, actor.Location.Position.Y);
             if (zones == null || zones.Count == 0)
                 return sb.ToString();
 
             foreach (Zone z in zones)
-                sb.Append(String.Format("{0} ", z.Name));
+                sb.Append(string.Format("{0} ", z.Name));
 
             return sb.ToString();
         }
@@ -17599,7 +17515,7 @@ namespace RogueSurvivor.Engine
                         int scent = map.GetScentByOdorAt(Odor.LIVING, new Point(x, y));
                         if (scent > 0)
                         {
-                            m_UI.UI_DrawString(Color.White, String.Format("{0}", scent), MapToScreen(x, y).X, MapToScreen(x, y).Y);
+                            m_UI.UI_DrawString(Color.White, string.Format("{0}", scent), MapToScreen(x, y).X, MapToScreen(x, y).Y);
                         }
                     }
                 }
@@ -18419,22 +18335,22 @@ namespace RogueSurvivor.Engine
         public void DrawActorStatus(Actor actor, int gx, int gy)
         {
             // 1. Name & occupation
-            m_UI.DrawStringBold(actor.IsInvincible ? Color.LightGreen : Color.White, String.Format("{0}, {1}", actor.Name, actor.Faction.MemberName), gx, gy);
+            m_UI.DrawStringBold(actor.IsInvincible ? Color.LightGreen : Color.White, string.Format("{0}, {1}", actor.Name, actor.Faction.MemberName), gx, gy);
 
             // 2. Bars: Health, Stamina, Food, Sleep, Infection.
             gy += Ui.BOLD_LINE_SPACING;
             int maxHP = m_Rules.ActorMaxHPs(actor);
-            m_UI.DrawStringBold(Color.White, String.Format("HP  {0}", actor.HitPoints), gx, gy);
+            m_UI.DrawStringBold(Color.White, string.Format("HP  {0}", actor.HitPoints), gx, gy);
             DrawBar(actor.HitPoints, actor.PreviousHitPoints, maxHP, 0, 100, Ui.BOLD_LINE_SPACING, gx + Ui.BOLD_LINE_SPACING * 5, gy, Color.Red, Color.DarkRed, Color.OrangeRed, Color.Gray);
-            m_UI.DrawStringBold(Color.White, String.Format("{0}", maxHP), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
+            m_UI.DrawStringBold(Color.White, string.Format("{0}", maxHP), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
 
             gy += Ui.BOLD_LINE_SPACING;
             if (actor.Model.Abilities.CanTire)
             {
                 int maxSTA = m_Rules.ActorMaxSTA(actor);
-                m_UI.DrawStringBold(Color.White, String.Format("STA {0}", actor.StaminaPoints), gx, gy);
+                m_UI.DrawStringBold(Color.White, string.Format("STA {0}", actor.StaminaPoints), gx, gy);
                 DrawBar(actor.StaminaPoints, actor.PreviousStaminaPoints, maxSTA, Rules.STAMINA_MIN_FOR_ACTIVITY, 100, Ui.BOLD_LINE_SPACING, gx + Ui.BOLD_LINE_SPACING * 5, gy, Color.Green, Color.DarkGreen, Color.LightGreen, Color.Gray);
-                m_UI.DrawStringBold(Color.White, String.Format("{0}", maxSTA), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
+                m_UI.DrawStringBold(Color.White, string.Format("{0}", maxSTA), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
                 if (actor.IsRunning)
                     m_UI.DrawStringBold(Color.LightGreen, "RUNNING!", gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
                 else if (m_Rules.CanActorRun(actor))
@@ -18447,9 +18363,9 @@ namespace RogueSurvivor.Engine
             if (actor.Model.Abilities.HasToEat)
             {
                 int maxFood = m_Rules.ActorMaxFood(actor);
-                m_UI.DrawStringBold(Color.White, String.Format("FOO {0}", actor.FoodPoints), gx, gy);
+                m_UI.DrawStringBold(Color.White, string.Format("FOO {0}", actor.FoodPoints), gx, gy);
                 DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxFood, Rules.FOOD_HUNGRY_LEVEL, 100, Ui.BOLD_LINE_SPACING, gx + Ui.BOLD_LINE_SPACING * 5, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
-                m_UI.DrawStringBold(Color.White, String.Format("{0}", maxFood), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
+                m_UI.DrawStringBold(Color.White, string.Format("{0}", maxFood), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
                 if (m_Rules.IsActorHungry(actor))
                 {
                     if (m_Rules.IsActorStarving(actor))
@@ -18458,14 +18374,14 @@ namespace RogueSurvivor.Engine
                         m_UI.DrawStringBold(Color.Yellow, "Hungry", gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
                 }
                 else
-                    m_UI.DrawStringBold(Color.White, String.Format("{0}h", FoodToHoursUntilHungry(actor.FoodPoints)), gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
+                    m_UI.DrawStringBold(Color.White, string.Format("{0}h", FoodToHoursUntilHungry(actor.FoodPoints)), gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
             }
             else if (actor.Model.Abilities.IsRotting)
             {
                 int maxFood = m_Rules.ActorMaxRot(actor);
-                m_UI.DrawStringBold(Color.White, String.Format("ROT {0}", actor.FoodPoints), gx, gy);
+                m_UI.DrawStringBold(Color.White, string.Format("ROT {0}", actor.FoodPoints), gx, gy);
                 DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxFood, Rules.ROT_HUNGRY_LEVEL, 100, Ui.BOLD_LINE_SPACING, gx + Ui.BOLD_LINE_SPACING * 5, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
-                m_UI.DrawStringBold(Color.White, String.Format("{0}", maxFood), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
+                m_UI.DrawStringBold(Color.White, string.Format("{0}", maxFood), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
                 if (m_Rules.IsRottingActorHungry(actor))
                 {
                     if (m_Rules.IsRottingActorStarving(actor))
@@ -18474,16 +18390,16 @@ namespace RogueSurvivor.Engine
                         m_UI.DrawStringBold(Color.Yellow, "Hungry", gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
                 }
                 else
-                    m_UI.DrawStringBold(Color.White, String.Format("{0}h", FoodToHoursUntilRotHungry(actor.FoodPoints)), gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
+                    m_UI.DrawStringBold(Color.White, string.Format("{0}h", FoodToHoursUntilRotHungry(actor.FoodPoints)), gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
             }
 
             gy += Ui.BOLD_LINE_SPACING;
             if (actor.Model.Abilities.HasToSleep)
             {
                 int maxSleep = m_Rules.ActorMaxSleep(actor);
-                m_UI.DrawStringBold(Color.White, String.Format("SLP {0}", actor.SleepPoints), gx, gy);
+                m_UI.DrawStringBold(Color.White, string.Format("SLP {0}", actor.SleepPoints), gx, gy);
                 DrawBar(actor.SleepPoints, actor.PreviousSleepPoints, maxSleep, Rules.SLEEP_SLEEPY_LEVEL, 100, Ui.BOLD_LINE_SPACING, gx + Ui.BOLD_LINE_SPACING * 5, gy, Color.Blue, Color.DarkBlue, Color.LightBlue, Color.Gray);
-                m_UI.DrawStringBold(Color.White, String.Format("{0}", maxSleep), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
+                m_UI.DrawStringBold(Color.White, string.Format("{0}", maxSleep), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
                 if (m_Rules.IsActorSleepy(actor))
                 {
                     if (m_Rules.IsActorExhausted(actor))
@@ -18492,16 +18408,16 @@ namespace RogueSurvivor.Engine
                         m_UI.DrawStringBold(Color.Yellow, "Sleepy", gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
                 }
                 else
-                    m_UI.DrawStringBold(Color.White, String.Format("{0}h", m_Rules.SleepToHoursUntilSleepy(actor.SleepPoints, m_Session.WorldTime.IsNight)), gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
+                    m_UI.DrawStringBold(Color.White, string.Format("{0}h", m_Rules.SleepToHoursUntilSleepy(actor.SleepPoints, m_Session.WorldTime.IsNight)), gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
             }
 
             gy += Ui.BOLD_LINE_SPACING;
             if (actor.Model.Abilities.HasSanity)
             {
                 int maxSan = m_Rules.ActorMaxSanity(actor);
-                m_UI.DrawStringBold(Color.White, String.Format("SAN {0}", actor.Sanity), gx, gy);
+                m_UI.DrawStringBold(Color.White, string.Format("SAN {0}", actor.Sanity), gx, gy);
                 DrawBar(actor.Sanity, actor.PreviousSanity, maxSan, m_Rules.ActorDisturbedLevel(actor), 100, Ui.BOLD_LINE_SPACING, gx + Ui.BOLD_LINE_SPACING * 5, gy, Color.Orange, Color.DarkOrange, Color.OrangeRed, Color.Gray);
-                m_UI.DrawStringBold(Color.White, String.Format("{0}", maxSan), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
+                m_UI.DrawStringBold(Color.White, string.Format("{0}", maxSan), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
                 if (m_Rules.IsActorDisturbed(actor))
                 {
                     if (m_Rules.IsActorInsane(actor))
@@ -18510,7 +18426,7 @@ namespace RogueSurvivor.Engine
                         m_UI.DrawStringBold(Color.Yellow, "Disturbed", gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
                 }
                 else
-                    m_UI.DrawStringBold(Color.White, String.Format("{0}h", m_Rules.SanityToHoursUntilUnstable(actor)), gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
+                    m_UI.DrawStringBold(Color.White, string.Format("{0}h", m_Rules.SanityToHoursUntilUnstable(actor)), gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
             }
 
             if (Rules.HasInfection(m_Session.GameMode) && !actor.Model.Abilities.IsUndead)
@@ -18518,16 +18434,16 @@ namespace RogueSurvivor.Engine
                 int maxInf = m_Rules.ActorInfectionHPs(actor);
                 int refInf = (Rules.INFECTION_LEVEL_1_WEAK * maxInf) / 100;
                 gy += Ui.BOLD_LINE_SPACING;
-                m_UI.DrawStringBold(Color.White, String.Format("INF {0}", actor.Infection), gx, gy);
+                m_UI.DrawStringBold(Color.White, string.Format("INF {0}", actor.Infection), gx, gy);
                 DrawBar(actor.Infection, actor.Infection, maxInf, refInf, 100, Ui.BOLD_LINE_SPACING, gx + Ui.BOLD_LINE_SPACING * 5, gy, Color.Purple, Color.Black, Color.Black, Color.Gray);
-                m_UI.DrawStringBold(Color.White, String.Format("{0}%", m_Rules.ActorInfectionPercent(actor)), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
+                m_UI.DrawStringBold(Color.White, string.Format("{0}%", m_Rules.ActorInfectionPercent(actor)), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
             }
 
             // 3. Melee & Ranged Attacks.
             gy += Ui.BOLD_LINE_SPACING;
             Attack melee = m_Rules.ActorMeleeAttack(actor, actor.CurrentMeleeAttack, null);
             int dmgBonusVsUndead = m_Rules.ActorDamageBonusVsUndeads(actor);
-            m_UI.DrawStringBold(Color.White, String.Format("Melee  Atk {0:D2}  Dmg {1:D2}/{2:D2}", melee.HitValue, melee.DamageValue, melee.DamageValue + dmgBonusVsUndead), gx, gy);
+            m_UI.DrawStringBold(Color.White, string.Format("Melee  Atk {0:D2}  Dmg {1:D2}/{2:D2}", melee.HitValue, melee.DamageValue, melee.DamageValue + dmgBonusVsUndead), gx, gy);
 
             gy += Ui.BOLD_LINE_SPACING;
             Attack ranged = m_Rules.ActorRangedAttack(actor, actor.CurrentRangedAttack, actor.CurrentRangedAttack.EfficientRange, null);
@@ -18538,7 +18454,7 @@ namespace RogueSurvivor.Engine
             {
                 ammo = rangedWeapon.Ammo;
                 maxAmmo = (rangedWeapon.Model as ItemRangedWeaponModel).MaxAmmo;
-                m_UI.DrawStringBold(Color.White, String.Format("Ranged Atk {0:D2}  Dmg {1:D2}/{2:D2} Rng {3}-{4} Amo {5}/{6}",
+                m_UI.DrawStringBold(Color.White, string.Format("Ranged Atk {0:D2}  Dmg {1:D2}/{2:D2} Rng {3}-{4} Amo {5}/{6}",
                     ranged.HitValue, ranged.DamageValue, ranged.DamageValue + dmgBonusVsUndead, ranged.Range, ranged.EfficientRange, ammo, maxAmmo), gx, gy);
             }
 
@@ -18548,7 +18464,7 @@ namespace RogueSurvivor.Engine
 
             if (actor.Model.Abilities.IsUndead)
             {
-                m_UI.DrawStringBold(Color.White, String.Format("Def {0:D2} Spd {1:F2} FoV {2} Sml {3:F2} Kills {4}",
+                m_UI.DrawStringBold(Color.White, string.Format("Def {0:D2} Spd {1:F2} FoV {2} Sml {3:F2} Kills {4}",
                     defence.Value,
                     (float)m_Rules.ActorSpeed(actor) / (float)Rules.BASE_SPEED,
                     m_Rules.ActorFOV(actor, m_Session.WorldTime, m_Session.World.Weather),
@@ -18558,7 +18474,7 @@ namespace RogueSurvivor.Engine
             }
             else
             {
-                m_UI.DrawStringBold(Color.White, String.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} FoV {4}/{5} Fol {6}/{7}",
+                m_UI.DrawStringBold(Color.White, string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} FoV {4}/{5} Fol {6}/{7}",
                     defence.Value, defence.Protection_Hit, defence.Protection_Shot,
                     (float)m_Rules.ActorSpeed(actor) / (float)Rules.BASE_SPEED,
                     m_Rules.ActorFOV(actor, m_Session.WorldTime, m_Session.World.Weather),
@@ -18760,7 +18676,7 @@ namespace RogueSurvivor.Engine
                         break;
                 }
 
-                m_UI.DrawString(skColor, String.Format("{0}-", sk.Level), x, y);
+                m_UI.DrawString(skColor, string.Format("{0}-", sk.Level), x, y);
                 x += 16;
                 m_UI.DrawString(skColor, Skills.Name(sk.ID), x, y);
                 x -= 16;
@@ -18965,14 +18881,14 @@ namespace RogueSurvivor.Engine
             string savingOrAutosaving = isAutoSave ? "AUTOSAVING" : "SAVING";
 
             ClearMessages();
-            AddMessage(new Message(String.Format("{0} GAME, PLEASE WAIT...", savingOrAutosaving), m_Session.WorldTime.TurnCounter, Color.Yellow));
+            AddMessage(new Message(string.Format("{0} GAME, PLEASE WAIT...", savingOrAutosaving), m_Session.WorldTime.TurnCounter, Color.Yellow));
             RedrawPlayScreen();
             m_UI.UI_Repaint();
 
             // save session object.
             Session.Save(m_Session, saveName);
 
-            AddMessage(new Message(String.Format("{0} DONE.", savingOrAutosaving), m_Session.WorldTime.TurnCounter, Color.Yellow));
+            AddMessage(new Message(string.Format("{0} DONE.", savingOrAutosaving), m_Session.WorldTime.TurnCounter, Color.Yellow));
             RedrawPlayScreen();
             m_UI.UI_Repaint();
 
@@ -19121,7 +19037,7 @@ namespace RogueSurvivor.Engine
             bool isFreeID = false;
             do
             {
-                name = String.Format("grave_{0:D3}", i);
+                name = string.Format("grave_{0:D3}", i);
                 isFreeID = !File.Exists(GraveFilePath(name));
                 ++i;
             }
@@ -19161,7 +19077,7 @@ namespace RogueSurvivor.Engine
             bool isFreeID = false;
             do
             {
-                name = String.Format("screenshot_{0:D3}", i);
+                name = string.Format("screenshot_{0:D3}", i);
                 isFreeID = !File.Exists(ScreenshotFilePath(name));
                 ++i;
             }
@@ -19188,7 +19104,7 @@ namespace RogueSurvivor.Engine
 
         bool CheckDirectory(string path, string description, ref int gy)
         {
-            m_UI.DrawString(Color.White, String.Format("{0} : {1}...", description, path), 0, gy);
+            m_UI.DrawString(Color.White, string.Format("{0} : {1}...", description, path), 0, gy);
             gy += Ui.BOLD_LINE_SPACING;
             m_UI.UI_Repaint();
             bool created = CreateDirectory(path);
@@ -19225,7 +19141,7 @@ namespace RogueSurvivor.Engine
             return GetUserDocsPath() + "RS Manual.txt";
         }
 
-        string GetUserHiScorePath()
+        static string GetUserHiScorePath()
         {
             return GetUserSavesPath();
         }
@@ -19235,7 +19151,7 @@ namespace RogueSurvivor.Engine
             return GetUserHiScorePath() + "hiscores.dat";
         }
 
-        string GetUserHiScoreTextFilePath()
+        public static string GetUserHiScoreTextFilePath()
         {
             return GetUserHiScorePath() + "hiscores.txt";
         }
@@ -19294,7 +19210,7 @@ namespace RogueSurvivor.Engine
                     if (isVerbose)
                     {
                         m_UI.Clear(Color.Black);
-                        m_UI.DrawStringBold(Color.White, String.Format("Creating District@{0}...", World.CoordToString(x, y)), 0, 0);
+                        m_UI.DrawStringBold(Color.White, string.Format("Creating District@{0}...", World.CoordToString(x, y)), 0, 0);
                         m_UI.UI_Repaint();
                     }
 
@@ -19369,7 +19285,7 @@ namespace RogueSurvivor.Engine
                     if (isVerbose)
                     {
                         m_UI.Clear(Color.Black);
-                        m_UI.DrawStringBold(Color.White, String.Format("Linking District@{0}...", World.CoordToString(x, y)), 0, 0);
+                        m_UI.DrawStringBold(Color.White, string.Format("Linking District@{0}...", World.CoordToString(x, y)), 0, 0);
                         m_UI.UI_Repaint();
                     }
 
@@ -19998,7 +19914,7 @@ namespace RogueSurvivor.Engine
             Point baseEntryPos;  // alpha10
             Map map = m_TownGenerator.GenerateUniqueMap_CHARUnderground(chosenDistrict.EntryMap, chosenOffice, out baseEntryPos);
             map.District = chosenDistrict;
-            map.Name = String.Format("CHAR Underground Facility @{0}-{1}", baseEntryPos.X, baseEntryPos.Y); // alpha10
+            map.Name = string.Format("CHAR Underground Facility @{0}-{1}", baseEntryPos.X, baseEntryPos.Y); // alpha10
             chosenDistrict.AddUniqueMap(map);
             return new UniqueMap() { TheMap = map };
         }
@@ -20079,7 +19995,7 @@ namespace RogueSurvivor.Engine
             BaseTownGenerator.Parameters prevParams = m_TownGenerator.Params;
             m_TownGenerator.Params = genParams;
             Map map = m_TownGenerator.Generate(gridSeed);
-            map.Name = String.Format("{0}@{1}", kindName, World.CoordToString(gridX, gridY));
+            map.Name = string.Format("{0}@{1}", kindName, World.CoordToString(gridX, gridY));
             m_TownGenerator.Params = prevParams;
 
             // done.
@@ -20093,7 +20009,7 @@ namespace RogueSurvivor.Engine
 
             // Generate map.
             Map sewers = m_TownGenerator.GenerateSewersMap(sewersSeed, district);
-            sewers.Name = String.Format("Sewers@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y);
+            sewers.Name = string.Format("Sewers@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y);
 
             // done.
             return sewers;
@@ -20106,7 +20022,7 @@ namespace RogueSurvivor.Engine
 
             // Generate map.
             Map subway = m_TownGenerator.GenerateSubwayMap(subwaySeed, district);
-            subway.Name = String.Format("Subway@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y);
+            subway.Name = string.Format("Subway@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y);
 
             // done.
             return subway;
@@ -20327,7 +20243,7 @@ namespace RogueSurvivor.Engine
 
                             // show.
                             ClearMessages();
-                            AddMessage(new Message(String.Format("Simulating district, please wait {0}/{1}...", entryMap.LocalTime.TurnCounter, m_Session.WorldTime.TurnCounter), m_Session.WorldTime.TurnCounter, Color.White));
+                            AddMessage(new Message(string.Format("Simulating district, please wait {0}/{1}...", entryMap.LocalTime.TurnCounter, m_Session.WorldTime.TurnCounter), m_Session.WorldTime.TurnCounter, Color.White));
                             AddMessage(new Message("(this is an option you can tune)", m_Session.WorldTime.TurnCounter, Color.White));
 
                             // estimate turns per seconds and time left.
@@ -20336,13 +20252,13 @@ namespace RogueSurvivor.Engine
                             {
                                 int turnsLeft = m_Session.WorldTime.TurnCounter - entryMap.LocalTime.TurnCounter;
                                 double turnsPerSecs = 1000.0f * (float)turnsDone / (1 + timerNow - timerStart);
-                                AddMessage(new Message(String.Format("Turns per second    : {0:F2}.", turnsPerSecs), m_Session.WorldTime.TurnCounter, Color.White));
+                                AddMessage(new Message(string.Format("Turns per second    : {0:F2}.", turnsPerSecs), m_Session.WorldTime.TurnCounter, Color.White));
 
                                 int secsLeft = (int)(turnsLeft / turnsPerSecs);
                                 int mins = secsLeft / 60;
                                 int secs = secsLeft % 60;
-                                string etaFormat = (mins > 0 ? String.Format("{0} min {1:D2} secs", mins, secs) : String.Format("{0} secs", secs));
-                                AddMessage(new Message(String.Format("Estimated time left : {0}.", etaFormat), m_Session.WorldTime.TurnCounter, Color.White));
+                                string etaFormat = (mins > 0 ? string.Format("{0} min {1:D2} secs", mins, secs) : string.Format("{0} secs", secs));
+                                AddMessage(new Message(string.Format("Estimated time left : {0}.", etaFormat), m_Session.WorldTime.TurnCounter, Color.White));
                             }
                             if (aborted)
                                 AddMessage(new Message("Simulation aborted!", m_Session.WorldTime.TurnCounter, Color.Red));
@@ -20631,7 +20547,7 @@ namespace RogueSurvivor.Engine
             string[] text = ach.Text;
 
             // add event.
-            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, String.Format("** Achievement : {0} for {1} points. **", title, ach.ScoreValue));
+            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("** Achievement : {0} for {1} points. **", title, ach.ScoreValue));
 
             // music.
             m_MusicManager.Stop();
@@ -20642,11 +20558,11 @@ namespace RogueSurvivor.Engine
             string starsLine = new string('*', Math.Max(longestLine, 50));
             List<string> lines = new List<string>(text.Length + 3 + 2);
             lines.Add(starsLine);
-            lines.Add(String.Format("ACHIEVEMENT : {0}", title));
+            lines.Add(string.Format("ACHIEVEMENT : {0}", title));
             lines.Add("CONGRATULATIONS!");
             for (int i = 0; i < text.Length; i++)
                 lines.Add(text[i]);
-            lines.Add(String.Format("Achievements : {0}/{1}.", m_Session.Scoring.CompletedAchievementsCount, Scoring.MAX_ACHIEVEMENTS));
+            lines.Add(string.Format("Achievements : {0}/{1}.", m_Session.Scoring.CompletedAchievementsCount, Scoring.MAX_ACHIEVEMENTS));
             lines.Add(starsLine);
 
             // banner.
@@ -20812,7 +20728,7 @@ namespace RogueSurvivor.Engine
                                 string[] text = new string[]
                                 {
                                     "\" Psssst! Hey! You over there! \"",
-                                    String.Format("{0} is discretly calling you from {1} cell. You listen closely...", prisoner.Name, HisOrHer(prisoner)),
+                                    string.Format("{0} is discretly calling you from {1} cell. You listen closely...", prisoner.Name, HisOrHer(prisoner)),
                                     "\" Listen! I shouldn't be here! Just drove a bit too fast!",
                                     "  Look, I know what's happening! I worked down there! At the CHAR facility!",
                                     "  They didn't want me to leave but I did! Like I'm stupid enough to stay down there uh?",
@@ -20824,12 +20740,12 @@ namespace RogueSurvivor.Engine
                                     "  I don't give a fuck about CHAR anymore, you can do what you want with that!",
                                     "  There are plenty of cool stuff to loot down there!",
                                     "  Do it PLEASE! I REALLY shoudn't be there! \"",
-                                    String.Format("Looks like {0} wants you to turn the generator on to open the cells...", HeOrShe(prisoner))
+                                    string.Format("Looks like {0} wants you to turn the generator on to open the cells...", HeOrShe(prisoner))
                                 };
                                 ShowSpecialDialogue(prisoner, text);
 
                                 // Scoring event.
-                                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, String.Format("{0} offered a deal.", prisoner.Name));
+                                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("{0} offered a deal.", prisoner.Name));
 
                                 // Next stage.
                                 m_Session.ScriptStage_PoliceStationPrisoner = ScriptStage.STAGE_1;
@@ -20852,7 +20768,7 @@ namespace RogueSurvivor.Engine
                                 {
                                     "\" Thank you! Thank you so much!",
                                     "  As promised, I'll tell you the big secret!",
-                                    String.Format("  The CHAR Underground Facility is in district {0}.", World.CoordToString(m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.District.WorldPosition.X,  m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.District.WorldPosition.Y)),
+                                    string.Format("  The CHAR Underground Facility is in district {0}.", World.CoordToString(m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.District.WorldPosition.X,  m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.District.WorldPosition.Y)),
                                     "  Look for a CHAR Office, a room with an iron door.",
                                     "  Now I must hurry! Thanks a lot for saving me!",
                                     "  I don't want them to... UGGH...",
@@ -20862,7 +20778,7 @@ namespace RogueSurvivor.Engine
                                 ShowSpecialDialogue(prisoner, text);
 
                                 // Scoring event.
-                                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, String.Format("Freed {0}.", prisoner.Name));
+                                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Freed {0}.", prisoner.Name));
 
                                 // reveal location.
                                 m_Session.PlayerKnows_CHARUndergroundFacilityLocation = true;
@@ -20880,7 +20796,7 @@ namespace RogueSurvivor.Engine
                                 monster.ActionPoints = 0;
 
                                 // Scoring event.
-                                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, String.Format("{0} turned into a {1}!", prisoner.Name, monster.Model.Name));
+                                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", prisoner.Name, monster.Model.Name));
 
                                 // fight music!
                                 m_MusicManager.Play(GameMusics.FIGHT, MusicPriority.PRIORITY_EVENT);
@@ -20959,7 +20875,7 @@ namespace RogueSurvivor.Engine
             {
                 // visit.
                 m_Session.Scoring.AddVisit(m_Session.WorldTime.TurnCounter, player.Location.Map);
-                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, String.Format("Visited {0}.", player.Location.Map.Name));
+                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Visited {0}.", player.Location.Map.Name));
             }
 
             // 2. Sighting an actor : actor model, unique NPCs.
@@ -21031,9 +20947,9 @@ namespace RogueSurvivor.Engine
             string[] values =
             {
                 DescribeAvatar(randomR),
-                String.Format("{0}   (out of {1} possibilities)", DescribeAvatar(livingR), countLivings),
-                String.Format("{0}   (out of {1} possibilities)", DescribeAvatar(undeadR), countUndead),
-                String.Format("{0}   (out of {1} possibilities)", DescribeAvatar(followerR), countFollower),
+                string.Format("{0}   (out of {1} possibilities)", DescribeAvatar(livingR), countLivings),
+                string.Format("{0}   (out of {1} possibilities)", DescribeAvatar(undeadR), countUndead),
+                string.Format("{0}   (out of {1} possibilities)", DescribeAvatar(followerR), countFollower),
                 DescribeAvatar(killerR),
                 DescribeAvatar(zombifiedR)
             };
@@ -21053,7 +20969,7 @@ namespace RogueSurvivor.Engine
 
                 m_UI.DrawStringBold(Color.Pink, ".-* District Fun Facts! *-.", gx, gy);
                 gy += Ui.BOLD_LINE_SPACING;
-                m_UI.DrawStringBold(Color.Pink, String.Format("at current date : {0}.", new WorldTime(m_Session.WorldTime.TurnCounter).ToString()), gx, gy);
+                m_UI.DrawStringBold(Color.Pink, string.Format("at current date : {0}.", new WorldTime(m_Session.WorldTime.TurnCounter).ToString()), gx, gy);
                 gy += 2 * Ui.BOLD_LINE_SPACING;
                 for (int i = 0; i < funFacts.Length; i++)
                 {
@@ -21129,7 +21045,7 @@ namespace RogueSurvivor.Engine
             m_Player = avatar;
             m_Session.CurrentMap = avatar.Location.Map;
             m_Session.Scoring.StartNewLife(m_Session.WorldTime.TurnCounter);
-            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, String.Format("(reincarnation {0})", m_Session.Scoring.ReincarnationNumber));
+            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("(reincarnation {0})", m_Session.Scoring.ReincarnationNumber));
             m_Session.Scoring.Side = m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
             m_Session.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber);
             /// forget all maps memory.
@@ -21146,7 +21062,7 @@ namespace RogueSurvivor.Engine
             UpdatePlayerFOV(m_Player);
             ComputeViewRect(m_Player.Location.Position);
             ClearMessages();
-            AddMessage(new Message(String.Format("{0} feels disoriented for a second...", m_Player.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+            AddMessage(new Message(string.Format("{0} feels disoriented for a second...", m_Player.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
             RedrawPlayScreen();
 
             // Play reinc sfx or special music for actor.
@@ -21168,7 +21084,7 @@ namespace RogueSurvivor.Engine
                 return "(N/A)";
             bool isLeader = a.CountFollowers > 0;
             bool isFollower = a.HasLeader;
-            return String.Format("{0}, a {1}{2}", a.Name, a.Model.Name, isLeader ? ", leader" : isFollower ? ", follower" : "");
+            return string.Format("{0}, a {1}{2}", a.Name, a.Model.Name, isLeader ? ", leader" : isFollower ? ", follower" : "");
         }
 
         bool AskForReincarnation()
@@ -21179,7 +21095,7 @@ namespace RogueSurvivor.Engine
             m_UI.Clear(Color.Black);
             m_UI.DrawStringBold(Color.Yellow, "Limbo", gx, gy);
             gy += 2 * Ui.BOLD_LINE_SPACING;
-            m_UI.DrawStringBold(Color.White, String.Format("Leave body {0}/{1}.", (1 + m_Session.Scoring.ReincarnationNumber), (1 + s_Options.MaxReincarnations)), gx, gy);
+            m_UI.DrawStringBold(Color.White, string.Format("Leave body {0}/{1}.", (1 + m_Session.Scoring.ReincarnationNumber), (1 + s_Options.MaxReincarnations)), gx, gy);
             gy += Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.White, "Remember lives.", gx, gy);
             gy += Ui.BOLD_LINE_SPACING;
@@ -21440,14 +21356,14 @@ namespace RogueSurvivor.Engine
                     if (a.IsPlayer)
                         AddMessage(new Message("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
                     else if (IsVisibleToPlayer(a))
-                        AddMessage(MakeMessage(a, String.Format("{0} done something very disturbing...", Conjugate(a, VERB_HAVE))));
+                        AddMessage(MakeMessage(a, string.Format("{0} done something very disturbing...", Conjugate(a, VERB_HAVE))));
                 }
                 else
                 {
                     if (a.IsPlayer)
-                        AddMessage(new Message(String.Format("Seeing {0} is very disturbing...", what), loc.Map.LocalTime.TurnCounter, Color.Orange));
+                        AddMessage(new Message(string.Format("Seeing {0} is very disturbing...", what), loc.Map.LocalTime.TurnCounter, Color.Orange));
                     else if (IsVisibleToPlayer(a))
-                        AddMessage(MakeMessage(a, String.Format("{0} something very disturbing...", Conjugate(a, VERB_SEE))));
+                        AddMessage(MakeMessage(a, string.Format("{0} something very disturbing...", Conjugate(a, VERB_SEE))));
                 }
             }
         }
@@ -21669,7 +21585,7 @@ namespace RogueSurvivor.Engine
             InflictDamage(crushedActor, crushingDamage);
             if (IsVisibleToPlayer(crushedActor))
             {
-                AddMessage(MakeMessage(crushedActor, String.Format("is crushed for {0} damage!", crushingDamage)));
+                AddMessage(MakeMessage(crushedActor, string.Format("is crushed for {0} damage!", crushingDamage)));
                 AddOverlay(new OverlayImage(MapToScreen(crushedActor.Location.Position), GameImages.ICON_MELEE_DAMAGE));
                 AddOverlay(new OverlayText(MapToScreen(crushedActor.Location.Position).Add(DAMAGE_DX, DAMAGE_DY), Color.White, crushingDamage.ToString(), Color.Black));
                 RedrawPlayScreen();
@@ -21925,7 +21841,7 @@ namespace RogueSurvivor.Engine
         {
             if (a == null)
                 return "(N/A)";
-            return String.Format("{0} - {1}, a {2} - {3}",
+            return string.Format("{0} - {1}, a {2} - {3}",
                 info, a.TheName, a.Model.Name, a.Location.Map.Name);
         }
 
@@ -21956,9 +21872,9 @@ namespace RogueSurvivor.Engine
             {
                 allLivings.Sort((a, b) => a.SpawnTime < b.SpawnTime ? -1 : a.SpawnTime == b.SpawnTime ? 0 : 1);
                 list.Add("- Oldest Livings Surviving");
-                list.Add(String.Format("    1st {0}.", FunFactActorResume(allLivings[0], new WorldTime(allLivings[0].SpawnTime).ToString())));
+                list.Add(string.Format("    1st {0}.", FunFactActorResume(allLivings[0], new WorldTime(allLivings[0].SpawnTime).ToString())));
                 if (allLivings.Count > 1)
-                    list.Add(String.Format("    2nd {0}.", FunFactActorResume(allLivings[1], new WorldTime(allLivings[1].SpawnTime).ToString())));
+                    list.Add(string.Format("    2nd {0}.", FunFactActorResume(allLivings[1], new WorldTime(allLivings[1].SpawnTime).ToString())));
             }
             else
                 list.Add("    No living actors alive!");
@@ -21967,9 +21883,9 @@ namespace RogueSurvivor.Engine
             {
                 allUndeads.Sort((a, b) => a.SpawnTime < b.SpawnTime ? -1 : a.SpawnTime == b.SpawnTime ? 0 : 1);
                 list.Add("- Oldest Undeads Rotting Around");
-                list.Add(String.Format("    1st {0}.", FunFactActorResume(allUndeads[0], new WorldTime(allUndeads[0].SpawnTime).ToString())));
+                list.Add(string.Format("    1st {0}.", FunFactActorResume(allUndeads[0], new WorldTime(allUndeads[0].SpawnTime).ToString())));
                 if (allUndeads.Count > 1)
-                    list.Add(String.Format("    2nd {0}.", FunFactActorResume(allUndeads[1], new WorldTime(allUndeads[1].SpawnTime).ToString())));
+                    list.Add(string.Format("    2nd {0}.", FunFactActorResume(allUndeads[1], new WorldTime(allUndeads[1].SpawnTime).ToString())));
             }
             else
                 list.Add("    No undeads shambling around!");
@@ -21981,9 +21897,9 @@ namespace RogueSurvivor.Engine
                 list.Add("- Deadliest Livings Kicking ass");
                 if (allLivings[0].KillsCount > 0)
                 {
-                    list.Add(String.Format("    1st {0}.", FunFactActorResume(allLivings[0], allLivings[0].KillsCount.ToString())));
+                    list.Add(string.Format("    1st {0}.", FunFactActorResume(allLivings[0], allLivings[0].KillsCount.ToString())));
                     if (allLivings.Count > 1 && allLivings[1].KillsCount > 0)
-                        list.Add(String.Format("    2nd {0}.", FunFactActorResume(allLivings[1], allLivings[1].KillsCount.ToString())));
+                        list.Add(string.Format("    2nd {0}.", FunFactActorResume(allLivings[1], allLivings[1].KillsCount.ToString())));
                 }
                 else
                     list.Add("    Livings can't fight for their lives apparently.");
@@ -21994,9 +21910,9 @@ namespace RogueSurvivor.Engine
                 list.Add("- Deadliest Undeads Chewing Brains");
                 if (allUndeads[0].KillsCount > 0)
                 {
-                    list.Add(String.Format("    1st {0}.", FunFactActorResume(allUndeads[0], allUndeads[0].KillsCount.ToString())));
+                    list.Add(string.Format("    1st {0}.", FunFactActorResume(allUndeads[0], allUndeads[0].KillsCount.ToString())));
                     if (allUndeads.Count > 1 && allUndeads[1].KillsCount > 0)
-                        list.Add(String.Format("    2nd {0}.", FunFactActorResume(allUndeads[1], allUndeads[1].KillsCount.ToString())));
+                        list.Add(string.Format("    2nd {0}.", FunFactActorResume(allUndeads[1], allUndeads[1].KillsCount.ToString())));
                 }
                 else
                     list.Add("    Undeads don't care for brains apparently.");
@@ -22009,9 +21925,9 @@ namespace RogueSurvivor.Engine
                 list.Add("- Most Murderous Murderer Murdering");
                 if (allLivings[0].MurdersCounter > 0)
                 {
-                    list.Add(String.Format("    1st {0}.", FunFactActorResume(allLivings[0], allLivings[0].MurdersCounter.ToString())));
+                    list.Add(string.Format("    1st {0}.", FunFactActorResume(allLivings[0], allLivings[0].MurdersCounter.ToString())));
                     if (allLivings.Count > 1 && allLivings[1].MurdersCounter > 0)
-                        list.Add(String.Format("    2nd {0}.", FunFactActorResume(allLivings[1], allLivings[1].MurdersCounter.ToString())));
+                        list.Add(string.Format("    2nd {0}.", FunFactActorResume(allLivings[1], allLivings[1].MurdersCounter.ToString())));
                 }
                 else
                     list.Add("    No murders committed!");

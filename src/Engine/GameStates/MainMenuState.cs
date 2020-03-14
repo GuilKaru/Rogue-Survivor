@@ -32,7 +32,7 @@ namespace RogueSurvivor.Engine.GameStates
         public override void Enter()
         {
             selected = 0;
-            isLoadEnabled = File.Exists(RogueGame.GetUserSave());
+            isLoadEnabled = File.Exists(game.SaveFilePath);
 
             musicManager.Play(GameMusics.INTRO, MusicPriority.PRIORITY_EVENT);
 
@@ -127,7 +127,7 @@ namespace RogueSurvivor.Engine.GameStates
                             break;
 
                         case 6:
-                            //HandleHiScores(true);
+                            game.PushState<HiScoresState>();
                             break;
 
                         case 7:

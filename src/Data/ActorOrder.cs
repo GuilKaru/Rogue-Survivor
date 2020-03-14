@@ -38,19 +38,19 @@ namespace RogueSurvivor.Data
             switch (m_Task)
             {
                 case ActorTasks.BARRICADE_ONE:
-                    return String.Format("barricade one ({0},{1})", m_Location.Position.X, m_Location.Position.Y);
+                    return string.Format("barricade one ({0},{1})", m_Location.Position.X, m_Location.Position.Y);
                 case ActorTasks.BARRICADE_MAX:
-                    return String.Format("barricade max ({0},{1})", m_Location.Position.X, m_Location.Position.Y);
+                    return string.Format("barricade max ({0},{1})", m_Location.Position.X, m_Location.Position.Y);
                 case ActorTasks.BUILD_LARGE_FORTIFICATION:
-                    return String.Format("build large fortification ({0},{1})", m_Location.Position.X, m_Location.Position.Y);
+                    return string.Format("build large fortification ({0},{1})", m_Location.Position.X, m_Location.Position.Y);
                 case ActorTasks.BUILD_SMALL_FORTIFICATION:
-                    return String.Format("build small fortification ({0},{1})", m_Location.Position.X, m_Location.Position.Y);
+                    return string.Format("build small fortification ({0},{1})", m_Location.Position.X, m_Location.Position.Y);
                 case ActorTasks.DROP_ALL_ITEMS:
                     return "drop all items";
                 case ActorTasks.GUARD:
-                    return String.Format("guard ({0},{1})", m_Location.Position.X, m_Location.Position.Y);
+                    return string.Format("guard ({0},{1})", m_Location.Position.X, m_Location.Position.Y);
                 case ActorTasks.PATROL:
-                    return String.Format("patrol ({0},{1})", m_Location.Position.X, m_Location.Position.Y);
+                    return string.Format("patrol ({0},{1})", m_Location.Position.X, m_Location.Position.Y);
                 case ActorTasks.REPORT_EVENTS:
                     return "reporting events to leader";
                 case ActorTasks.SLEEP_NOW:

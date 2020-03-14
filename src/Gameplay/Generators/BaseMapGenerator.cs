@@ -979,7 +979,7 @@ namespace RogueSurvivor.Gameplay.Generators
 
         protected Zone MakeUniqueZone(string basename, Rectangle rect)
         {
-            string name = String.Format("{0}@{1}-{2}", basename, rect.Left + rect.Width / 2, rect.Top + rect.Height / 2);
+            string name = string.Format("{0}@{1}-{2}", basename, rect.Left + rect.Width / 2, rect.Top + rect.Height / 2);
             return new Zone(name, rect);
         }
     }

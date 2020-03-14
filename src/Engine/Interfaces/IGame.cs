@@ -4,6 +4,11 @@ namespace RogueSurvivor.Engine.Interfaces
 {
     interface IGame
     {
+        HiScoreTable HiScoreTable { get; }
+
+        string SaveFilePath { get; }
+        string HiScoreTextFilePath { get; }
+
         void Init(IGameLoader gameLoader);
         void Draw();
         bool Update();

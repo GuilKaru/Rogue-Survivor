@@ -844,7 +844,7 @@ namespace RogueSurvivor.Data
         public void RefreshScentAt(Odor odor, int freshStrength, Point position)
         {
             if (!IsInBounds(position))
-                throw new ArgumentOutOfRangeException(String.Format("position; ({0},{1}) map {2} odor {3}", position.X, position.Y, this.m_Name, odor.ToString()));
+                throw new ArgumentOutOfRangeException(string.Format("position; ({0},{1}) map {2} odor {3}", position.X, position.Y, this.m_Name, odor.ToString()));
 
             OdorScent oldScent = GetScentByOdor(odor, position);
             if (oldScent == null)

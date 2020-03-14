@@ -3498,7 +3498,7 @@ namespace RogueSurvivor.Gameplay.Generators
             // make map.
             Rectangle rect = houseBlock.BuildingRect;
             int seed = map.Seed << 1 + rect.Left * map.Height + rect.Top;
-            Map basement = new Map(seed, String.Format("basement{0}{1}@{2}-{3}", m_Params.District.WorldPosition.X, m_Params.District.WorldPosition.Y, rect.Left + rect.Width / 2, rect.Top + rect.Height / 2), rect.Width, rect.Height)
+            Map basement = new Map(seed, string.Format("basement{0}{1}@{2}-{3}", m_Params.District.WorldPosition.X, m_Params.District.WorldPosition.Y, rect.Left + rect.Width / 2, rect.Top + rect.Height / 2), rect.Width, rect.Height)
             {
                 Lighting = Lighting.DARKNESS
             };
@@ -5404,7 +5404,7 @@ namespace RogueSurvivor.Gameplay.Generators
         public Actor MakeZombified(Actor zombifier, Actor deadVictim, int turn)
         {
             // create actor.
-            string zombiefiedName = String.Format("{0}'s zombie", deadVictim.UnmodifiedName);
+            string zombiefiedName = string.Format("{0}'s zombie", deadVictim.UnmodifiedName);
             ActorModel zombiefiedModel = deadVictim.Doll.Body.IsMale ? m_Game.GameActors.MaleZombified : m_Game.GameActors.FemaleZombified;
             Faction zombieFaction = (zombifier == null ? m_Game.GameFactions.TheUndeads : zombifier.Faction);
             Actor newZombie = zombiefiedModel.CreateNamed(zombieFaction, zombiefiedName, deadVictim.IsPluralName, turn);

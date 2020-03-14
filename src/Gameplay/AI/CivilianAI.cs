@@ -484,7 +484,7 @@ namespace RogueSurvivor.Gameplay.AI
                                 // remember we tried to trade.
                                 MarkActorAsRecentTrade(tradeTarget);
                                 // say, so we make sure we spend a turn and won't loop.
-                                game.DoSay(m_Actor, tradeTarget, String.Format("Hey {0}, let's make a deal!", tradeTarget.Name), RogueGame.Sayflags.NONE);
+                                game.DoSay(m_Actor, tradeTarget, string.Format("Hey {0}, let's make a deal!", tradeTarget.Name), RogueGame.Sayflags.NONE);
                                 return tradeAction;
                             }
                         }
@@ -495,7 +495,7 @@ namespace RogueSurvivor.Gameplay.AI
                             {
                                 // alpha10 announce it to make it clear to the player whats happening but dont spend AP (free action)
                                 // might spam for a few turns, but its better than not understanding whats going on.
-                                game.DoSay(m_Actor, tradeTarget, String.Format("Hey {0}, let's make a deal!", tradeTarget.Name), RogueGame.Sayflags.IS_FREE_ACTION);
+                                game.DoSay(m_Actor, tradeTarget, string.Format("Hey {0}, let's make a deal!", tradeTarget.Name), RogueGame.Sayflags.IS_FREE_ACTION);
 
                                 m_Actor.Activity = Activity.FOLLOWING;
                                 m_Actor.TargetActor = tradeTarget;
@@ -788,13 +788,13 @@ namespace RogueSurvivor.Gameplay.AI
                     if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
                     {
                         if (target.IsSleeping)
-                            game.DoEmote(m_Actor, String.Format("patiently waits for {0} to wake up.", target.Name));
+                            game.DoEmote(m_Actor, string.Format("patiently waits for {0} to wake up.", target.Name));
                         else
                         {
                             if (m_LOSSensor.FOV.Contains(target.Location.Position))
-                                game.DoEmote(m_Actor, String.Format("Come on {0}! Hurry up!", target.Name));
+                                game.DoEmote(m_Actor, string.Format("Come on {0}! Hurry up!", target.Name));
                             else
-                                game.DoEmote(m_Actor, String.Format("Where the hell is {0}?", target.Name));
+                                game.DoEmote(m_Actor, string.Format("Where the hell is {0}?", target.Name));
                         }
                     }
 

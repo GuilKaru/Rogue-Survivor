@@ -220,7 +220,7 @@ namespace RogueSurvivor.Gameplay
             // get line for id in table.
             CSVLine line = FindLineForModel(table, skillID);
             if (line == null)
-                throw new InvalidOperationException(String.Format("skill {0} not found", skillID.ToString()));
+                throw new InvalidOperationException(string.Format("skill {0} not found", skillID.ToString()));
 
             // get data from line.
             DATA_TYPE data;
@@ -230,7 +230,7 @@ namespace RogueSurvivor.Gameplay
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException(String.Format("invalid data format for skill {0}; exception : {1}", skillID.ToString(), e.ToString()));
+                throw new InvalidOperationException(string.Format("invalid data format for skill {0}; exception : {1}", skillID.ToString(), e.ToString()));
             }
 
             // ok.

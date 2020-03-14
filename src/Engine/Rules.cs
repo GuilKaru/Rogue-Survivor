@@ -1537,7 +1537,7 @@ namespace RogueSurvivor.Engine
             }
             if (!target.Model.Abilities.CanTalk)
             {
-                reason = String.Format("{0} can't talk", target.TheName);
+                reason = string.Format("{0} can't talk", target.TheName);
                 return false;
             }
 
@@ -1549,7 +1549,7 @@ namespace RogueSurvivor.Engine
             }
             if (target.IsSleeping)
             {
-                reason = String.Format("{0} is sleeping", target.TheName);
+                reason = string.Format("{0} is sleeping", target.TheName);
                 return false;
             }
 
@@ -2617,7 +2617,7 @@ namespace RogueSurvivor.Engine
             // 7. Faction restrictions.
             if (actor.Faction != target.Faction && target.Faction.LeadOnlyBySameFaction)
             {
-                reason = String.Format("{0} can't lead {1}", actor.Faction.Name, target.Faction.Name);
+                reason = string.Format("{0} can't lead {1}", actor.Faction.Name, target.Faction.Name);
                 return false;
             }
 
@@ -2767,7 +2767,7 @@ namespace RogueSurvivor.Engine
             int need = ActorBarricadingMaterialNeedForFortification(actor, isLarge);
             if (CountBarricadingMaterial(actor) < need)
             {
-                reason = String.Format("not enough barricading material, need {0}.", need);
+                reason = string.Format("not enough barricading material, need {0}.", need);
                 return false;
             }
 
@@ -3990,7 +3990,7 @@ namespace RogueSurvivor.Engine
         public int BlastDamage(int distance, BlastAttack attack)
         {
             if (distance < 0 || distance > attack.Radius)
-                throw new ArgumentOutOfRangeException(String.Format("blast distance {0} out of range", distance));
+                throw new ArgumentOutOfRangeException(string.Format("blast distance {0} out of range", distance));
 
             return attack.Damage[distance];
         }

@@ -56,7 +56,7 @@ namespace RogueSurvivor
             lock (s_Mutex)
             {
                 // format.
-                string s = String.Format("{0} {1} : {2}", s_Lines.Count, StageToString(stage), text);
+                string s = string.Format("{0} {1} : {2}", s_Lines.Count, StageToString(stage), text);
 
                 // add line.
                 s_Lines.Add(s);

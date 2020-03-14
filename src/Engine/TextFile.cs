@@ -28,7 +28,7 @@ namespace RogueSurvivor.Engine
         {
             try
             {
-                Logger.WriteLine(Logger.Stage.RUN, String.Format("Loading text file {0}...", fileName));
+                Logger.WriteLine(Logger.Stage.RUN, string.Format("Loading text file {0}...", fileName));
                 StreamReader inStream = File.OpenText(fileName);
                 m_RawLines = new List<string>();
                 while (!inStream.EndOfStream)
@@ -38,12 +38,12 @@ namespace RogueSurvivor.Engine
                 }
                 inStream.Close();
 
-                Logger.WriteLine(Logger.Stage.RUN, String.Format("done!", fileName));
+                Logger.WriteLine(Logger.Stage.RUN, string.Format("done!", fileName));
                 return true;
             }
             catch (Exception e)
             {
-                Logger.WriteLine(Logger.Stage.RUN, String.Format("Loading exception: {0}", e.ToString()));
+                Logger.WriteLine(Logger.Stage.RUN, string.Format("Loading exception: {0}", e.ToString()));
                 return false;
             }
         }
@@ -52,14 +52,14 @@ namespace RogueSurvivor.Engine
         {
             try
             {
-                Logger.WriteLine(Logger.Stage.RUN, String.Format("Saving text file {0}...", fileName));
+                Logger.WriteLine(Logger.Stage.RUN, string.Format("Saving text file {0}...", fileName));
                 File.WriteAllLines(fileName, m_RawLines.ToArray());
-                Logger.WriteLine(Logger.Stage.RUN, String.Format("done!", fileName));
+                Logger.WriteLine(Logger.Stage.RUN, string.Format("done!", fileName));
                 return true;
             }
             catch (Exception e)
             {
-                Logger.WriteLine(Logger.Stage.RUN, String.Format("Saving exception: {0}", e.ToString()));
+                Logger.WriteLine(Logger.Stage.RUN, string.Format("Saving exception: {0}", e.ToString()));
                 return false;
             }
         }

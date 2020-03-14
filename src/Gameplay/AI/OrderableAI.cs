@@ -174,7 +174,7 @@ namespace RogueSurvivor.Gameplay.AI
                 Actor nearestEnemy = FilterNearest(game, enemies).Percepted as Actor;
                 if (nearestEnemy == null)
                     throw new InvalidOperationException("null nearest enemy");
-                return new ActionShout(m_Actor, game, String.Format("{0} sighted!!", nearestEnemy.Name));
+                return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", nearestEnemy.Name));
             }
 
             //////////////////////////////
@@ -251,7 +251,7 @@ namespace RogueSurvivor.Gameplay.AI
                 Actor nearestEnemy = FilterNearest(game, enemies).Percepted as Actor;
                 if (nearestEnemy == null)
                     throw new InvalidOperationException("null nearest enemy");
-                return new ActionShout(m_Actor, game, String.Format("{0} sighted!!", nearestEnemy.Name));
+                return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", nearestEnemy.Name));
             }
 
             //////////////////////////////
@@ -366,7 +366,7 @@ namespace RogueSurvivor.Gameplay.AI
                 Actor nearestEnemy = FilterNearest(game, enemies).Percepted as Actor;
                 if (nearestEnemy == null)
                     throw new InvalidOperationException("null nearest enemy");
-                return new ActionShout(m_Actor, game, String.Format("{0} sighted!!", nearestEnemy.Name));
+                return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", nearestEnemy.Name));
             }
 
             //////////////////////
@@ -439,7 +439,7 @@ namespace RogueSurvivor.Gameplay.AI
                 Actor nearestEnemy = FilterNearest(game, enemies).Percepted as Actor;
                 if (nearestEnemy == null)
                     throw new InvalidOperationException("null nearest enemy");
-                return new ActionShout(m_Actor, game, String.Format("{0} sighted!!", nearestEnemy.Name));
+                return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", nearestEnemy.Name));
             }
 
             // try to sleep.
@@ -455,7 +455,7 @@ namespace RogueSurvivor.Gameplay.AI
             else
             {
                 SetOrder(null);
-                game.DoEmote(m_Actor, String.Format("I can't sleep now : {0}.", reason));
+                game.DoEmote(m_Actor, string.Format("I can't sleep now : {0}.", reason));
                 return new ActionWait(m_Actor, game);
             }
         }
@@ -479,7 +479,7 @@ namespace RogueSurvivor.Gameplay.AI
             SetOrder(null);
 
             // do it.
-            string reportTxt = String.Format("I'm in {0} at {1},{2}.", m_Actor.Location.Map.Name, m_Actor.Location.Position.X, m_Actor.Location.Position.Y);
+            string reportTxt = string.Format("I'm in {0} at {1},{2}.", m_Actor.Location.Map.Name, m_Actor.Location.Position.X, m_Actor.Location.Position.Y);
             return new ActionSay(m_Actor, game, m_Actor.Leader, reportTxt, RogueGame.Sayflags.NONE);
         }
 
@@ -498,7 +498,7 @@ namespace RogueSurvivor.Gameplay.AI
                 case RaidType.NATGUARD: raidDesc = "the army coming"; break;
                 case RaidType.SURVIVORS: raidDesc = "honking coming"; break;
                 default:
-                    throw new ArgumentOutOfRangeException(String.Format("unhandled raidtype {0}", raid.ToString()));
+                    throw new ArgumentOutOfRangeException(string.Format("unhandled raidtype {0}", raid.ToString()));
             }
 
             m_LastRaidHeard = new Percept(raidDesc, turn, location);

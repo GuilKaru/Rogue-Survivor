@@ -14,8 +14,8 @@ namespace RogueSurvivor
         {
             Logger.CreateFile();
             Logger.WriteLine(Logger.Stage.INIT, "starting program...");
-            Logger.WriteLine(Logger.Stage.INIT, String.Format("date : {0}.", DateTime.Now.ToString()));
-            Logger.WriteLine(Logger.Stage.INIT, String.Format("game version : {0}.", SetupConfig.GAME_VERSION));
+            Logger.WriteLine(Logger.Stage.INIT, string.Format("date : {0}.", DateTime.Now.ToString()));
+            Logger.WriteLine(Logger.Stage.INIT, string.Format("game version : {0}.", SetupConfig.GAME_VERSION));
 
             Application.CurrentCulture = CultureInfo.InvariantCulture;  // avoids nasty "," vs "." format confusion.
             Application.EnableVisualStyles();

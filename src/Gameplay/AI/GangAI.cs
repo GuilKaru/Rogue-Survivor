@@ -274,7 +274,7 @@ namespace RogueSurvivor.Gameplay.AI
                         if (game.Rules.RollChance(game.Rules.ActorUnsuspicousChance(m_Actor, a)))
                         {
                             // emote.
-                            game.DoEmote(a, String.Format("moves unnoticed by {0}.", m_Actor.Name));
+                            game.DoEmote(a, string.Format("moves unnoticed by {0}.", m_Actor.Name));
                             // unnoticed.
                             return false;
                         }
@@ -304,7 +304,7 @@ namespace RogueSurvivor.Gameplay.AI
                         m_Actor.Activity = Activity.CHASING;
                         m_Actor.TargetActor = victim;
                         return new ActionSay(m_Actor, game, victim,
-                            String.Format("Hey! That's some nice {0} you have here!", wantIt.Model.SingleName), RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER);
+                            string.Format("Hey! That's some nice {0} you have here!", wantIt.Model.SingleName), RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER);
                     }
                 }
             }
@@ -361,13 +361,13 @@ namespace RogueSurvivor.Gameplay.AI
                     if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
                     {
                         if (target.IsSleeping)
-                            game.DoEmote(m_Actor, String.Format("patiently waits for {0} to wake up.", target.Name));
+                            game.DoEmote(m_Actor, string.Format("patiently waits for {0} to wake up.", target.Name));
                         else
                         {
                             if (m_LOSSensor.FOV.Contains(target.Location.Position))
-                                game.DoEmote(m_Actor, String.Format("Hey {0}! Fucking move!", target.Name));
+                                game.DoEmote(m_Actor, string.Format("Hey {0}! Fucking move!", target.Name));
                             else
-                                game.DoEmote(m_Actor, String.Format("Where is that {0} retard?", target.Name));
+                                game.DoEmote(m_Actor, string.Format("Where is that {0} retard?", target.Name));
                         }
                     }
 

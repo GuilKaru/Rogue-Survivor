@@ -595,7 +595,7 @@ namespace RogueSurvivor.Engine
             {
                 // first kill!
                 m_Kills.Add(actorModelID, new KillData(actorModelID, turn));
-                m_Events.Add(new GameEventData(turn, String.Format("Killed first {0}.", Models.Actors[actorModelID].Name)));
+                m_Events.Add(new GameEventData(turn, string.Format("Killed first {0}.", Models.Actors[actorModelID].Name)));
             }
 
             // add to score.
@@ -614,7 +614,7 @@ namespace RogueSurvivor.Engine
 
             // add.
             m_Sightings.Add(actorModelID);
-            m_Events.Add(new GameEventData(turn, String.Format("Sighted first {0}.", Models.Actors[actorModelID].Name)));
+            m_Events.Add(new GameEventData(turn, string.Format("Sighted first {0}.", Models.Actors[actorModelID].Name)));
         }
 
         public bool HasSighted(int actorModelID)

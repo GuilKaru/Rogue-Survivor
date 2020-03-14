@@ -79,7 +79,7 @@ namespace RogueSurvivor.Data
         /// <returns>[A-Z][0-9]</returns>
         public static string CoordToString(int x, int y)
         {
-            return String.Format("{0}{1}", (char)('A' + x), y);
+            return string.Format("{0}{1}", (char)('A' + x), y);
         }
 
         public void OptimizeBeforeSaving()

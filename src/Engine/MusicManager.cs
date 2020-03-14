@@ -66,7 +66,7 @@ namespace RogueSurvivor.Engine
             }
             catch (Exception e)
             {
-                Logger.WriteLine(Logger.Stage.INIT, String.Format("Failed to load music file {0} exception {1}.", filename, e.ToString()));
+                Logger.WriteLine(Logger.Stage.INIT, string.Format("Failed to load music file {0} exception {1}.", filename, e.ToString()));
             }
 
             return true;
@@ -84,7 +84,7 @@ namespace RogueSurvivor.Engine
             Song music;
             if (m_Musics.TryGetValue(musicname, out music))
             {
-                Logger.WriteLine(Logger.Stage.RUN, String.Format("playing music {0}.", musicname));
+                Logger.WriteLine(Logger.Stage.RUN, string.Format("playing music {0}.", musicname));
                 MediaPlayer.Play(music);
                 MediaPlayer.IsRepeating = false;
                 Music = musicname;
@@ -105,7 +105,7 @@ namespace RogueSurvivor.Engine
             Song music;
             if (m_Musics.TryGetValue(musicname, out music))
             {
-                Logger.WriteLine(Logger.Stage.RUN, String.Format("playing looping music {0}.", musicname));
+                Logger.WriteLine(Logger.Stage.RUN, string.Format("playing looping music {0}.", musicname));
                 MediaPlayer.Play(music);
                 MediaPlayer.IsRepeating = true;
                 Music = musicname;

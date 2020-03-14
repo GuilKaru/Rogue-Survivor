@@ -155,7 +155,7 @@ namespace RogueSurvivor.Engine
             catch (Exception e)
             {
                 Logger.WriteLine(Logger.Stage.RUN, "failed to load hiscore table (no hiscores?).");
-                Logger.WriteLine(Logger.Stage.RUN, String.Format("load exception : {0}.", e.ToString()));
+                Logger.WriteLine(Logger.Stage.RUN, string.Format("load exception : {0}.", e.ToString()));
                 return null;
             }
 

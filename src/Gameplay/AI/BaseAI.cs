@@ -28,7 +28,7 @@ namespace RogueSurvivor.Gameplay.AI
 
             public override string ToString()
             {
-                return String.Format("ChoiceEval({0}; {1:F})", (this.Choice == null ? "NULL" : this.Choice.ToString()), this.Value);
+                return string.Format("ChoiceEval({0}; {1:F})", (this.Choice == null ? "NULL" : this.Choice.ToString()), this.Value);
             }
         }
 
@@ -1309,7 +1309,7 @@ namespace RogueSurvivor.Gameplay.AI
 
             // emote?
             if (game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
-                game.DoEmote(m_Actor, String.Format("{0}! Great!", takeIt.AName));
+                game.DoEmote(m_Actor, string.Format("{0}! Great!", takeIt.AName));
 
             // try to move/get one.
             if (position == m_Actor.Location.Position)
@@ -1586,7 +1586,7 @@ namespace RogueSurvivor.Gameplay.AI
                 return new ActionUseItem(m_Actor, game, trap);
 
             // trap ready to setup, do it!
-            game.DoEmote(m_Actor, String.Format("{0} {1}!", reason, trap.AName), true);
+            game.DoEmote(m_Actor, string.Format("{0} {1}!", reason, trap.AName), true);
             return new ActionDropItem(m_Actor, game, trap);
         }
 
@@ -2359,7 +2359,7 @@ namespace RogueSurvivor.Gameplay.AI
 
                 // emote?
                 if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
-                    game.DoEmote(m_Actor, String.Format("{0} {1}!", emotes[0], enemy.Name));
+                    game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[0], enemy.Name));
 
                 // 1. Close door between me and the enemy if he can't open it right after we closed it.
                 if (m_Actor.Model.Abilities.CanUseMapObjects)
@@ -2498,7 +2498,7 @@ namespace RogueSurvivor.Gameplay.AI
                 {
                     // emote?
                     if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_CHARGE_CHANCE))
-                        game.DoEmote(m_Actor, String.Format("{0} {1}!", emotes[2], enemy.Name, true));
+                        game.DoEmote(m_Actor, string.Format("{0} {1}!", emotes[2], enemy.Name, true));
 
                     // chaaarge!
                     m_Actor.Activity = Activity.FIGHTING;
@@ -2538,7 +2538,7 @@ namespace RogueSurvivor.Gameplay.AI
                     continue;
 
                 // friend sleeping, wake up!
-                string shoutText = nearestEnemy == null ? String.Format("Wake up {0}!", other.Name) : String.Format("Wake up {0}! {1} sighted!", other.Name, nearestEnemy.Name);
+                string shoutText = nearestEnemy == null ? string.Format("Wake up {0}!", other.Name) : string.Format("Wake up {0}! {1} sighted!", other.Name, nearestEnemy.Name);
                 return new ActionShout(m_Actor, game, shoutText);
             }
 
@@ -2571,11 +2571,11 @@ namespace RogueSurvivor.Gameplay.AI
             // make message.
             string tellMsg;
             string whereMsg = MakeCentricLocationDirection(game, m_Actor.Location, percept.Location);
-            string timeMsg = String.Format("{0} ago", WorldTime.MakeTimeDurationMessage(m_Actor.Location.Map.LocalTime.TurnCounter - percept.Turn));
+            string timeMsg = string.Format("{0} ago", WorldTime.MakeTimeDurationMessage(m_Actor.Location.Map.LocalTime.TurnCounter - percept.Turn));
             if (percept.Percepted is Actor)
             {
                 Actor who = percept.Percepted as Actor;
-                tellMsg = String.Format("I saw {0} {1} {2}.", who.Name, whereMsg, timeMsg);
+                tellMsg = string.Format("I saw {0} {1} {2}.", who.Name, whereMsg, timeMsg);
             }
             else if (percept.Percepted is Inventory)
             {
@@ -2599,12 +2599,12 @@ namespace RogueSurvivor.Gameplay.AI
                 }
 
                 // do it.
-                tellMsg = String.Format("I saw {0} {1} {2}.", what.AName, whereMsg, timeMsg);
+                tellMsg = string.Format("I saw {0} {1} {2}.", what.AName, whereMsg, timeMsg);
             }
-            else if (percept.Percepted is String)
+            else if (percept.Percepted is string)
             {
-                String raidDesc = percept.Percepted as String;
-                tellMsg = String.Format("I heard {0} {1} {2}!", raidDesc, whereMsg, timeMsg);
+                string raidDesc = percept.Percepted as string;
+                tellMsg = string.Format("I heard {0} {1} {2}!", raidDesc, whereMsg, timeMsg);
             }
             else
                 throw new InvalidOperationException("unhandled percept.Percepted type");
@@ -3236,14 +3236,14 @@ namespace RogueSurvivor.Gameplay.AI
             if (game.Rules.RollChance(game.Rules.ActorUnsuspicousChance(m_Actor, target)))
             {
                 // emote.
-                game.DoEmote(target, String.Format("moves unnoticed by {0}.", m_Actor.Name));
+                game.DoEmote(target, string.Format("moves unnoticed by {0}.", m_Actor.Name));
 
                 // done.
                 return null;
             }
 
             // mmmmhhh. who's that?
-            game.DoEmote(m_Actor, String.Format("takes a closer look at {0}.", target.Name));
+            game.DoEmote(m_Actor, string.Format("takes a closer look at {0}.", target.Name));
 
             // then roll chance to spot and recognize him as murderer.
             int spotChance = game.Rules.ActorSpotMurdererChance(m_Actor, target);
@@ -3255,7 +3255,7 @@ namespace RogueSurvivor.Gameplay.AI
             // make him our enemy and tell him!
             game.DoMakeAggression(m_Actor, target);
             return new ActionSay(m_Actor, game, target,
-                String.Format("HEY! YOU ARE WANTED FOR {0} MURDER{1}!", target.MurdersCounter, target.MurdersCounter > 1 ? "s" : ""), RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER);
+                string.Format("HEY! YOU ARE WANTED FOR {0} MURDER{1}!", target.MurdersCounter, target.MurdersCounter > 1 ? "s" : ""), RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_DANGER);
         }
 
         protected ActorAction BehaviorGoEatFoodOnGround(RogueGame game, List<Percept> stacksPercepts)
@@ -3376,14 +3376,14 @@ namespace RogueSurvivor.Gameplay.AI
             // if not same location, just says the map.
             if (from.Map != to.Map)
             {
-                return String.Format("in {0}", to.Map.Name);
+                return string.Format("in {0}", to.Map.Name);
             }
 
             // same location, says direction.
             Point fromPos = from.Position;
             Point toPos = to.Position;
             Point vDir = new Point(toPos.X - fromPos.X, toPos.Y - fromPos.Y);
-            return String.Format("{0} tiles to the {1}", (int)game.Rules.StdDistance(vDir), Direction.ApproximateFromVector(vDir));
+            return string.Format("{0} tiles to the {1}", (int)game.Rules.StdDistance(vDir), Direction.ApproximateFromVector(vDir));
         }
 
         protected bool IsItemWorthTellingAbout(Item it)

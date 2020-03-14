@@ -85,7 +85,7 @@ namespace RogueSurvivor.Engine
         public void AddLine(CSVLine line)
         {
             if (line.FieldsCount != m_nbFields)
-                throw new ArgumentException(String.Format("line fields count {0} does not match with table fields count {1}", line.FieldsCount, m_nbFields));
+                throw new ArgumentException(string.Format("line fields count {0} does not match with table fields count {1}", line.FieldsCount, m_nbFields));
 
             m_Lines.Add(line);
         }
@@ -216,7 +216,7 @@ namespace RogueSurvivor.Engine
         public string Format(string[] fields)
         {
             if (fields == null)
-                return String.Format("{0}", m_Delimiter);
+                return string.Format("{0}", m_Delimiter);
 
             StringBuilder sb = new StringBuilder();
             foreach (string f in fields)

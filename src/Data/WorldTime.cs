@@ -153,7 +153,7 @@ namespace RogueSurvivor.Data
 
         public override string ToString()
         {
-            return String.Format("day {0} hour {1:D2}", this.Day, this.Hour);
+            return string.Format("day {0} hour {1:D2}", this.Day, this.Hour);
         }
 
         public static string MakeTimeDurationMessage(int turns)

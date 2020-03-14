@@ -182,12 +182,15 @@
     <Compile Include="Engine\Actions\ActionTrade.cs" />
     <Compile Include="Engine\Actions\ActionReviveCorpse.cs" />
     <Compile Include="Engine\GameStates\CreditsState.cs" />
+    <Compile Include="Engine\GameStates\HiScoresState.cs" />
     <Compile Include="Engine\Interfaces\IGame.cs" />
     <Compile Include="Engine\Interfaces\IGameLoader.cs" />
     <Compile Include="Engine\RogueGame.cs" />
     <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\RectangleExtensions.cs" />
     <Compile Include="Extensions\SpriteBatchExtensions.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Extensions\TimeSpanExtensions.cs" />
     <Compile Include="Gameplay\AI\Tools\RouteFinder.cs" />
     <Compile Include="Engine\CSVParser.cs" />
     <Compile Include="Engine\GameHints.cs" />

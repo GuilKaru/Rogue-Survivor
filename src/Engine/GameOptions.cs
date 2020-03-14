@@ -779,23 +779,23 @@ namespace RogueSurvivor.Engine
                 case IDs.GAME_ALLOW_UNDEADS_EVOLUTION:
                     return AllowUndeadsEvolution ? "YES   (default YES)" : "NO    (default YES)";
                 case IDs.GAME_CITY_SIZE:
-                    return String.Format("{0:D2}*   (default {1:D2})", CitySize, GameOptions.DEFAULT_CITY_SIZE);
+                    return string.Format("{0:D2}*   (default {1:D2})", CitySize, GameOptions.DEFAULT_CITY_SIZE);
                 case IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
-                    return String.Format("{0:D3}%  (default {1:D3}%)", DayZeroUndeadsPercent, GameOptions.DEFAULT_DAY_ZERO_UNDEADS_PERCENT);
+                    return string.Format("{0:D3}%  (default {1:D3}%)", DayZeroUndeadsPercent, GameOptions.DEFAULT_DAY_ZERO_UNDEADS_PERCENT);
                 case IDs.GAME_DEATH_SCREENSHOT:
                     return IsDeathScreenshotOn ? "YES   (default YES)" : "NO    (default YES)";
                 case IDs.GAME_DISTRICT_SIZE:
-                    return String.Format("{0:D2}*   (default {1:D2})", DistrictSize, GameOptions.DEFAULT_DISTRICT_SIZE);
+                    return string.Format("{0:D2}*   (default {1:D2})", DistrictSize, GameOptions.DEFAULT_DISTRICT_SIZE);
                 case IDs.GAME_MAX_CIVILIANS:
-                    return String.Format("{0:D3}*  (default {1:D3})", MaxCivilians, GameOptions.DEFAULT_MAX_CIVILIANS);
+                    return string.Format("{0:D3}*  (default {1:D3})", MaxCivilians, GameOptions.DEFAULT_MAX_CIVILIANS);
                 case IDs.GAME_MAX_DOGS:
-                    return String.Format("{0:D3}*  (default {1:D3})", MaxDogs, GameOptions.DEFAULT_MAX_DOGS);
+                    return string.Format("{0:D3}*  (default {1:D3})", MaxDogs, GameOptions.DEFAULT_MAX_DOGS);
                 case IDs.GAME_MAX_REINCARNATIONS:
-                    return String.Format("{0:D3}   (default {1:D3})", MaxReincarnations, GameOptions.DEFAULT_MAX_REINCARNATIONS);
+                    return string.Format("{0:D3}   (default {1:D3})", MaxReincarnations, GameOptions.DEFAULT_MAX_REINCARNATIONS);
                 case IDs.GAME_MAX_UNDEADS:
-                    return String.Format("{0:D3}*  (default {1:D3})", MaxUndeads, GameOptions.DEFAULT_MAX_UNDEADS);
+                    return string.Format("{0:D3}*  (default {1:D3})", MaxUndeads, GameOptions.DEFAULT_MAX_UNDEADS);
                 case IDs.GAME_NATGUARD_FACTOR:
-                    return String.Format("{0:D3}%  (default {1:D3}%)", NatGuardFactor, GameOptions.DEFAULT_NATGUARD_FACTOR);
+                    return string.Format("{0:D3}%  (default {1:D3}%)", NatGuardFactor, GameOptions.DEFAULT_NATGUARD_FACTOR);
                 case IDs.GAME_NPC_CAN_STARVE_TO_DEATH:
                     return NPCCanStarveToDeath ? "YES   (default YES)" : "NO    (default YES)";
                 case IDs.GAME_PERMADEATH:
@@ -817,19 +817,19 @@ namespace RogueSurvivor.Engine
                 case IDs.GAME_SIM_THREAD:
                     return SimThread ? "YES*  (default YES)" : "NO*   (default YES)";
                 case IDs.GAME_SIMULATE_DISTRICTS:
-                    return String.Format("{0,-4}* (default {1})", GameOptions.Name(SimulateDistricts), GameOptions.Name(GameOptions.DEFAULT_SIM_DISTRICTS));
+                    return string.Format("{0,-4}* (default {1})", GameOptions.Name(SimulateDistricts), GameOptions.Name(GameOptions.DEFAULT_SIM_DISTRICTS));
                 case IDs.GAME_SIMULATE_SLEEP:
                     return SimulateWhenSleeping ? "YES*  (default NO)" : "NO*   (default NO)";
                 case IDs.GAME_STARVED_ZOMBIFICATION_CHANCE:
-                    return String.Format("{0:D3}%  (default {1:D3}%)", StarvedZombificationChance, GameOptions.DEFAULT_STARVED_ZOMBIFICATION_CHANCE);
+                    return string.Format("{0:D3}%  (default {1:D3}%)", StarvedZombificationChance, GameOptions.DEFAULT_STARVED_ZOMBIFICATION_CHANCE);
                 case IDs.GAME_SUPPLIESDROP_FACTOR:
-                    return String.Format("{0:D3}%  (default {1:D3}%)", SuppliesDropFactor, GameOptions.DEFAULT_SUPPLIESDROP_FACTOR);
+                    return string.Format("{0:D3}%  (default {1:D3}%)", SuppliesDropFactor, GameOptions.DEFAULT_SUPPLIESDROP_FACTOR);
                 case IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE:
-                    return String.Format("{0:D3}%  (default {1:D3}%)", ZombieInvasionDailyIncrease, GameOptions.DEFAULT_ZOMBIE_INVASION_DAILY_INCREASE);
+                    return string.Format("{0:D3}%  (default {1:D3}%)", ZombieInvasionDailyIncrease, GameOptions.DEFAULT_ZOMBIE_INVASION_DAILY_INCREASE);
                 case IDs.GAME_ZOMBIFICATION_CHANCE:
-                    return String.Format("{0:D3}%  (default {1:D3}%)", ZombificationChance, GameOptions.DEFAULT_ZOMBIFICATION_CHANCE);
+                    return string.Format("{0:D3}%  (default {1:D3}%)", ZombificationChance, GameOptions.DEFAULT_ZOMBIFICATION_CHANCE);
                 case IDs.GAME_UNDEADS_UPGRADE_DAYS:
-                    return String.Format("{0:D3}   (default {1:D3})", GameOptions.Name(ZombifiedsUpgradeDays), GameOptions.Name(GameOptions.DEFAULT_ZOMBIFIEDS_UPGRADE_DAYS));
+                    return string.Format("{0:D3}   (default {1:D3})", GameOptions.Name(ZombifiedsUpgradeDays), GameOptions.Name(GameOptions.DEFAULT_ZOMBIFIEDS_UPGRADE_DAYS));
                 case IDs.UI_ADVISOR:
                     return IsAdvisorEnabled ? "YES" : "NO ";
                 case IDs.UI_ANIM_DELAY:
@@ -849,7 +849,7 @@ namespace RogueSurvivor.Engine
                 case IDs.UI_SHOW_TARGETS:
                     return ShowTargets ? "ON    (default ON)" : "OFF   (default ON)";
                 case IDs.GAME_AUTOSAVE_PERIOD:
-                    return String.Format("{0,-4}  (default {1}h)",
+                    return string.Format("{0,-4}  (default {1}h)",
                         m_AutoSavePeriodInHours == 0 ? "OFF" : m_AutoSavePeriodInHours.ToString() + "h",
                         GameOptions.DEFAULT_AUTOSAVE_PERIOD);
                 default:
@@ -897,7 +897,7 @@ namespace RogueSurvivor.Engine
             catch (Exception e)
             {
                 Logger.WriteLine(Logger.Stage.RUN, "failed to load options (no custom options?).");
-                Logger.WriteLine(Logger.Stage.RUN, String.Format("load exception : {0}.", e.ToString()));
+                Logger.WriteLine(Logger.Stage.RUN, string.Format("load exception : {0}.", e.ToString()));
                 Logger.WriteLine(Logger.Stage.RUN, "returning default values.");
                 options = new GameOptions();
                 options.ResetToDefaultValues();
