@@ -1187,86 +1187,6 @@ namespace RogueSurvivor.Engine
             return true;
         }
 
-        bool HandleNewCharacterSkill(DiceRoller roller, out Skills.IDs skID)
-        {
-            /////////////////////////////
-            // Make table of all skills.
-            /////////////////////////////
-            Skills.IDs[] allSkills = new Skills.IDs[(int)Skills.IDs._LAST_LIVING + 1];
-            string[] menuEntries = new string[allSkills.Length + 1];
-            string[] skillDesc = new string[allSkills.Length + 1];
-            menuEntries[0] = "*Random*";
-            skillDesc[0] = "(picks a skill at random for you)";
-            for (int i = (int)Skills.IDs._FIRST_LIVING; i < (int)Skills.IDs._LAST_LIVING + 1; i++)
-            {
-                allSkills[i] = (Skills.IDs)i;
-                menuEntries[i + 1] = Skills.Name(allSkills[i]);
-                skillDesc[i + 1] = string.Format("{0} max - {1}", Skills.MaxSkillLevel(i), DescribeSkillShort(allSkills[i]));
-            }
-
-            //////////////////////////
-            // Loop until choice done
-            //////////////////////////
-            skID = Skills.IDs._FIRST;
-            bool loop = true;
-            bool choiceDone = false;
-            int selected = 0;
-            do
-            {
-                // display.
-                m_UI.Clear(Color.Black);
-                int gx, gy;
-                gx = gy = 0;
-                /*m_UI.DrawStringBold(Color.Yellow, string.Format("[{0}] New {1} Character - Choose Starting Skill",
-                    Session.DescGameMode(m_Session.GameMode),
-                    m_CharGen.IsMale ? "Male" : "Female"), gx, gy);*/
-                gy += 2 * Ui.BOLD_LINE_SPACING;
-                m_UI.DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGray, skillDesc, gx, ref gy);
-                m_UI.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
-                m_UI.UI_Repaint();
-
-                // get menu action.
-                Key key = m_UI.ReadKey();
-                switch (key)
-                {
-                    case Key.Up:       // move up
-                        if (selected > 0) --selected;
-                        else selected = menuEntries.Length - 1;
-                        break;
-                    case Key.Down:     // move down
-                        selected = (selected + 1) % menuEntries.Length;
-                        break;
-
-                    case Key.Escape:
-                        choiceDone = false;
-                        loop = false;
-                        break;
-
-                    case Key.Enter:    // validate
-                        if (selected == 0) // random
-                            skID = Skills.RollLiving(roller);
-                        else
-                            skID = (Skills.IDs)(selected - 1 + (int)Skills.IDs._FIRST);
-
-                        gy += Ui.BOLD_LINE_SPACING;
-                        m_UI.DrawStringBold(Color.White, string.Format("Skill : {0}.", Skills.Name(skID)), gx, gy);
-                        gy += Ui.BOLD_LINE_SPACING;
-                        m_UI.DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy);
-                        m_UI.UI_Repaint();
-                        if (WaitYesOrNo())
-                        {
-                            choiceDone = true;
-                            loop = false;
-                        }
-                        break;
-                }
-            }
-            while (loop);
-
-            // done.
-            return choiceDone;
-        }
-
         void LoadManual()
         {
             m_Manual = new TextFile();
@@ -11035,75 +10955,6 @@ namespace RogueSurvivor.Engine
                 return string.Format("Batteries : {0} MAX ({1}h)", batteries, hours);
         }
 
-        string DescribeSkillShort(Skills.IDs id)
-        {
-            switch (id)
-            {
-                case Skills.IDs.AGILE:
-                    return string.Format("+{0} melee ATK, +{1} DEF", Rules.SKILL_AGILE_ATK_BONUS, Rules.SKILL_AGILE_DEF_BONUS);
-                case Skills.IDs.AWAKE:
-                    return string.Format("+{0}% max SLP, +{1}% SLP regen ", (int)(100 * Rules.SKILL_AWAKE_SLEEP_BONUS), (int)(100 * Rules.SKILL_AWAKE_SLEEP_REGEN_BONUS));
-                case Skills.IDs.BOWS:
-                    return string.Format("bows +{0} ATK, +{1} DMG", Rules.SKILL_BOWS_ATK_BONUS, Rules.SKILL_BOWS_DMG_BONUS);
-                case Skills.IDs.CARPENTRY:
-                    return string.Format("build, -{0} mat. at lvl 3, +{1}% barricading", Rules.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS, (int)(100 * Rules.SKILL_CARPENTRY_BARRICADING_BONUS));
-                case Skills.IDs.CHARISMATIC:
-                    return string.Format("+{0} trust per turn, +{1}% trade rolls, steal followers", Rules.SKILL_CHARISMATIC_TRUST_BONUS, Rules.SKILL_CHARISMATIC_TRADE_BONUS);  // alpha10.1 steal followers
-                case Skills.IDs.FIREARMS:
-                    return string.Format("firearms +{0} ATK, +{1} DMG", Rules.SKILL_FIREARMS_ATK_BONUS, Rules.SKILL_FIREARMS_DMG_BONUS);
-                case Skills.IDs.HARDY:
-                    return string.Format("sleeping anywhere heals, +{0}% chance to heal when sleeping", Rules.SKILL_HARDY_HEAL_CHANCE_BONUS);
-                case Skills.IDs.HAULER:
-                    return string.Format("+{0} inventory slots", Rules.SKILL_HAULER_INV_BONUS);
-                case Skills.IDs.HIGH_STAMINA:
-                    return string.Format("+{0} STA", Rules.SKILL_HIGH_STAMINA_STA_BONUS);
-                case Skills.IDs.LEADERSHIP:
-                    return string.Format("+{0} max Followers", Rules.SKILL_LEADERSHIP_FOLLOWER_BONUS);
-                case Skills.IDs.LIGHT_EATER:
-                    return string.Format("+{0}% max FOO, +{1}% items food points", (int)(100 * Rules.SKILL_LIGHT_EATER_MAXFOOD_BONUS), (int)(100 * Rules.SKILL_LIGHT_EATER_FOOD_BONUS));
-                case Skills.IDs.LIGHT_FEET:
-                    return string.Format("+{0}% to avoid and escape traps", Rules.SKILL_LIGHT_FEET_TRAP_BONUS);
-                case Skills.IDs.LIGHT_SLEEPER:
-                    return string.Format("+{0}% noise wake up chance", Rules.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS);
-                case Skills.IDs.MARTIAL_ARTS:
-                    return string.Format("unarmed only +{0} ATK, +{1} DMG, +{2}% disarm", Rules.SKILL_MARTIAL_ARTS_ATK_BONUS, Rules.SKILL_MARTIAL_ARTS_DMG_BONUS, Rules.SKILL_MARTIAL_ARTS_DISARM_BONUS);
-                case Skills.IDs.MEDIC:
-                    return string.Format("+{0}% medicine items effects, +{1}% revive ", (int)(100 * Rules.SKILL_MEDIC_BONUS), Rules.SKILL_MEDIC_REVIVE_BONUS);
-                case Skills.IDs.NECROLOGY:
-                    return string.Format("+{0}/+{1} DMG vs undeads/corpses, data on corpses", Rules.SKILL_NECROLOGY_UNDEAD_BONUS, Rules.SKILL_NECROLOGY_CORPSE_BONUS);
-                case Skills.IDs.STRONG:
-                    return string.Format("+{0} melee DMG, +{1}% resist disarming, +{2} throw range", Rules.SKILL_STRONG_DMG_BONUS, Rules.SKILL_STRONG_RESIST_DISARM_BONUS, Rules.SKILL_STRONG_THROW_BONUS);
-                case Skills.IDs.STRONG_PSYCHE:
-                    return string.Format("+{0}% SAN threshold", (int)(100 * Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS));
-                case Skills.IDs.TOUGH:
-                    return string.Format("+{0} HP", Rules.SKILL_TOUGH_HP_BONUS);
-                case Skills.IDs.UNSUSPICIOUS:
-                    return string.Format("+{0}% unnoticed by law enforcers and gangs", Rules.SKILL_UNSUSPICIOUS_BONUS);
-
-                case Skills.IDs.Z_AGILE:
-                    return string.Format("+{0} melee ATK, +{1} DEF, can jump", Rules.SKILL_ZAGILE_ATK_BONUS, Rules.SKILL_ZAGILE_DEF_BONUS);
-                case Skills.IDs.Z_EATER:
-                    return string.Format("+{0}% eating HP regen", (int)(100 * Rules.SKILL_ZEATER_REGEN_BONUS));
-                case Skills.IDs.Z_GRAB:
-                    return string.Format("can grab enemies, +{0}% per level", Rules.SKILL_ZGRAB_CHANCE);
-                case Skills.IDs.Z_INFECTOR:
-                    return string.Format("+{0}% infection damage", (int)(100 * Rules.SKILL_ZINFECTOR_BONUS));
-                case Skills.IDs.Z_LIGHT_EATER:
-                    return string.Format("+{0}% max ROT, +{1}% from eating", (int)(100 * Rules.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS), (int)(100 * Rules.SKILL_ZLIGHT_EATER_FOOD_BONUS));
-                case Skills.IDs.Z_LIGHT_FEET:
-                    return string.Format("+{0}% to avoid traps", Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS);
-                case Skills.IDs.Z_STRONG:
-                    return string.Format("+{0} melee DMG, can push", Rules.SKILL_ZSTRONG_DMG_BONUS);
-                case Skills.IDs.Z_TOUGH:
-                    return string.Format("+{0} HP", Rules.SKILL_ZTOUGH_HP_BONUS);
-                case Skills.IDs.Z_TRACKER:
-                    return string.Format("+{0}% smell", (int)(100 * Rules.SKILL_ZTRACKER_SMELL_BONUS));
-
-                default:
-                    throw new ArgumentOutOfRangeException("unhandled skill id");
-            }
-        }
-
         string DescribeDayPhase(DayPhase phase)
         {
             switch (phase)
@@ -15740,7 +15591,7 @@ namespace RogueSurvivor.Engine
                         AddMessage(new Message(text, m_Session.WorldTime.TurnCounter, Color.LightGreen));
 
                         popupLines.Add(text);
-                        popupLines.Add("    " + DescribeSkillShort(sk));
+                        popupLines.Add("    " + Skills.DescribeSkillShort(sk));
                         popupLines.Add(" ");
                     }
 

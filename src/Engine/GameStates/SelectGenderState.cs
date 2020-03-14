@@ -110,6 +110,7 @@ namespace RogueSurvivor.Engine.GameStates
         {
             game.Session.charGen.IsMale = male;
             game.PopState();
+            game.PushState<SelectSkillState>();
         }
     }
 }

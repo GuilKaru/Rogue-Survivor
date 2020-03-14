@@ -176,6 +176,75 @@ namespace RogueSurvivor.Gameplay
             return (IDs)roller.Roll((int)IDs._FIRST_LIVING, (int)IDs._LAST_LIVING + 1);
         }
 
+        public static string DescribeSkillShort(IDs id)
+        {
+            switch (id)
+            {
+                case IDs.AGILE:
+                    return string.Format("+{0} melee ATK, +{1} DEF", Rules.SKILL_AGILE_ATK_BONUS, Rules.SKILL_AGILE_DEF_BONUS);
+                case IDs.AWAKE:
+                    return string.Format("+{0}% max SLP, +{1}% SLP regen ", (int)(100 * Rules.SKILL_AWAKE_SLEEP_BONUS), (int)(100 * Rules.SKILL_AWAKE_SLEEP_REGEN_BONUS));
+                case IDs.BOWS:
+                    return string.Format("bows +{0} ATK, +{1} DMG", Rules.SKILL_BOWS_ATK_BONUS, Rules.SKILL_BOWS_DMG_BONUS);
+                case IDs.CARPENTRY:
+                    return string.Format("build, -{0} mat. at lvl 3, +{1}% barricading", Rules.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS, (int)(100 * Rules.SKILL_CARPENTRY_BARRICADING_BONUS));
+                case IDs.CHARISMATIC:
+                    return string.Format("+{0} trust per turn, +{1}% trade rolls, steal followers", Rules.SKILL_CHARISMATIC_TRUST_BONUS, Rules.SKILL_CHARISMATIC_TRADE_BONUS);  // alpha10.1 steal followers
+                case IDs.FIREARMS:
+                    return string.Format("firearms +{0} ATK, +{1} DMG", Rules.SKILL_FIREARMS_ATK_BONUS, Rules.SKILL_FIREARMS_DMG_BONUS);
+                case IDs.HARDY:
+                    return string.Format("sleeping anywhere heals, +{0}% chance to heal when sleeping", Rules.SKILL_HARDY_HEAL_CHANCE_BONUS);
+                case IDs.HAULER:
+                    return string.Format("+{0} inventory slots", Rules.SKILL_HAULER_INV_BONUS);
+                case IDs.HIGH_STAMINA:
+                    return string.Format("+{0} STA", Rules.SKILL_HIGH_STAMINA_STA_BONUS);
+                case IDs.LEADERSHIP:
+                    return string.Format("+{0} max Followers", Rules.SKILL_LEADERSHIP_FOLLOWER_BONUS);
+                case IDs.LIGHT_EATER:
+                    return string.Format("+{0}% max FOO, +{1}% items food points", (int)(100 * Rules.SKILL_LIGHT_EATER_MAXFOOD_BONUS), (int)(100 * Rules.SKILL_LIGHT_EATER_FOOD_BONUS));
+                case IDs.LIGHT_FEET:
+                    return string.Format("+{0}% to avoid and escape traps", Rules.SKILL_LIGHT_FEET_TRAP_BONUS);
+                case IDs.LIGHT_SLEEPER:
+                    return string.Format("+{0}% noise wake up chance", Rules.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS);
+                case IDs.MARTIAL_ARTS:
+                    return string.Format("unarmed only +{0} ATK, +{1} DMG, +{2}% disarm", Rules.SKILL_MARTIAL_ARTS_ATK_BONUS, Rules.SKILL_MARTIAL_ARTS_DMG_BONUS, Rules.SKILL_MARTIAL_ARTS_DISARM_BONUS);
+                case IDs.MEDIC:
+                    return string.Format("+{0}% medicine items effects, +{1}% revive ", (int)(100 * Rules.SKILL_MEDIC_BONUS), Rules.SKILL_MEDIC_REVIVE_BONUS);
+                case IDs.NECROLOGY:
+                    return string.Format("+{0}/+{1} DMG vs undeads/corpses, data on corpses", Rules.SKILL_NECROLOGY_UNDEAD_BONUS, Rules.SKILL_NECROLOGY_CORPSE_BONUS);
+                case IDs.STRONG:
+                    return string.Format("+{0} melee DMG, +{1}% resist disarming, +{2} throw range", Rules.SKILL_STRONG_DMG_BONUS, Rules.SKILL_STRONG_RESIST_DISARM_BONUS, Rules.SKILL_STRONG_THROW_BONUS);
+                case IDs.STRONG_PSYCHE:
+                    return string.Format("+{0}% SAN threshold", (int)(100 * Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS));
+                case IDs.TOUGH:
+                    return string.Format("+{0} HP", Rules.SKILL_TOUGH_HP_BONUS);
+                case IDs.UNSUSPICIOUS:
+                    return string.Format("+{0}% unnoticed by law enforcers and gangs", Rules.SKILL_UNSUSPICIOUS_BONUS);
+
+                case IDs.Z_AGILE:
+                    return string.Format("+{0} melee ATK, +{1} DEF, can jump", Rules.SKILL_ZAGILE_ATK_BONUS, Rules.SKILL_ZAGILE_DEF_BONUS);
+                case IDs.Z_EATER:
+                    return string.Format("+{0}% eating HP regen", (int)(100 * Rules.SKILL_ZEATER_REGEN_BONUS));
+                case IDs.Z_GRAB:
+                    return string.Format("can grab enemies, +{0}% per level", Rules.SKILL_ZGRAB_CHANCE);
+                case IDs.Z_INFECTOR:
+                    return string.Format("+{0}% infection damage", (int)(100 * Rules.SKILL_ZINFECTOR_BONUS));
+                case IDs.Z_LIGHT_EATER:
+                    return string.Format("+{0}% max ROT, +{1}% from eating", (int)(100 * Rules.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS), (int)(100 * Rules.SKILL_ZLIGHT_EATER_FOOD_BONUS));
+                case IDs.Z_LIGHT_FEET:
+                    return string.Format("+{0}% to avoid traps", Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS);
+                case IDs.Z_STRONG:
+                    return string.Format("+{0} melee DMG, can push", Rules.SKILL_ZSTRONG_DMG_BONUS);
+                case IDs.Z_TOUGH:
+                    return string.Format("+{0} HP", Rules.SKILL_ZTOUGH_HP_BONUS);
+                case IDs.Z_TRACKER:
+                    return string.Format("+{0}% smell", (int)(100 * Rules.SKILL_ZTRACKER_SMELL_BONUS));
+
+                default:
+                    throw new ArgumentOutOfRangeException("unhandled skill id");
+            }
+        }
+
         public static IDs RollUndead(DiceRoller roller)
         {
             return (IDs)roller.Roll((int)IDs._FIRST_UNDEAD, (int)IDs._LAST_UNDEAD + 1);
