@@ -116,8 +116,7 @@ namespace RogueSurvivor.Engine.GameStates
                             break;
 
                         case 3:
-                            //HandleOptions(false);
-                            //ApplyOptions(false);
+                            game.PushState<OptionsState>();
                             break;
 
                         case 4:

@@ -857,7 +857,7 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        public static void Save(GameOptions options, string filepath)
+        public void Save(string filepath)
         {
             if (filepath == null)
                 throw new ArgumentNullException("filepath");
@@ -867,7 +867,7 @@ namespace RogueSurvivor.Engine
             IFormatter formatter = CreateFormatter();
             Stream stream = CreateStream(filepath, true);
 
-            formatter.Serialize(stream, options);
+            formatter.Serialize(stream, this);
             stream.Flush();
             stream.Close();
 

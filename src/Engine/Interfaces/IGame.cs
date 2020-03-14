@@ -10,11 +10,13 @@ namespace RogueSurvivor.Engine.Interfaces
         GameHintsStatus Hints { get; }
         Keybindings KeyBindings { get; }
         TextFile Manual { get; }
+        ref GameOptions Options { get; }
         Session Session { get; }
 
         string SaveFilePath { get; }
         string HiScoreTextFilePath { get; }
         string KeyBindingsPath { get; }
+        string UserOptionsFilePath { get; }
 
         void Init(IGameLoader gameLoader);
         void Draw();
