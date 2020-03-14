@@ -610,7 +610,6 @@ namespace RogueSurvivor.Engine
         CharGen m_CharGen;
 
         TextFile m_Manual;
-        int m_ManualLine;
 
         GameFactions m_GameFactions;
         GameActors m_GameActors;
@@ -756,6 +755,7 @@ namespace RogueSurvivor.Engine
 
         public HiScoreTable HiScoreTable => m_HiScoreTable;
         public GameHintsStatus Hints => s_Hints;
+        public TextFile Manual => m_Manual;
 
         public string SaveFilePath => GetUserSave();
         public string HiScoreTextFilePath => GetUserHiScoreTextFilePath();
@@ -1127,9 +1127,6 @@ namespace RogueSurvivor.Engine
 
         void Tick()
         {
-            // main menu.
-            UpdateMainMenu();
-
             // play until player dies or quits.
             while (m_Player != null && !m_Player.IsDead && m_IsGameRunning)
             {
@@ -1182,38 +1179,6 @@ namespace RogueSurvivor.Engine
             });
 
             loader.CategoryEnd();
-        }
-
-        void UpdateMainMenu()
-        {
-            bool loop = true;
-            bool isLoadEnabled = File.Exists(GetUserSave());
-
-            string[] menuEntries = new string[] {
-                "New Game",                                     // 0 
-                isLoadEnabled ?  "Load Game" : "(Load Game)",   // 1
-                "Redefine keys",                                // 2
-                "Options",                                      // 3
-                "Game Manual",                                  // 4
-                "All Hints",                                    // 5
-                "Hi Scores",                                    // 6
-                "Credits",                                      // 7
-                "Quit Game" };                                  // 8
-            int selected = 0;
-            do
-            {
-                // music.
-
-
-
-
-
-                // repaint.
-                m_UI.UI_Repaint();
-
-
-            }
-            while (loop);
         }
 
         bool HandleNewCharacter()
@@ -1836,7 +1801,6 @@ namespace RogueSurvivor.Engine
         void LoadManual()
         {
             m_Manual = new TextFile();
-            m_ManualLine = 0;
             if (m_Manual.Load(GetUserManualFilePath()))
                 m_Manual.FormatLines(Ui.TEXTFILE_CHARS_PER_LINE);
             else
@@ -5046,11 +5010,13 @@ namespace RogueSurvivor.Engine
                                 break;
 
                             case PlayerCommand.HELP_MODE:
-                                HandleHelpMode();
+                                //HandleHelpMode();
+                                // !FIXME
                                 break;
 
                             case PlayerCommand.HINTS_SCREEN_MODE:
-                                HandleHintsScreen();
+                                //HandleHintsScreen();
+                                // !FIXME
                                 break;
 
                             case PlayerCommand.ADVISOR:
@@ -5577,123 +5543,6 @@ namespace RogueSurvivor.Engine
                 return shotname;
             else
                 return null;
-        }
-
-        void HandleHelpMode()
-        {
-            if (m_Manual == null)
-            {
-                m_UI.Clear(Color.Black);
-                int gy = 0;
-                m_UI.DrawStringBold(Color.Red, "Game manual not available ingame.", 0, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-                m_UI.DrawFootnote(Color.White, "press ENTER");
-                m_UI.UI_Repaint();
-                WaitEnter();
-                return;
-            }
-
-            bool loop = true;
-            List<string> lines = m_Manual.FormatedLines;
-            do
-            {
-                // draw header.
-                m_UI.Clear(Color.Black);
-                int gy = 0;
-                m_UI.DrawHeader();
-                gy += Ui.BOLD_LINE_SPACING;
-                m_UI.DrawStringBold(Color.Yellow, "Game Manual", 0, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-                m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-
-                // draw manual.
-                int iLine = m_ManualLine;
-                do
-                {
-                    // ignore commands
-                    bool ignore = (lines[iLine] == "<SECTION>");
-
-                    if (!ignore)
-                    {
-                        m_UI.DrawStringBold(Color.LightGray, lines[iLine], 0, gy);
-                        gy += Ui.BOLD_LINE_SPACING;
-                    }
-                    ++iLine;
-                }
-                while (iLine < lines.Count && gy < Ui.CANVAS_HEIGHT - 2 * Ui.BOLD_LINE_SPACING);
-
-                // draw foot.
-                m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-                m_UI.DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, numbers to jump to section, ESC to leave");
-
-                m_UI.UI_Repaint();
-
-                // get command.
-                Key key = m_UI.ReadKey();
-                int choice = KeyToChoiceNumber(key);
-
-                if (choice >= 0)
-                {
-                    if (choice == 0)
-                    {
-                        m_ManualLine = 0;
-                    }
-                    else
-                    {
-                        // jump to Nth section.
-                        int prevLine = m_ManualLine;
-                        int sectionCount = 0;
-                        m_ManualLine = 0;
-                        while (sectionCount < choice && m_ManualLine < lines.Count)
-                        {
-                            if (lines[m_ManualLine] == "<SECTION>")
-                            {
-                                ++sectionCount;
-                            }
-                            ++m_ManualLine;
-                        }
-
-                        // if section not found, don't move.
-                        if (m_ManualLine >= lines.Count)
-                        {
-                            m_ManualLine = prevLine;
-                        }
-                    }
-                }
-                else
-                {
-                    switch (key)
-                    {
-                        case Key.Escape:
-                            loop = false;
-                            break;
-
-                        case Key.Up:
-                            --m_ManualLine;
-                            break;
-                        case Key.Down:
-                            ++m_ManualLine;
-                            break;
-                        case Key.PageUp:
-                            m_ManualLine -= Ui.TEXTFILE_LINES_PER_PAGE;
-                            break;
-                        case Key.PageDown:
-                            m_ManualLine += Ui.TEXTFILE_LINES_PER_PAGE;
-                            break;
-                    }
-                }
-
-                if (m_ManualLine < 0) m_ManualLine = 0;
-                if (m_ManualLine + Ui.TEXTFILE_LINES_PER_PAGE >= lines.Count) m_ManualLine = Math.Max(0, lines.Count - Ui.TEXTFILE_LINES_PER_PAGE);
-            }
-            while (loop);
-        }
-
-        void HandleHintsScreen()
-        {
-            
         }
 
         void HandleMessageLog()
@@ -6884,7 +6733,7 @@ namespace RogueSurvivor.Engine
                     }
                     else
                     {
-                        int slot = KeyToChoiceNumber(inKey);
+                        int slot = inKey.ToChoiceNumber();
                         if (slot != -1) // select an item
                         {
                             if (slot == 0) slot = 9;
@@ -8672,7 +8521,7 @@ namespace RogueSurvivor.Engine
 
                 // 2. Get input.
                 Key key = m_UI.ReadKey();
-                int choice = KeyToChoiceNumber(key);
+                int choice = key.ToChoiceNumber();
 
                 // 3. Handle input
                 if (key == Key.Escape)
@@ -8743,7 +8592,7 @@ namespace RogueSurvivor.Engine
 
                 // 2. Get input.
                 Key key = m_UI.ReadKey();
-                int choice = KeyToChoiceNumber(key);
+                int choice = key.ToChoiceNumber();
 
                 // 3. Handle input
                 if (key == Key.Escape)
@@ -8842,7 +8691,7 @@ namespace RogueSurvivor.Engine
 
                 // 2. Get input.
                 Key key = m_UI.ReadKey();
-                int choice = KeyToChoiceNumber(key);
+                int choice = key.ToChoiceNumber();
 
                 // 3. Handle input
                 if (key == Key.Escape)
@@ -9482,7 +9331,7 @@ namespace RogueSurvivor.Engine
 
                 // 2. Get input.
                 Key key = m_UI.ReadKey();
-                int choice = KeyToChoiceNumber(key);
+                int choice = key.ToChoiceNumber();
 
                 // 3. Handle input
                 if (key == Key.Escape)
@@ -10566,60 +10415,6 @@ namespace RogueSurvivor.Engine
                 Key inKey = m_UI.ReadKey();
                 if (inKey == Key.Escape)
                     return;
-            }
-        }
-
-        /// <summary>
-        /// -1 if no choice.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        int KeyToChoiceNumber(Key key)
-        {
-            switch (key)
-            {
-                case Key.NumPad0:
-                case Key.D0:
-                    return 0;
-
-                case Key.NumPad1:
-                case Key.D1:
-                    return 1;
-
-                case Key.NumPad2:
-                case Key.D2:
-                    return 2;
-
-                case Key.NumPad3:
-                case Key.D3:
-                    return 3;
-
-                case Key.NumPad4:
-                case Key.D4:
-                    return 4;
-
-                case Key.NumPad5:
-                case Key.D5:
-                    return 5;
-
-                case Key.NumPad6:
-                case Key.D6:
-                    return 6;
-
-                case Key.NumPad7:
-                case Key.D7:
-                    return 7;
-
-                case Key.NumPad8:
-                case Key.D8:
-                    return 8;
-
-                case Key.NumPad9:
-                case Key.D9:
-                    return 9;
-
-                default:
-                    return -1;
             }
         }
 
@@ -16512,7 +16307,7 @@ namespace RogueSurvivor.Engine
                 else
                 {
                     // get choice.
-                    int choice = KeyToChoiceNumber(inKey);
+                    int choice = inKey.ToChoiceNumber();
 
                     if (choice >= 1 && choice <= upgradeChoices.Count)
                     {

@@ -119,7 +119,7 @@ namespace RogueSurvivor.Engine.GameStates
                             break;
 
                         case 4:
-                            //HandleHelpMode();
+                            game.PushState<HelpState>();
                             break;
 
                         case 5:

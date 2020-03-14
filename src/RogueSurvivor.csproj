@@ -182,6 +182,7 @@
     <Compile Include="Engine\Actions\ActionTrade.cs" />
     <Compile Include="Engine\Actions\ActionReviveCorpse.cs" />
     <Compile Include="Engine\GameStates\CreditsState.cs" />
+    <Compile Include="Engine\GameStates\HelpState.cs" />
     <Compile Include="Engine\GameStates\HintsState.cs" />
     <Compile Include="Engine\GameStates\HiScoresState.cs" />
     <Compile Include="Engine\Interfaces\IGame.cs" />

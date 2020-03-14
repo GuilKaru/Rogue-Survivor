@@ -6,6 +6,7 @@ namespace RogueSurvivor.Engine.Interfaces
     {
         HiScoreTable HiScoreTable { get; }
         GameHintsStatus Hints { get; }
+        TextFile Manual { get; }
 
         string SaveFilePath { get; }
         string HiScoreTextFilePath { get; }
