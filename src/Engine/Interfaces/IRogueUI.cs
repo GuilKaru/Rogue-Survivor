@@ -3,12 +3,19 @@ using System.Drawing;
 
 namespace RogueSurvivor.Engine.Interfaces
 {
+    /// <summary>
+    /// UI constants
+    /// </summary>
     class Ui
     {
         public const int CANVAS_WIDTH = 1024;
         public const int CANVAS_HEIGHT = 768;
+
         public const int LINE_SPACING = 12;
         public const int BOLD_LINE_SPACING = 14;
+
+        public const int TEXTFILE_CHARS_PER_LINE = 120;
+        public const int TEXTFILE_LINES_PER_PAGE = 50;
     }
 
     /// <summary>

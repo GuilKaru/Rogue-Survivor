@@ -49,7 +49,7 @@ namespace RogueSurvivor.Engine.GameStates
             ui.DrawFootnote(Color.White, "ESC to leave");
         }
 
-        public override void Update()
+        public override void Update(double dt)
         {
             Key key = ui.ReadKey();
             if (key == Key.Escape)

@@ -49,7 +49,7 @@ namespace RogueSurvivor.Engine.GameStates
             }
         }
 
-        public override void Update()
+        public override void Update(double dt)
         {
             if (Process())
                 game.SetState<MainMenuState>(dispose: true);

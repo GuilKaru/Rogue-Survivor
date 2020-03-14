@@ -70,7 +70,7 @@ namespace RogueSurvivor.Engine.GameStates
             // !FIXME
         }
 
-        public override void Update()
+        public override void Update(double dt)
         {
             // get menu action.
             Key key = ui.ReadKey();
@@ -123,7 +123,7 @@ namespace RogueSurvivor.Engine.GameStates
                             break;
 
                         case 5:
-                            //HandleHintsScreen();
+                            game.PushState<HintsState>();
                             break;
 
                         case 6:

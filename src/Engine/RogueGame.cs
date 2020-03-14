@@ -122,9 +122,6 @@ namespace RogueSurvivor.Engine
         readonly Color NIGHT_COLOR = Color.Cyan;
         readonly Color DAY_COLOR = Color.Gold;
 
-        const int TEXTFILE_CHARS_PER_LINE = 120;
-        const int TEXTFILE_LINES_PER_PAGE = 50;
-
         public const string NAME_SUBWAY_STATION = "Subway Station";
         public const string NAME_SEWERS_MAINTENANCE = "Sewers Maintenance";
         public const string NAME_SUBWAY_RAILS = "rails";
@@ -704,14 +701,14 @@ namespace RogueSurvivor.Engine
             CurrentState.Draw();
         }
 
-        public bool Update()
+        public bool Update(double dt)
         {
             // Toggle fullscreen mode
             Key key = m_UI.ReadKey();
             if (key == (Key.Enter | Key.Alt))
                 m_UI.ToggleFullscreen();
 
-            CurrentState.Update();
+            CurrentState.Update(dt);
 
             return m_IsGameRunning;
         }
@@ -758,6 +755,8 @@ namespace RogueSurvivor.Engine
         }
 
         public HiScoreTable HiScoreTable => m_HiScoreTable;
+        public GameHintsStatus Hints => s_Hints;
+
         public string SaveFilePath => GetUserSave();
         public string HiScoreTextFilePath => GetUserHiScoreTextFilePath();
 
@@ -1839,7 +1838,7 @@ namespace RogueSurvivor.Engine
             m_Manual = new TextFile();
             m_ManualLine = 0;
             if (m_Manual.Load(GetUserManualFilePath()))
-                m_Manual.FormatLines(TEXTFILE_CHARS_PER_LINE);
+                m_Manual.FormatLines(Ui.TEXTFILE_CHARS_PER_LINE);
             else
                 m_Manual = null;
         }
@@ -5678,122 +5677,23 @@ namespace RogueSurvivor.Engine
                             ++m_ManualLine;
                             break;
                         case Key.PageUp:
-                            m_ManualLine -= TEXTFILE_LINES_PER_PAGE;
+                            m_ManualLine -= Ui.TEXTFILE_LINES_PER_PAGE;
                             break;
                         case Key.PageDown:
-                            m_ManualLine += TEXTFILE_LINES_PER_PAGE;
+                            m_ManualLine += Ui.TEXTFILE_LINES_PER_PAGE;
                             break;
                     }
                 }
 
                 if (m_ManualLine < 0) m_ManualLine = 0;
-                if (m_ManualLine + TEXTFILE_LINES_PER_PAGE >= lines.Count) m_ManualLine = Math.Max(0, lines.Count - TEXTFILE_LINES_PER_PAGE);
+                if (m_ManualLine + Ui.TEXTFILE_LINES_PER_PAGE >= lines.Count) m_ManualLine = Math.Max(0, lines.Count - Ui.TEXTFILE_LINES_PER_PAGE);
             }
             while (loop);
         }
 
         void HandleHintsScreen()
         {
-            // draw header.
-            m_UI.Clear(Color.Black);
-            int gy = 0;
-            m_UI.DrawHeader();
-            gy += Ui.BOLD_LINE_SPACING;
-            m_UI.DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-
-            // prepare : get all the hints text into one huuuuuge list of line :D
-            m_UI.DrawStringBold(Color.White, "preparing...", 0, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-            m_UI.UI_Repaint();
-            List<string> lines = new List<string>();
-            for (int i = (int)AdvisorHint._FIRST; i < (int)AdvisorHint._COUNT; i++)
-            {
-                string title;
-                string[] body;
-                GetAdvisorHintText((AdvisorHint)i, out title, out body);
-                if (s_Hints.IsAdvisorHintGiven((AdvisorHint)i)) title += " (hint already given)"; // alpha10
-
-                lines.Add(string.Format("HINT {0} : {1}", i, title));
-                lines.AddRange(body);
-                lines.Add("~~~~");
-                lines.Add("");
-            }
-
-            // display & handle loop.
-            int currentLine = 0;
-            bool loop = true;
-            do
-            {
-                // header.
-                m_UI.Clear(Color.Black);
-                gy = 0;
-                m_UI.DrawHeader();
-                gy += Ui.BOLD_LINE_SPACING;
-                m_UI.DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-
-                // display currently viewed lines.
-                m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-                int iLine = currentLine;
-                do
-                {
-                    m_UI.DrawStringBold(Color.LightGray, lines[iLine], 0, gy);
-                    gy += Ui.BOLD_LINE_SPACING;
-                    ++iLine;
-                }
-                while (iLine < lines.Count && gy < Ui.CANVAS_HEIGHT - 2 * Ui.BOLD_LINE_SPACING);
-
-                // draw foot.
-                m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-                m_UI.DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, R to reset hints, ESC to leave");
-
-                m_UI.UI_Repaint();
-
-                // get command.
-                Key key = m_UI.ReadKey();
-                switch (key)
-                {
-                    case Key.Escape:
-                        loop = false;
-                        break;
-
-                    case Key.Up:
-                        --currentLine;
-                        break;
-                    case Key.Down:
-                        ++currentLine;
-                        break;
-                    case Key.PageUp:
-                        currentLine -= TEXTFILE_LINES_PER_PAGE;
-                        break;
-                    case Key.PageDown:
-                        currentLine += TEXTFILE_LINES_PER_PAGE;
-                        break;
-
-                    case Key.R:
-                        // do it.
-                        s_Hints.ResetAllHints();
-
-                        // notify.
-                        m_UI.Clear(Color.Black);
-                        gy = 0;
-                        m_UI.DrawHeader();
-                        gy += Ui.BOLD_LINE_SPACING;
-                        m_UI.DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy);
-                        gy += Ui.BOLD_LINE_SPACING;
-                        m_UI.DrawStringBold(Color.White, "Hints reset done.", 0, gy);
-                        m_UI.UI_Repaint();
-                        m_UI.UI_Wait(DELAY_LONG);
-                        break;
-                }
-
-                if (currentLine < 0) currentLine = 0;
-                if (currentLine + TEXTFILE_LINES_PER_PAGE >= lines.Count) currentLine = Math.Max(0, lines.Count - TEXTFILE_LINES_PER_PAGE);
-            }
-            while (loop);
+            
         }
 
         void HandleMessageLog()
@@ -10071,7 +9971,7 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        void GetAdvisorHintText(AdvisorHint hint, out string title, out string[] body)
+        public void GetAdvisorHintText(AdvisorHint hint, out string title, out string[] body)
         {
             switch (hint)
             {
@@ -16338,7 +16238,7 @@ namespace RogueSurvivor.Engine
             ///////////////////////////////
             // Display grave as text file.
             ///////////////////////////////
-            graveyard.FormatLines(TEXTFILE_CHARS_PER_LINE);
+            graveyard.FormatLines(Ui.TEXTFILE_CHARS_PER_LINE);
             int iLine = 0;
             bool loop = false;
             do
@@ -16353,7 +16253,7 @@ namespace RogueSurvivor.Engine
                 int linesThisPage = 0;
                 m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
                 gy += Ui.BOLD_LINE_SPACING;
-                while (linesThisPage < TEXTFILE_LINES_PER_PAGE && iLine < graveyard.FormatedLines.Count)
+                while (linesThisPage < Ui.TEXTFILE_LINES_PER_PAGE && iLine < graveyard.FormatedLines.Count)
                 {
                     string line = graveyard.FormatedLines[iLine];
                     m_UI.DrawStringBold(Color.White, line, gx, gy);

@@ -9,7 +9,7 @@ namespace RogueSurvivor.Engine.GameStates
         public IMusicManager musicManager;
 
         public abstract void Enter();
-        public abstract void Update();
+        public abstract void Update(double dt);
         public abstract void Draw();
     }
 }

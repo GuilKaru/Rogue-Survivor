@@ -93,9 +93,11 @@ namespace RogueSurvivor
         {
             base.Update(gameTime);
 
-            HandleInput(gameTime.ElapsedGameTime.TotalSeconds);
+            double dt = gameTime.ElapsedGameTime.TotalSeconds;
 
-            if (!game.Update())
+            HandleInput(dt);
+
+            if (!game.Update(dt))
                 Exit();
 
             /*try
