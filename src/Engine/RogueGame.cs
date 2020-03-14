@@ -35,9 +35,6 @@ namespace RogueSurvivor.Engine
         const int HALF_VIEW_WIDTH = 10;
         const int HALF_VIEW_HEIGHT = 10;
 
-        public const int CANVAS_WIDTH = 1024;
-        public const int CANVAS_HEIGHT = 768;
-
         const int DAMAGE_DX = 10;
         const int DAMAGE_DY = 10;
 
@@ -68,7 +65,7 @@ namespace RogueSurvivor.Engine
         const int MESSAGES_HISTORY = 59;
 
         public const int MINITILE_SIZE = 2;
-        const int MINIMAP_X = RIGHTPANEL_X + (CANVAS_WIDTH - RIGHTPANEL_X - MAP_MAX_WIDTH * MINITILE_SIZE) / 2;
+        const int MINIMAP_X = RIGHTPANEL_X + (Ui.CANVAS_WIDTH - RIGHTPANEL_X - MAP_MAX_WIDTH * MINITILE_SIZE) / 2;
         const int MINIMAP_Y = MESSAGES_Y - MINITILE_SIZE * MAP_MAX_HEIGHT - 1;
         const int MINI_TRACKER_OFFSET = 1;
 
@@ -119,10 +116,8 @@ namespace RogueSurvivor.Engine
         readonly Color SAYOREMOTE_NORMAL_COLOR = Color.DarkCyan;
         readonly Color PLAYER_AUDIO_COLOR = Color.Green;
 
-        const int LINE_SPACING = 12;
-        const int BOLD_LINE_SPACING = 14;
         const int CREDIT_CHAR_SPACING = 8;
-        const int CREDIT_LINE_SPACING = LINE_SPACING;
+        const int CREDIT_LINE_SPACING = Ui.LINE_SPACING;
 
         readonly Color NIGHT_COLOR = Color.Cyan;
         readonly Color DAY_COLOR = Color.Gold;
@@ -405,7 +400,7 @@ namespace RogueSurvivor.Engine
 
             public override void Draw(IRogueUI ui)
             {
-                ui.UI_DrawImage(ImageID, ScreenPosition.X, ScreenPosition.Y);
+                ui.DrawImage(ImageID, ScreenPosition.X, ScreenPosition.Y);
             }
         }
 
@@ -424,7 +419,7 @@ namespace RogueSurvivor.Engine
 
             public override void Draw(IRogueUI ui)
             {
-                ui.UI_DrawTransparentImage(Alpha, ImageID, ScreenPosition.X, ScreenPosition.Y);
+                ui.DrawTransparentImage(Alpha, ImageID, ScreenPosition.X, ScreenPosition.Y);
             }
         }
 
@@ -451,8 +446,8 @@ namespace RogueSurvivor.Engine
             public override void Draw(IRogueUI ui)
             {
                 if (ShadowColor.HasValue)
-                    ui.UI_DrawString(ShadowColor.Value, Text, ScreenPosition.X + 1, ScreenPosition.Y + 1);
-                ui.UI_DrawString(Color, Text, ScreenPosition.X, ScreenPosition.Y);
+                    ui.DrawString(ShadowColor.Value, Text, ScreenPosition.X + 1, ScreenPosition.Y + 1);
+                ui.DrawString(Color, Text, ScreenPosition.X, ScreenPosition.Y);
             }
         }
 
@@ -471,7 +466,7 @@ namespace RogueSurvivor.Engine
 
             public override void Draw(IRogueUI ui)
             {
-                ui.UI_DrawLine(Color, ScreenFrom.X, ScreenFrom.Y, ScreenTo.X, ScreenTo.Y);
+                ui.DrawLine(Color, ScreenFrom.X, ScreenFrom.Y, ScreenTo.X, ScreenTo.Y);
             }
         }
 
@@ -488,7 +483,7 @@ namespace RogueSurvivor.Engine
 
             public override void Draw(IRogueUI ui)
             {
-                ui.UI_DrawRect(this.Color, this.Rectangle);
+                ui.DrawRect(this.Color, this.Rectangle);
             }
         }
 
@@ -519,7 +514,7 @@ namespace RogueSurvivor.Engine
 
             public override void Draw(IRogueUI ui)
             {
-                ui.UI_DrawPopup(Lines, TextColor, BoxBorderColor, BoxFillColor, ScreenPosition.X, ScreenPosition.Y);
+                ui.DrawPopup(Lines, TextColor, BoxBorderColor, BoxFillColor, ScreenPosition.X, ScreenPosition.Y);
             }
         }
 
@@ -546,7 +541,7 @@ namespace RogueSurvivor.Engine
 
             public override void Draw(IRogueUI ui)
             {
-                ui.UI_DrawPopupTitle(Title, TitleColor, Lines, TextColor, BoxBorderColor, BoxFillColor, ScreenPosition.X, ScreenPosition.Y);
+                ui.DrawPopupTitle(Title, TitleColor, Lines, TextColor, BoxBorderColor, BoxFillColor, ScreenPosition.X, ScreenPosition.Y);
             }
         }
 
@@ -573,7 +568,7 @@ namespace RogueSurvivor.Engine
 
             public override void Draw(IRogueUI ui)
             {
-                ui.UI_DrawPopupTitleColors(Title, TitleColor, Lines, Colors, BoxBorderColor, BoxFillColor, ScreenPosition.X, ScreenPosition.Y);
+                ui.DrawPopupTitleColors(Title, TitleColor, Lines, Colors, BoxBorderColor, BoxFillColor, ScreenPosition.X, ScreenPosition.Y);
             }
         }
 
@@ -600,7 +595,6 @@ namespace RogueSurvivor.Engine
         MessageManager m_MessageManager;
         bool m_IsGameRunning = true;
         bool m_HasLoadedGame = false;
-        bool inMainMenu;
         List<Overlay> m_Overlays = new List<Overlay>();
         Actor m_Player;
         HashSet<Point> m_PlayerFOV = new HashSet<Point>();
@@ -614,7 +608,6 @@ namespace RogueSurvivor.Engine
 
         BaseTownGenerator m_TownGenerator;
 
-        bool m_PlayedIntro;
         IMusicManager m_MusicManager;
 
         CharGen m_CharGen;
@@ -704,6 +697,24 @@ namespace RogueSurvivor.Engine
 
         Dictionary<Type, GameState> allStates = new Dictionary<Type, GameState>();
         List<GameState> states = new List<GameState>();
+        GameState CurrentState => states[states.Count - 1];
+
+        public void Draw()
+        {
+            CurrentState.Draw();
+        }
+
+        public bool Update()
+        {
+            // Toggle fullscreen mode
+            Key key = m_UI.ReadKey();
+            if (key == (Key.Enter | Key.Alt))
+                m_UI.ToggleFullscreen();
+            
+            CurrentState.Update();
+
+            return m_IsGameRunning;
+        }
 
         public void SetState<State>(bool dispose) where State : GameState
         {
@@ -722,6 +733,7 @@ namespace RogueSurvivor.Engine
                 allStates[type] = state;
                 state.game = this;
                 state.ui = m_UI;
+                state.musicManager = m_MusicManager;
             }
 
             states.Add(state);
@@ -1063,8 +1075,6 @@ namespace RogueSurvivor.Engine
         /// </summary>
         public void Init(IGameLoader loader)
         {
-            inMainMenu = true;
-
             InitDirectories(loader);
             LoadData(loader);
             LoadMusic(loader);
@@ -1087,7 +1097,7 @@ namespace RogueSurvivor.Engine
             m_IsGameRunning = false;
         }
 
-        public bool Update()
+        /*public bool Update()
         {
             if (inMainMenu)
                 UpdateMainMenu();
@@ -1108,7 +1118,7 @@ namespace RogueSurvivor.Engine
         {
             if (inMainMenu)
                 DrawMainMenu();
-        }
+        }*/
 
         void Tick()
         {
@@ -1169,21 +1179,6 @@ namespace RogueSurvivor.Engine
             loader.CategoryEnd();
         }
 
-
-        void EnterMenu()
-        {
-            inMainMenu = true;
-
-            if (!m_PlayedIntro)
-            {
-                m_MusicManager.Stop();
-                
-                m_PlayedIntro = true;
-            }
-
-            
-        }
-
         void UpdateMainMenu()
         {
             bool loop = true;
@@ -1205,109 +1200,16 @@ namespace RogueSurvivor.Engine
                 // music.
                 
 
-                // display.
-                int gx, gy;
-                gx = gy = 0;
-                m_UI.Clear(Color.Black);
-                DrawHeader();
-                gy += BOLD_LINE_SPACING;
-                m_UI.DrawStringBold(Color.Yellow, "Main Menu", 0, gy);
-                gy += 2 * BOLD_LINE_SPACING;
-                DrawMenuOrOptions(selected, Color.White, menuEntries, Color.White, null, gx, ref gy);
-                DrawFootnote(Color.White, "cursor to move, ENTER to select");
 
                 
 
                 // repaint.
                 m_UI.UI_Repaint();
 
-                // get menu action.
-                Key key = m_UI.UI_WaitKey();
-                switch (key)
-                {
-                    case Key.Up:       // move up
-                        if (selected > 0) --selected;
-                        else selected = menuEntries.Length - 1;
-                        break;
-                    case Key.Down:     // move down
-                        selected = (selected + 1) % menuEntries.Length;
-                        break;
-
-                    case Key.Enter:    // validate
-                        {
-                            switch (selected)
-                            {
-                                case 0:
-                                    if (HandleNewCharacter())
-                                    {
-                                        StartNewGame();
-                                        loop = false;
-                                    }
-                                    break;
-
-                                case 1:
-                                    if (!isLoadEnabled)
-                                        break;
-                                    gy += 2 * BOLD_LINE_SPACING;
-                                    m_UI.DrawStringBold(Color.Yellow, "Loading game, please wait...", gx, gy);
-                                    m_UI.UI_Repaint();
-                                    LoadGame(GetUserSave());
-                                    loop = false;
-                                    // alpha10
-                                    if (s_Options.IsSimON && s_Options.SimThread)
-                                        StartSimThread();
-                                    break;
-
-                                case 2:
-                                    HandleRedefineKeys();
-                                    break;
-
-                                case 3:
-                                    HandleOptions(false);
-                                    ApplyOptions(false);
-                                    break;
-
-                                case 4:
-                                    HandleHelpMode();
-                                    break;
-
-                                case 5:
-                                    HandleHintsScreen();
-                                    break;
-
-                                case 6:
-                                    HandleHiScores(true);
-                                    break;
-
-                                case 7:
-                                    HandleCredits();
-                                    break;
-
-                                case 8:
-                                    m_IsGameRunning = false;
-                                    loop = false;
-                                    break;
-
-                                default:
-                                    break;
-                            } // switch selected
-                            break;
-                        }
-                }
+                
             }
             while (loop);
         }
-
-        void DrawMainMenu()
-        {
-            bool loop = true;
-            bool isLoadEnabled = File.Exists(GetUserSave());
-
-            
-
-                // repaint.
-                m_UI.UI_Repaint();
-            }
 
         bool HandleNewCharacter()
         {
@@ -1396,9 +1298,9 @@ namespace RogueSurvivor.Engine
                 int gx, gy;
                 gx = gy = 0;
                 m_UI.DrawStringBold(Color.Yellow, "New Game - Choose Game Mode", gx, gy);
-                gy += 2 * BOLD_LINE_SPACING;
-                DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGray, descs, gx, ref gy);
-                gy += 2 * BOLD_LINE_SPACING;
+                gy += 2 * Ui.BOLD_LINE_SPACING;
+                m_UI.DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGray, descs, gx, ref gy);
+                gy += 2 * Ui.BOLD_LINE_SPACING;
 
                 string[] descMode = { };
                 switch (selected)
@@ -1456,15 +1358,15 @@ namespace RogueSurvivor.Engine
                 foreach (String str in descMode)
                 {
                     m_UI.DrawStringBold(Color.Gray, str, gx, gy);
-                    gy += BOLD_LINE_SPACING;
+                    gy += Ui.BOLD_LINE_SPACING;
                 }
 
 
-                DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
+                m_UI.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
                 m_UI.UI_Repaint();
 
                 // get menu action.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 switch (key)
                 {
                     case Key.Up:       // move up
@@ -1547,15 +1449,15 @@ namespace RogueSurvivor.Engine
                 int gx, gy;
                 gx = gy = 0;
                 m_UI.DrawStringBold(Color.Yellow, String.Format("[{0}] New Character - Choose Race", Session.DescGameMode(m_Session.GameMode)), gx, gy);
-                gy += 2 * BOLD_LINE_SPACING;
-                DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGray, descs, gx, ref gy);
-                gy += 2 * BOLD_LINE_SPACING;
+                gy += 2 * Ui.BOLD_LINE_SPACING;
+                m_UI.DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGray, descs, gx, ref gy);
+                gy += 2 * Ui.BOLD_LINE_SPACING;
 
-                DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
+                m_UI.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
                 m_UI.UI_Repaint();
 
                 // get menu action.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 switch (key)
                 {
                     case Key.Up:       // move up
@@ -1578,9 +1480,9 @@ namespace RogueSurvivor.Engine
                                 case 0: // random
                                     isUndead = roller.RollChance(50);
 
-                                    gy += BOLD_LINE_SPACING;
+                                    gy += Ui.BOLD_LINE_SPACING;
                                     m_UI.DrawStringBold(Color.White, String.Format("Race : {0}.", isUndead ? "Undead" : "Living"), gx, gy);
-                                    gy += BOLD_LINE_SPACING;
+                                    gy += Ui.BOLD_LINE_SPACING;
                                     m_UI.DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy);
                                     m_UI.UI_Repaint();
                                     if (WaitYesOrNo())
@@ -1642,13 +1544,13 @@ namespace RogueSurvivor.Engine
                 int gx, gy;
                 gx = gy = 0;
                 m_UI.DrawStringBold(Color.Yellow, String.Format("[{0}] New Living - Choose Gender", Session.DescGameMode(m_Session.GameMode)), gx, gy);
-                gy += 2 * BOLD_LINE_SPACING;
-                DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGray, descs, gx, ref gy);
-                DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
+                gy += 2 * Ui.BOLD_LINE_SPACING;
+                m_UI.DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGray, descs, gx, ref gy);
+                m_UI.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
                 m_UI.UI_Repaint();
 
                 // get menu action.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 switch (key)
                 {
                     case Key.Up:       // move up
@@ -1671,9 +1573,9 @@ namespace RogueSurvivor.Engine
                                 case 0: // random
                                     isMale = roller.RollChance(50);
 
-                                    gy += BOLD_LINE_SPACING;
+                                    gy += Ui.BOLD_LINE_SPACING;
                                     m_UI.DrawStringBold(Color.White, String.Format("Gender : {0}.", isMale ? "Male" : "Female"), gx, gy);
-                                    gy += BOLD_LINE_SPACING;
+                                    gy += Ui.BOLD_LINE_SPACING;
                                     m_UI.DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy);
                                     m_UI.UI_Repaint();
                                     if (WaitYesOrNo())
@@ -1752,13 +1654,13 @@ namespace RogueSurvivor.Engine
                 int gx, gy;
                 gx = gy = 0;
                 m_UI.DrawStringBold(Color.Yellow, String.Format("[{0}] New Undead - Choose Type", Session.DescGameMode(m_Session.GameMode)), gx, gy);
-                gy += 2 * BOLD_LINE_SPACING;
-                DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGray, descs, gx, ref gy);
-                DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
+                gy += 2 * Ui.BOLD_LINE_SPACING;
+                m_UI.DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGray, descs, gx, ref gy);
+                m_UI.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
                 m_UI.UI_Repaint();
 
                 // get menu action.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 switch (key)
                 {
                     case Key.Up:       // move up
@@ -1791,9 +1693,9 @@ namespace RogueSurvivor.Engine
                                             throw new ArgumentOutOfRangeException("unhandled select " + selected);
                                     }
 
-                                    gy += BOLD_LINE_SPACING;
+                                    gy += Ui.BOLD_LINE_SPACING;
                                     m_UI.DrawStringBold(Color.White, String.Format("Type : {0}.", GameActors[modelID].Name), gx, gy);
-                                    gy += BOLD_LINE_SPACING;
+                                    gy += Ui.BOLD_LINE_SPACING;
                                     m_UI.DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy);
                                     m_UI.UI_Repaint();
                                     if (WaitYesOrNo())
@@ -1879,13 +1781,13 @@ namespace RogueSurvivor.Engine
                 m_UI.DrawStringBold(Color.Yellow, String.Format("[{0}] New {1} Character - Choose Starting Skill",
                     Session.DescGameMode(m_Session.GameMode),
                     m_CharGen.IsMale ? "Male" : "Female"), gx, gy);
-                gy += 2 * BOLD_LINE_SPACING;
-                DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGray, skillDesc, gx, ref gy);
-                DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
+                gy += 2 * Ui.BOLD_LINE_SPACING;
+                m_UI.DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGray, skillDesc, gx, ref gy);
+                m_UI.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
                 m_UI.UI_Repaint();
 
                 // get menu action.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 switch (key)
                 {
                     case Key.Up:       // move up
@@ -1907,9 +1809,9 @@ namespace RogueSurvivor.Engine
                         else
                             skID = (Skills.IDs)(selected - 1 + (int)Skills.IDs._FIRST);
 
-                        gy += BOLD_LINE_SPACING;
+                        gy += Ui.BOLD_LINE_SPACING;
                         m_UI.DrawStringBold(Color.White, String.Format("Skill : {0}.", Skills.Name(skID)), gx, gy);
-                        gy += BOLD_LINE_SPACING;
+                        gy += Ui.BOLD_LINE_SPACING;
                         m_UI.DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy);
                         m_UI.UI_Repaint();
                         if (WaitYesOrNo())
@@ -1944,16 +1846,16 @@ namespace RogueSurvivor.Engine
 
             m_UI.Clear(Color.Black);
             int gy = 0;
-            DrawHeader();
-            gy += BOLD_LINE_SPACING;
+            m_UI.DrawHeader();
+            gy += Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.Yellow, "Hi Scores", 0, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
 
             // display.
             m_UI.DrawStringBold(Color.White, "Rank | Name, Skills, Death       |  Score |Difficulty|Survival|  Kills |Achievm.|      Game Time | Playing time", 0, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
 
             // text.
             if (saveToTextfile)
@@ -1969,18 +1871,18 @@ namespace RogueSurvivor.Engine
                 // display.
                 Color rankColor = (i == 0 ? Color.LightYellow : i == 1 ? Color.LightCyan : i == 2 ? Color.LightGreen : Color.DimGray);
                 m_UI.DrawStringBold(rankColor, "------------------------------------------------------------------------------------------------------------------------", 0, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 HiScore hi = m_HiScoreTable[i];
                 string line = String.Format("{0,3}. | {1,-25} | {2,6} |     {3,3}% | {4,6} | {5,6} | {6,6} | {7,14} | {8}",
                     i + 1, TruncateString(hi.Name, 25),
                     hi.TotalPoints, hi.DifficultyPercent, hi.SurvivalPoints, hi.KillPoints, hi.AchievementPoints,
                     new WorldTime(hi.TurnSurvived).ToString(), TimeSpanToString(hi.PlayingTime));
                 m_UI.DrawStringBold(rankColor, line, 0, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(rankColor, String.Format("     | {0}.", hi.SkillsDescription), 0, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(rankColor, String.Format("     | {0}.", hi.Death), 0, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
 
                 // text.
                 if (saveToTextfile)
@@ -1999,13 +1901,13 @@ namespace RogueSurvivor.Engine
 
             // display.
             m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             if (saveToTextfile)
             {
                 m_UI.DrawStringBold(Color.White, textfilePath, 0, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
             }
-            DrawFootnote(Color.White, "press ESC to leave");
+            m_UI.DrawFootnote(Color.White, "press ESC to leave");
             m_UI.UI_Repaint();
             WaitEscape();
         }
@@ -2115,34 +2017,34 @@ namespace RogueSurvivor.Engine
 
             // draw.
             m_UI.Clear(Color.Black);
-            DrawHeader();
-            gy += BOLD_LINE_SPACING;
+            m_UI.DrawHeader();
+            gy += Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.Yellow, "Credits", 0, gy);
-            gy += 2 * BOLD_LINE_SPACING;
+            gy += 2 * Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.White, "Programming, Graphics & Music by Jacques Ruiz (roguedjack) 2018", 0, gy);
-            gy += 2 * BOLD_LINE_SPACING;
+            gy += 2 * Ui.BOLD_LINE_SPACING;
 
-            m_UI.DrawStringBold(Color.White, "Programming", left, gy); m_UI.UI_DrawString(Color.White, "- C# NET 3.5, Microsoft Visual Studio Community 2017", right, gy);
-            gy += BOLD_LINE_SPACING;
-            m_UI.DrawStringBold(Color.White, "Graphic softwares", left, gy); m_UI.UI_DrawString(Color.White, "- Inkscape, Paint.NET", right, gy);
-            gy += BOLD_LINE_SPACING;
-            m_UI.DrawStringBold(Color.White, "Sound & Music softwares", left, gy); m_UI.UI_DrawString(Color.White, "- GuitarPro 7, Audacity", right, gy);
-            gy += BOLD_LINE_SPACING;
-            m_UI.DrawStringBold(Color.White, "Sound samples", left, gy); m_UI.UI_DrawString(Color.White, @"- http://www.sound-fishing.net  http://www.soundsnap.com/", right, gy);
+            m_UI.DrawStringBold(Color.White, "Programming", left, gy); m_UI.DrawString(Color.White, "- C# NET 3.5, Microsoft Visual Studio Community 2017", right, gy);
+            gy += Ui.BOLD_LINE_SPACING;
+            m_UI.DrawStringBold(Color.White, "Graphic softwares", left, gy); m_UI.DrawString(Color.White, "- Inkscape, Paint.NET", right, gy);
+            gy += Ui.BOLD_LINE_SPACING;
+            m_UI.DrawStringBold(Color.White, "Sound & Music softwares", left, gy); m_UI.DrawString(Color.White, "- GuitarPro 7, Audacity", right, gy);
+            gy += Ui.BOLD_LINE_SPACING;
+            m_UI.DrawStringBold(Color.White, "Sound samples", left, gy); m_UI.DrawString(Color.White, @"- http://www.sound-fishing.net  http://www.soundsnap.com/", right, gy);
 
-            gy += 2 * BOLD_LINE_SPACING;
+            gy += 2 * Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.White, "Contact", 0, gy);
-            gy += BOLD_LINE_SPACING;
-            m_UI.UI_DrawString(Color.White, @"Email      : roguedjack@yahoo.fr", 0, gy);
-            gy += BOLD_LINE_SPACING;
-            m_UI.UI_DrawString(Color.White, @"Blog       : http://roguesurvivor.blogspot.com/", 0, gy);
-            gy += BOLD_LINE_SPACING;
-            m_UI.UI_DrawString(Color.White, @"Fans Forum : http://roguesurvivor.proboards.com/", 0, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
+            m_UI.DrawString(Color.White, @"Email      : roguedjack@yahoo.fr", 0, gy);
+            gy += Ui.BOLD_LINE_SPACING;
+            m_UI.DrawString(Color.White, @"Blog       : http://roguesurvivor.blogspot.com/", 0, gy);
+            gy += Ui.BOLD_LINE_SPACING;
+            m_UI.DrawString(Color.White, @"Fans Forum : http://roguesurvivor.proboards.com/", 0, gy);
+            gy += Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.White, "Thanks to the players for their feedback and eagerness to die!", 0, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
 
-            DrawFootnote(Color.White, "ESC to leave");
+            m_UI.DrawFootnote(Color.White, "ESC to leave");
             m_UI.UI_Repaint();
             WaitEscape();
         }
@@ -2233,50 +2135,50 @@ namespace RogueSurvivor.Engine
                 int gx, gy;
                 gx = gy = 0;
                 m_UI.Clear(Color.Black);
-                DrawHeader();
-                gy += BOLD_LINE_SPACING;
+                m_UI.DrawHeader();
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.Yellow, "Options", 0, gy);  // alpha10 dont mention current mode
-                gy += 2 * BOLD_LINE_SPACING;
-                DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGreen, values, gx, ref gy, false, 400);
+                gy += 2 * Ui.BOLD_LINE_SPACING;
+                m_UI.DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGreen, values, gx, ref gy, false, 400);
 
                 // alpha10
                 // describe current option.
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.White, menuEntries[selected].TrimStart(spaces), gx, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 string desc = GameOptions.Describe(list[selected]);
                 string[] descLines = desc.Split(newlines);
                 foreach (string d in descLines)
                 {
-                    m_UI.UI_DrawString(Color.White, "  " + d, gx, gy);
-                    gy += BOLD_LINE_SPACING;
+                    m_UI.DrawString(Color.White, "  " + d, gx, gy);
+                    gy += Ui.BOLD_LINE_SPACING;
                 }
 
                 // legend.
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.Red, "* Caution : increasing these values makes the game runs slower and saving/loading longer.", gx, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.White, "-V : option always OFF when playing VTG-Vintage", gx, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.White, "=S : option used only when playing STD-Standard", gx, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
 
                 // difficulty rating.               
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 int diffForSurvivor = (int)(100 * Scoring.ComputeDifficultyRating(s_Options, DifficultySide.FOR_SURVIVOR, 0));
                 int diffforUndead = (int)(100 * Scoring.ComputeDifficultyRating(s_Options, DifficultySide.FOR_UNDEAD, 0));
                 m_UI.DrawStringBold(Color.Yellow, String.Format("Difficulty Rating : {0}% as survivor / {1}% as undead.", diffForSurvivor, diffforUndead), gx, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.White, "Difficulty used for scoring automatically decrease with each reincarnation.", gx, gy);
-                gy += 2 * BOLD_LINE_SPACING;
+                gy += 2 * Ui.BOLD_LINE_SPACING;
 
                 // footnote.
-                DrawFootnote(Color.White, "cursor to move and change values, R to restore previous values, ESC to save and leave");
+                m_UI.DrawFootnote(Color.White, "cursor to move and change values, R to restore previous values, ESC to save and leave");
                 m_UI.UI_Repaint();
 
                 // handle
                 // get menu action.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 switch (key)
                 {
                     case Key.Up:       // move up
@@ -2595,22 +2497,22 @@ namespace RogueSurvivor.Engine
                 int gx, gy;
                 gx = gy = 0;
                 m_UI.Clear(Color.Black);
-                DrawHeader();
-                gy += BOLD_LINE_SPACING;
+                m_UI.DrawHeader();
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.Yellow, "Redefine keys", 0, gy);
-                gy += BOLD_LINE_SPACING;
-                DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGreen, values, gx, ref gy);
+                gy += Ui.BOLD_LINE_SPACING;
+                m_UI.DrawMenuOrOptions(selected, Color.White, menuEntries, Color.LightGreen, values, gx, ref gy);
                 if (conflict)
                 {
                     m_UI.DrawStringBold(Color.Red, "Conflicting keys. Please redefine the keys so the commands don't overlap.", gx, gy);
-                    gy += BOLD_LINE_SPACING;
+                    gy += Ui.BOLD_LINE_SPACING;
                 }
-                DrawFootnote(Color.White, "cursor to move, ENTER to rebind a key, ESC to save and leave");
+                m_UI.DrawFootnote(Color.White, "cursor to move, ENTER to rebind a key, ESC to save and leave");
                 m_UI.UI_Repaint();
 
                 // handle
                 // get menu action.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 switch (key)
                 {
                     case Key.Up:       // move up
@@ -2638,7 +2540,7 @@ namespace RogueSurvivor.Engine
                         Key newKeyData = Key.None;
                         do
                         {
-                            Key newKey = m_UI.UI_WaitKey();
+                            Key newKey = m_UI.ReadKey();
                             newKeyData = newKey;
                             loopNewKey = false;
                         }
@@ -5198,12 +5100,12 @@ namespace RogueSurvivor.Engine
                 bool inputLoop = true;
                 bool hasKey = false;
                 Key inKey;
-                Point prevMousePos = m_UI.UI_GetMousePosition();
+                Point prevMousePos = m_UI.GetMousePosition();
                 Point mousePos = new Point(-1, -1);
                 MouseButton mouseButton = MouseButton.None;
                 do
                 {
-                    inKey = m_UI.UI_PeekKey();
+                    inKey = m_UI.ReadKey();
                     if (inKey != Key.None)
                     {
                         hasKey = true;
@@ -5211,8 +5113,8 @@ namespace RogueSurvivor.Engine
                     }
                     else
                     {
-                        mousePos = m_UI.UI_GetMousePosition();
-                        mouseButton = m_UI.UI_PeekMouseButtons();
+                        mousePos = m_UI.GetMousePosition();
+                        mouseButton = m_UI.ReadMouseButton();
                         if (mousePos != prevMousePos || mouseButton != MouseButton.None)
                         {
                             inputLoop = false;
@@ -5797,8 +5699,8 @@ namespace RogueSurvivor.Engine
                 m_UI.Clear(Color.Black);
                 int gy = 0;
                 m_UI.DrawStringBold(Color.Red, "Game manual not available ingame.", 0, gy);
-                gy += BOLD_LINE_SPACING;
-                DrawFootnote(Color.White, "press ENTER");
+                gy += Ui.BOLD_LINE_SPACING;
+                m_UI.DrawFootnote(Color.White, "press ENTER");
                 m_UI.UI_Repaint();
                 WaitEnter();
                 return;
@@ -5811,12 +5713,12 @@ namespace RogueSurvivor.Engine
                 // draw header.
                 m_UI.Clear(Color.Black);
                 int gy = 0;
-                DrawHeader();
-                gy += BOLD_LINE_SPACING;
+                m_UI.DrawHeader();
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.Yellow, "Game Manual", 0, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
 
                 // draw manual.
                 int iLine = m_ManualLine;
@@ -5828,21 +5730,21 @@ namespace RogueSurvivor.Engine
                     if (!ignore)
                     {
                         m_UI.DrawStringBold(Color.LightGray, lines[iLine], 0, gy);
-                        gy += BOLD_LINE_SPACING;
+                        gy += Ui.BOLD_LINE_SPACING;
                     }
                     ++iLine;
                 }
-                while (iLine < lines.Count && gy < CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING);
+                while (iLine < lines.Count && gy < Ui.CANVAS_HEIGHT - 2 * Ui.BOLD_LINE_SPACING);
 
                 // draw foot.
                 m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
-                gy += BOLD_LINE_SPACING;
-                DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, numbers to jump to section, ESC to leave");
+                gy += Ui.BOLD_LINE_SPACING;
+                m_UI.DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, numbers to jump to section, ESC to leave");
 
                 m_UI.UI_Repaint();
 
                 // get command.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 int choice = KeyToChoiceNumber(key);
 
                 if (choice >= 0)
@@ -5907,14 +5809,14 @@ namespace RogueSurvivor.Engine
             // draw header.
             m_UI.Clear(Color.Black);
             int gy = 0;
-            DrawHeader();
-            gy += BOLD_LINE_SPACING;
+            m_UI.DrawHeader();
+            gy += Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
 
             // prepare : get all the hints text into one huuuuuge list of line :D
             m_UI.DrawStringBold(Color.White, "preparing...", 0, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             m_UI.UI_Repaint();
             List<string> lines = new List<string>();
             for (int i = (int)AdvisorHint._FIRST; i < (int)AdvisorHint._COUNT; i++)
@@ -5938,32 +5840,32 @@ namespace RogueSurvivor.Engine
                 // header.
                 m_UI.Clear(Color.Black);
                 gy = 0;
-                DrawHeader();
-                gy += BOLD_LINE_SPACING;
+                m_UI.DrawHeader();
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
 
                 // display currently viewed lines.
                 m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 int iLine = currentLine;
                 do
                 {
                     m_UI.DrawStringBold(Color.LightGray, lines[iLine], 0, gy);
-                    gy += BOLD_LINE_SPACING;
+                    gy += Ui.BOLD_LINE_SPACING;
                     ++iLine;
                 }
-                while (iLine < lines.Count && gy < CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING);
+                while (iLine < lines.Count && gy < Ui.CANVAS_HEIGHT - 2 * Ui.BOLD_LINE_SPACING);
 
                 // draw foot.
                 m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
-                gy += BOLD_LINE_SPACING;
-                DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, R to reset hints, ESC to leave");
+                gy += Ui.BOLD_LINE_SPACING;
+                m_UI.DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, R to reset hints, ESC to leave");
 
                 m_UI.UI_Repaint();
 
                 // get command.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 switch (key)
                 {
                     case Key.Escape:
@@ -5990,10 +5892,10 @@ namespace RogueSurvivor.Engine
                         // notify.
                         m_UI.Clear(Color.Black);
                         gy = 0;
-                        DrawHeader();
-                        gy += BOLD_LINE_SPACING;
+                        m_UI.DrawHeader();
+                        gy += Ui.BOLD_LINE_SPACING;
                         m_UI.DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy);
-                        gy += BOLD_LINE_SPACING;
+                        gy += Ui.BOLD_LINE_SPACING;
                         m_UI.DrawStringBold(Color.White, "Hints reset done.", 0, gy);
                         m_UI.UI_Repaint();
                         m_UI.UI_Wait(DELAY_LONG);
@@ -6011,22 +5913,22 @@ namespace RogueSurvivor.Engine
             // draw header.
             m_UI.Clear(Color.Black);
             int gy = 0;
-            DrawHeader();
-            gy += BOLD_LINE_SPACING;
+            m_UI.DrawHeader();
+            gy += Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.Yellow, "Message Log", 0, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
 
             // log.
             foreach (Message msg in m_MessageManager.History)
             {
-                m_UI.UI_DrawString(msg.Color, msg.Text, 0, gy);
-                gy += LINE_SPACING;
+                m_UI.DrawString(msg.Color, msg.Text, 0, gy);
+                gy += Ui.LINE_SPACING;
             }
 
             // foot.
-            DrawFootnote(Color.White, "press ESC to leave");
+            m_UI.DrawFootnote(Color.White, "press ESC to leave");
 
             // wait.
             m_UI.UI_Repaint();
@@ -6040,7 +5942,7 @@ namespace RogueSurvivor.Engine
             gx = gy = 0;
             m_UI.Clear(Color.Black);
             m_UI.DrawStringBold(Color.White, "CITY INFORMATION", gy, gy);
-            gy += 2 * BOLD_LINE_SPACING;
+            gy += 2 * Ui.BOLD_LINE_SPACING;
 
             /////////////////////
             // Undead : no info!
@@ -6049,9 +5951,9 @@ namespace RogueSurvivor.Engine
             if (m_Player.Model.Abilities.IsUndead)
             {
                 m_UI.DrawStringBold(Color.Red, "You can't remember where you are...", gx, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.Red, "Must be that rotting brain of yours...", gx, gy);
-                gy += 2 * BOLD_LINE_SPACING;
+                gy += 2 * Ui.BOLD_LINE_SPACING;
             }
             else
             {
@@ -6059,25 +5961,25 @@ namespace RogueSurvivor.Engine
                 // City map
                 ////////////
                 m_UI.DrawStringBold(Color.White, "> DISTRICTS LAYOUT", gx, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
 
                 // coordinates.
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 for (int y = 0; y < m_Session.World.Size; y++)
                 {
                     Color color = (y == m_Player.Location.Map.District.WorldPosition.Y ? Color.LightGreen : Color.White);
-                    m_UI.DrawStringBold(color, y.ToString(), 20, gy + y * 3 * BOLD_LINE_SPACING + BOLD_LINE_SPACING);
-                    m_UI.DrawStringBold(color, ".", 20, gy + y * 3 * BOLD_LINE_SPACING);
-                    m_UI.DrawStringBold(color, ".", 20, gy + y * 3 * BOLD_LINE_SPACING + 2 * BOLD_LINE_SPACING);
+                    m_UI.DrawStringBold(color, y.ToString(), 20, gy + y * 3 * Ui.BOLD_LINE_SPACING + Ui.BOLD_LINE_SPACING);
+                    m_UI.DrawStringBold(color, ".", 20, gy + y * 3 * Ui.BOLD_LINE_SPACING);
+                    m_UI.DrawStringBold(color, ".", 20, gy + y * 3 * Ui.BOLD_LINE_SPACING + 2 * Ui.BOLD_LINE_SPACING);
                 }
-                gy -= BOLD_LINE_SPACING;
+                gy -= Ui.BOLD_LINE_SPACING;
                 for (int x = 0; x < m_Session.World.Size; x++)
                 {
                     Color color = (x == m_Player.Location.Map.District.WorldPosition.X ? Color.LightGreen : Color.White);
                     m_UI.DrawStringBold(color, String.Format("..{0}..", (char)('A' + x)), 32 + x * 48, gy);
                 }
                 // districts.
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 int mx = 32;
                 int my = gy;
                 for (int y = 0; y < m_Session.World.Size; y++)
@@ -6103,38 +6005,38 @@ namespace RogueSurvivor.Engine
                             lchar += dStatus;
                         Color lColor = (d == m_Player.Location.Map.District ? Color.LightGreen : dColor);
 
-                        m_UI.DrawStringBold(lColor, lchar, mx + x * 48, my + (y * 3) * BOLD_LINE_SPACING);
-                        m_UI.DrawStringBold(lColor, dStatus.ToString(), mx + x * 48, my + (y * 3 + 1) * BOLD_LINE_SPACING);
-                        m_UI.DrawStringBold(dColor, dChar, mx + x * 48 + 8, my + (y * 3 + 1) * BOLD_LINE_SPACING);
-                        m_UI.DrawStringBold(lColor, dStatus.ToString(), mx + x * 48 + 4 * 8, my + (y * 3 + 1) * BOLD_LINE_SPACING);
-                        m_UI.DrawStringBold(lColor, lchar, mx + x * 48, my + (y * 3 + 2) * BOLD_LINE_SPACING);
+                        m_UI.DrawStringBold(lColor, lchar, mx + x * 48, my + (y * 3) * Ui.BOLD_LINE_SPACING);
+                        m_UI.DrawStringBold(lColor, dStatus.ToString(), mx + x * 48, my + (y * 3 + 1) * Ui.BOLD_LINE_SPACING);
+                        m_UI.DrawStringBold(dColor, dChar, mx + x * 48 + 8, my + (y * 3 + 1) * Ui.BOLD_LINE_SPACING);
+                        m_UI.DrawStringBold(lColor, dStatus.ToString(), mx + x * 48 + 4 * 8, my + (y * 3 + 1) * Ui.BOLD_LINE_SPACING);
+                        m_UI.DrawStringBold(lColor, lchar, mx + x * 48, my + (y * 3 + 2) * Ui.BOLD_LINE_SPACING);
                     }
                 // subway line.
                 const string subwayChar = "=";
                 int subwayY = m_Session.World.Size / 2;
                 for (int x = 1; x < m_Session.World.Size; x++)
                 {
-                    m_UI.DrawStringBold(Color.White, subwayChar, mx + x * 48 - 8, my + (subwayY * 3) * BOLD_LINE_SPACING + BOLD_LINE_SPACING);
+                    m_UI.DrawStringBold(Color.White, subwayChar, mx + x * 48 - 8, my + (subwayY * 3) * Ui.BOLD_LINE_SPACING + Ui.BOLD_LINE_SPACING);
                 }
 
-                gy += (m_Session.World.Size * 3 + 1) * BOLD_LINE_SPACING;
+                gy += (m_Session.World.Size * 3 + 1) * Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.White, "Legend", gx, gy);
-                gy += BOLD_LINE_SPACING;
-                m_UI.UI_DrawString(Color.White, "  *   - current     ?   - unvisited", gx, gy);
-                gy += LINE_SPACING;
-                m_UI.UI_DrawString(Color.White, "  Bus - Business    Gen - General    Gre - Green", gx, gy);
-                gy += LINE_SPACING;
-                m_UI.UI_DrawString(Color.White, "  Res - Residential Sho - Shopping", gx, gy);
-                gy += LINE_SPACING;
-                m_UI.UI_DrawString(Color.White, "  =   - Subway Line", gx, gy);
-                gy += LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
+                m_UI.DrawString(Color.White, "  *   - current     ?   - unvisited", gx, gy);
+                gy += Ui.LINE_SPACING;
+                m_UI.DrawString(Color.White, "  Bus - Business    Gen - General    Gre - Green", gx, gy);
+                gy += Ui.LINE_SPACING;
+                m_UI.DrawString(Color.White, "  Res - Residential Sho - Shopping", gx, gy);
+                gy += Ui.LINE_SPACING;
+                m_UI.DrawString(Color.White, "  =   - Subway Line", gx, gy);
+                gy += Ui.LINE_SPACING;
 
                 /////////////////////
                 // Notable locations
                 /////////////////////
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.White, "> NOTABLE LOCATIONS", gx, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 int buildingsY = gy;
                 for (int y = 0; y < m_Session.World.Size; y++)
                     for (int x = 0; x < m_Session.World.Size; x++)
@@ -6147,11 +6049,11 @@ namespace RogueSurvivor.Engine
                         if ((subwayZone = map.GetZoneByPartialName(NAME_SUBWAY_STATION)) != null)
                         {
                             m_UI.DrawStringBold(Color.Blue, String.Format("at {0} : {1}.", World.CoordToString(x, y), subwayZone.Name), gx, gy);
-                            gy += BOLD_LINE_SPACING;
-                            if (gy >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING)
+                            gy += Ui.BOLD_LINE_SPACING;
+                            if (gy >= Ui.CANVAS_HEIGHT - 2 * Ui.BOLD_LINE_SPACING)
                             {
                                 gy = buildingsY;
-                                gx += 25 * BOLD_LINE_SPACING;
+                                gx += 25 * Ui.BOLD_LINE_SPACING;
                             }
                         }
 
@@ -6159,11 +6061,11 @@ namespace RogueSurvivor.Engine
                         if (map == m_Session.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap)
                         {
                             m_UI.DrawStringBold(Color.CadetBlue, String.Format("at {0} : Police Station.", World.CoordToString(x, y)), gx, gy);
-                            gy += BOLD_LINE_SPACING;
-                            if (gy >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING)
+                            gy += Ui.BOLD_LINE_SPACING;
+                            if (gy >= Ui.CANVAS_HEIGHT - 2 * Ui.BOLD_LINE_SPACING)
                             {
                                 gy = buildingsY;
-                                gx += 25 * BOLD_LINE_SPACING;
+                                gx += 25 * Ui.BOLD_LINE_SPACING;
                             }
                         }
 
@@ -6171,11 +6073,11 @@ namespace RogueSurvivor.Engine
                         if (map == m_Session.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap)
                         {
                             m_UI.DrawStringBold(Color.White, String.Format("at {0} : Hospital.", World.CoordToString(x, y)), gx, gy);
-                            gy += BOLD_LINE_SPACING;
-                            if (gy >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING)
+                            gy += Ui.BOLD_LINE_SPACING;
+                            if (gy >= Ui.CANVAS_HEIGHT - 2 * Ui.BOLD_LINE_SPACING)
                             {
                                 gy = buildingsY;
-                                gx += 25 * BOLD_LINE_SPACING;
+                                gx += 25 * Ui.BOLD_LINE_SPACING;
                             }
                         }
 
@@ -6184,11 +6086,11 @@ namespace RogueSurvivor.Engine
                         if (m_Session.PlayerKnows_CHARUndergroundFacilityLocation && map == m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.District.EntryMap)
                         {
                             m_UI.DrawStringBold(Color.Red, String.Format("at {0} : {1}.", World.CoordToString(x, y), m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.Name), gx, gy);
-                            gy += BOLD_LINE_SPACING;
-                            if (gy >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING)
+                            gy += Ui.BOLD_LINE_SPACING;
+                            if (gy >= Ui.CANVAS_HEIGHT - 2 * Ui.BOLD_LINE_SPACING)
                             {
                                 gy = buildingsY;
-                                gx += 25 * BOLD_LINE_SPACING;
+                                gx += 25 * Ui.BOLD_LINE_SPACING;
                             }
                         }
                         // - The Sewers Thing?
@@ -6197,17 +6099,17 @@ namespace RogueSurvivor.Engine
                             !m_Session.UniqueActors.TheSewersThing.TheActor.IsDead)
                         {
                             m_UI.DrawStringBold(Color.Red, String.Format("at {0} : The Sewers Thing lives down there.", World.CoordToString(x, y)), gx, gy);
-                            gy += BOLD_LINE_SPACING;
-                            if (gy >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING)
+                            gy += Ui.BOLD_LINE_SPACING;
+                            if (gy >= Ui.CANVAS_HEIGHT - 2 * Ui.BOLD_LINE_SPACING)
                             {
                                 gy = buildingsY;
-                                gx += 25 * BOLD_LINE_SPACING;
+                                gx += 25 * Ui.BOLD_LINE_SPACING;
                             }
                         }
                     }
             }
 
-            DrawFootnote(Color.White, "press ESC to leave");
+            m_UI.DrawFootnote(Color.White, "press ESC to leave");
             m_UI.UI_Repaint();
             WaitEscape();
         }
@@ -7168,7 +7070,7 @@ namespace RogueSurvivor.Engine
                 else
                 {
                     // Select 1st or 2nd item
-                    Key inKey = m_UI.UI_WaitKey();
+                    Key inKey = m_UI.ReadKey();
 
                     if (inKey == Key.Escape)  // back/abort
                     {
@@ -7742,7 +7644,7 @@ namespace RogueSurvivor.Engine
                 RedrawPlayScreen();
 
                 // 2. Get input.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 PlayerCommand command = InputTranslator.KeyToCommand(key);
 
                 // 3. Handle input
@@ -7836,7 +7738,7 @@ namespace RogueSurvivor.Engine
                 RedrawPlayScreen();
 
                 // 2. Get input.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 PlayerCommand command = InputTranslator.KeyToCommand(key);
 
                 // 3. Handle input
@@ -7936,7 +7838,7 @@ namespace RogueSurvivor.Engine
                 RedrawPlayScreen();
 
                 // 2. Get input.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 PlayerCommand command = InputTranslator.KeyToCommand(key);
 
                 // 3. Handle input
@@ -8981,7 +8883,7 @@ namespace RogueSurvivor.Engine
                 RedrawPlayScreen();
 
                 // 2. Get input.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 int choice = KeyToChoiceNumber(key);
 
                 // 3. Handle input
@@ -9052,7 +8954,7 @@ namespace RogueSurvivor.Engine
                 RedrawPlayScreen();
 
                 // 2. Get input.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 int choice = KeyToChoiceNumber(key);
 
                 // 3. Handle input
@@ -9151,7 +9053,7 @@ namespace RogueSurvivor.Engine
                 RedrawPlayScreen();
 
                 // 2. Get input.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 int choice = KeyToChoiceNumber(key);
 
                 // 3. Handle input
@@ -9791,7 +9693,7 @@ namespace RogueSurvivor.Engine
                 RedrawPlayScreen();
 
                 // 2. Get input.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 int choice = KeyToChoiceNumber(key);
 
                 // 3. Handle input
@@ -10814,14 +10716,14 @@ namespace RogueSurvivor.Engine
         void WaitKeyOrMouse(out Key key, out Point mousePos, out MouseButton mouseButton)
         {
             // Peek keyboard & mouse until we got an event.
-            //m_UI.UI_PeekKey();  // consume keys to avoid repeats.
+            //m_UI.ReadKey();  // consume keys to avoid repeats.
             Key inKey;
-            Point prevMousePos = m_UI.UI_GetMousePosition();
+            Point prevMousePos = m_UI.GetMousePosition();
             mousePos = new Point(-1, -1);
             mouseButton = MouseButton.None;
             for (; ; )
             {
-                inKey = m_UI.UI_PeekKey();
+                inKey = m_UI.ReadKey();
                 if (inKey != Key.None)
                 {
                     key = inKey;
@@ -10829,8 +10731,8 @@ namespace RogueSurvivor.Engine
                 }
                 else
                 {
-                    mousePos = m_UI.UI_GetMousePosition();
-                    mouseButton = m_UI.UI_PeekMouseButtons();
+                    mousePos = m_UI.GetMousePosition();
+                    mouseButton = m_UI.ReadMouseButton();
                     if (mousePos != prevMousePos || mouseButton != MouseButton.None)
                     {
                         key = Key.None;
@@ -10848,7 +10750,7 @@ namespace RogueSurvivor.Engine
         {
             for (; ; )
             {
-                Key inKey = m_UI.UI_WaitKey();
+                Key inKey = m_UI.ReadKey();
                 PlayerCommand command = InputTranslator.KeyToCommand(inKey);
                 if (inKey == Key.Escape)// command == PlayerCommand.EXIT_OR_CANCEL)
                     return null;
@@ -10862,7 +10764,7 @@ namespace RogueSurvivor.Engine
         {
             for (; ; )
             {
-                Key inKey = m_UI.UI_WaitKey();
+                Key inKey = m_UI.ReadKey();
                 if (inKey == Key.Enter)
                     return;
             }
@@ -10872,7 +10774,7 @@ namespace RogueSurvivor.Engine
         {
             for (; ; )
             {
-                Key inKey = m_UI.UI_WaitKey();
+                Key inKey = m_UI.ReadKey();
                 if (inKey == Key.Escape)
                     return;
             }
@@ -10936,7 +10838,7 @@ namespace RogueSurvivor.Engine
         {
             for (; ; )
             {
-                Key inKey = m_UI.UI_WaitKey();
+                Key inKey = m_UI.ReadKey();
                 if (inKey == Key.Y)
                     return true;
                 else if (inKey == Key.N || inKey == Key.Escape)
@@ -16534,23 +16436,23 @@ namespace RogueSurvivor.Engine
             gx = gy = 0;
             m_UI.Clear(Color.Black);
             m_UI.DrawStringBold(Color.Yellow, "Saving post mortem to graveyard...", 0, 0);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             m_UI.UI_Repaint();
             string graveName = GetUserNewGraveyardName();
             string graveFile = GraveFilePath(graveName);
             if (!graveyard.Save(graveFile))
             {
                 m_UI.DrawStringBold(Color.Red, "Could not save to graveyard.", 0, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
             }
             else
             {
                 m_UI.DrawStringBold(Color.Yellow, "Grave saved to :", 0, gy);
-                gy += BOLD_LINE_SPACING;
-                m_UI.UI_DrawString(Color.White, graveFile, 0, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
+                m_UI.DrawString(Color.White, graveFile, 0, gy);
+                gy += Ui.BOLD_LINE_SPACING;
             }
-            DrawFootnote(Color.White, "press ENTER");
+            m_UI.DrawFootnote(Color.White, "press ENTER");
             m_UI.UI_Repaint();
             WaitEnter();
 
@@ -16565,28 +16467,28 @@ namespace RogueSurvivor.Engine
                 // header.
                 m_UI.Clear(Color.Black);
                 gx = gy = 0;
-                DrawHeader();
-                gy += BOLD_LINE_SPACING;
+                m_UI.DrawHeader();
+                gy += Ui.BOLD_LINE_SPACING;
 
                 // text.
                 int linesThisPage = 0;
                 m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 while (linesThisPage < TEXTFILE_LINES_PER_PAGE && iLine < graveyard.FormatedLines.Count)
                 {
                     string line = graveyard.FormatedLines[iLine];
                     m_UI.DrawStringBold(Color.White, line, gx, gy);
-                    gy += BOLD_LINE_SPACING;
+                    gy += Ui.BOLD_LINE_SPACING;
                     ++iLine;
                     ++linesThisPage;
                 }
 
                 // foot.
-                m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING);
+                m_UI.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, Ui.CANVAS_HEIGHT - 2 * Ui.BOLD_LINE_SPACING);
                 if (iLine < graveyard.FormatedLines.Count)
-                    DrawFootnote(Color.White, "press ENTER for more");
+                    m_UI.DrawFootnote(Color.White, "press ENTER for more");
                 else
-                    DrawFootnote(Color.White, "press ENTER to leave");
+                    m_UI.DrawFootnote(Color.White, "press ENTER to leave");
 
                 // wait.
                 m_UI.UI_Repaint();
@@ -16817,7 +16719,7 @@ namespace RogueSurvivor.Engine
                 RedrawPlayScreen();
 
                 // 2. Read input
-                Key inKey = m_UI.UI_WaitKey();
+                Key inKey = m_UI.ReadKey();
 
                 // 3. Handle input
                 PlayerCommand command = InputTranslator.KeyToCommand(inKey);
@@ -17383,14 +17285,14 @@ namespace RogueSurvivor.Engine
             {
                 // map & minimap
                 Color mapTint = Color.White; // disabled changing brightness bad for the eyes TintForDayPhase(m_Session.WorldTime.Phase);
-                m_UI.UI_DrawLine(Color.DarkGray, RIGHTPANEL_X, 0, RIGHTPANEL_X, MESSAGES_Y);
+                m_UI.DrawLine(Color.DarkGray, RIGHTPANEL_X, 0, RIGHTPANEL_X, MESSAGES_Y);
                 DrawMap(m_Session.CurrentMap, mapTint);
 
-                m_UI.UI_DrawLine(Color.DarkGray, RIGHTPANEL_X, MINIMAP_Y - 4, CANVAS_WIDTH, MINIMAP_Y - 4);
+                m_UI.DrawLine(Color.DarkGray, RIGHTPANEL_X, MINIMAP_Y - 4, Ui.CANVAS_WIDTH, MINIMAP_Y - 4);
                 DrawMiniMap(m_Session.CurrentMap);
 
                 // messages
-                m_UI.UI_DrawLine(Color.DarkGray, MESSAGES_X, MESSAGES_Y - 1, CANVAS_WIDTH, MESSAGES_Y - 1);
+                m_UI.DrawLine(Color.DarkGray, MESSAGES_X, MESSAGES_Y - 1, Ui.CANVAS_WIDTH, MESSAGES_Y - 1);
                 DrawMessages();
 
                 // location info.
@@ -17405,21 +17307,21 @@ namespace RogueSurvivor.Engine
                 const int X0 = LOCATIONPANEL_TEXT_X;
                 const int X1 = LOCATIONPANEL_TEXT_X + 128;
                 const int Y0 = LOCATIONPANEL_TEXT_Y;
-                const int Y1 = Y0 + LINE_SPACING;
-                const int Y2 = Y1 + LINE_SPACING;
-                const int Y3 = Y2 + LINE_SPACING;
-                const int Y4 = Y3 + LINE_SPACING;
-                const int Y5 = Y4 + LINE_SPACING;
-                const int Y6 = Y5 + LINE_SPACING;
+                const int Y1 = Y0 + Ui.LINE_SPACING;
+                const int Y2 = Y1 + Ui.LINE_SPACING;
+                const int Y3 = Y2 + Ui.LINE_SPACING;
+                const int Y4 = Y3 + Ui.LINE_SPACING;
+                const int Y5 = Y4 + Ui.LINE_SPACING;
+                const int Y6 = Y5 + Ui.LINE_SPACING;
 
-                m_UI.UI_DrawLine(Color.DarkGray, LOCATIONPANEL_X, LOCATIONPANEL_Y, LOCATIONPANEL_X, CANVAS_HEIGHT);
-                m_UI.UI_DrawString(Color.White, m_Session.CurrentMap.Name, X0, Y0);
-                m_UI.UI_DrawString(Color.White, LocationText(m_Session.CurrentMap, m_Player), X0, Y1);
-                m_UI.UI_DrawString(Color.White, String.Format("Day  {0}", m_Session.WorldTime.Day), X0, Y2);
+                m_UI.DrawLine(Color.DarkGray, LOCATIONPANEL_X, LOCATIONPANEL_Y, LOCATIONPANEL_X, Ui.CANVAS_HEIGHT);
+                m_UI.DrawString(Color.White, m_Session.CurrentMap.Name, X0, Y0);
+                m_UI.DrawString(Color.White, LocationText(m_Session.CurrentMap, m_Player), X0, Y1);
+                m_UI.DrawString(Color.White, String.Format("Day  {0}", m_Session.WorldTime.Day), X0, Y2);
                 if (canKnowTime)
-                    m_UI.UI_DrawString(Color.White, String.Format("Hour {0}", m_Session.WorldTime.Hour), X0, Y3);
+                    m_UI.DrawString(Color.White, String.Format("Hour {0}", m_Session.WorldTime.Hour), X0, Y3);
                 else
-                    m_UI.UI_DrawString(Color.White, "Hour ??", X0, Y3);
+                    m_UI.DrawString(Color.White, "Hour ??", X0, Y3);
 
                 // alpha10 desc day fov effect, not if cant know time
                 string dayPhaseString;
@@ -17435,7 +17337,7 @@ namespace RogueSurvivor.Engine
                     dayPhaseString = "???";
                 }
 
-                m_UI.UI_DrawString(m_Session.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR, dayPhaseString, X1, Y2);
+                m_UI.DrawString(m_Session.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR, dayPhaseString, X1, Y2);
 
                 Color weatherOrLightingColor;
                 string weatherOrLightingString;
@@ -17470,12 +17372,12 @@ namespace RogueSurvivor.Engine
                     default:
                         throw new ArgumentOutOfRangeException("unhandled lighting");
                 }
-                m_UI.UI_DrawString(weatherOrLightingColor, weatherOrLightingString, X1, Y3);
-                m_UI.UI_DrawString(Color.White, String.Format("Turn {0}", m_Session.WorldTime.TurnCounter), X0, Y4);
-                m_UI.UI_DrawString(Color.White, String.Format("Score   {0}@{1}% {2}", m_Session.Scoring.TotalPoints, (int)(100 * Scoring.ComputeDifficultyRating(s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber)), Session.DescShortGameMode(m_Session.GameMode)), X1, Y4);
-                m_UI.UI_DrawString(Color.White, String.Format("Avatar  {0}/{1}", (1 + m_Session.Scoring.ReincarnationNumber), (1 + s_Options.MaxReincarnations)), X1, Y5);
+                m_UI.DrawString(weatherOrLightingColor, weatherOrLightingString, X1, Y3);
+                m_UI.DrawString(Color.White, String.Format("Turn {0}", m_Session.WorldTime.TurnCounter), X0, Y4);
+                m_UI.DrawString(Color.White, String.Format("Score   {0}@{1}% {2}", m_Session.Scoring.TotalPoints, (int)(100 * Scoring.ComputeDifficultyRating(s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber)), Session.DescShortGameMode(m_Session.GameMode)), X1, Y4);
+                m_UI.DrawString(Color.White, String.Format("Avatar  {0}/{1}", (1 + m_Session.Scoring.ReincarnationNumber), (1 + s_Options.MaxReincarnations)), X1, Y5);
                 if (m_Player.MurdersCounter > 0)
-                    m_UI.UI_DrawString(Color.White, String.Format("Murders {0}", m_Player.MurdersCounter), X1, Y6);
+                    m_UI.DrawString(Color.White, String.Format("Murders {0}", m_Player.MurdersCounter), X1, Y6);
 
                 // character status.
                 if (m_Player != null)
@@ -17507,7 +17409,7 @@ namespace RogueSurvivor.Engine
                     int countLiving, countUndead;
                     countLiving = CountLivings(m_Session.CurrentMap);
                     countUndead = CountUndeads(m_Session.CurrentMap);
-                    m_UI.UI_DrawString(Color.White, String.Format("Living {0} vs {1} Undead", countLiving, countUndead), RIGHTPANEL_TEXT_X, SKILLTABLE_Y - 32);
+                    m_UI.DrawString(Color.White, String.Format("Living {0} vs {1} Undead", countLiving, countUndead), RIGHTPANEL_TEXT_X, SKILLTABLE_Y - 32);
                 }
 #endif
             }
@@ -17664,7 +17566,7 @@ namespace RogueSurvivor.Engine
                                 {
                                     float alpha = 0.90f * (float)livingScent / (float)OdorScent.MAX_STRENGTH;
                                     alpha *= alpha;
-                                    m_UI.UI_DrawTransparentImage(alpha, GameImages.ICON_SCENT_LIVING, toScreen.X, toScreen.Y);
+                                    m_UI.DrawTransparentImage(alpha, GameImages.ICON_SCENT_LIVING, toScreen.X, toScreen.Y);
                                 }
 
                                 // zombie master scent?
@@ -17673,7 +17575,7 @@ namespace RogueSurvivor.Engine
                                 {
                                     float alpha = 0.90f * (float)masterScent / (float)OdorScent.MAX_STRENGTH;
                                     alpha *= alpha;
-                                    m_UI.UI_DrawTransparentImage(alpha, GameImages.ICON_SCENT_ZOMBIEMASTER, toScreen.X, toScreen.Y);
+                                    m_UI.DrawTransparentImage(alpha, GameImages.ICON_SCENT_ZOMBIEMASTER, toScreen.X, toScreen.Y);
                                 }
                             }
                         }
@@ -17719,7 +17621,7 @@ namespace RogueSurvivor.Engine
 
                     // 7. Weather (if visible and not inside).
                     if (isVisible && weatherImage != null && tile != null && !tile.IsInside)
-                        m_UI.UI_DrawImage(weatherImage, toScreen.X, toScreen.Y);
+                        m_UI.DrawImage(weatherImage, toScreen.X, toScreen.Y);
                 }
             }
 
@@ -17761,32 +17663,32 @@ namespace RogueSurvivor.Engine
             if (tile.IsInView)  // visible
             {
                 // tile.
-                m_UI.UI_DrawImage(tile.Model.ImageID, screen.X, screen.Y, tint);
+                m_UI.DrawImage(tile.Model.ImageID, screen.X, screen.Y, tint);
 
                 // animation layer.
                 string movingWater = MovingWaterImage(tile.Model, m_Session.WorldTime.TurnCounter);
                 if (movingWater != null)
-                    m_UI.UI_DrawImage(movingWater, screen.X, screen.Y, tint);
+                    m_UI.DrawImage(movingWater, screen.X, screen.Y, tint);
 
                 // decorations.
                 if (tile.HasDecorations)
                     foreach (string deco in tile.Decorations)
-                        m_UI.UI_DrawImage(deco, screen.X, screen.Y, tint);
+                        m_UI.DrawImage(deco, screen.X, screen.Y, tint);
             }
             else if (tile.IsVisited && !IsPlayerSleeping()) // memorized
             {
                 // tile.
-                m_UI.UI_DrawGrayLevelImage(tile.Model.ImageID, screen.X, screen.Y);
+                m_UI.DrawGrayLevelImage(tile.Model.ImageID, screen.X, screen.Y);
 
                 // animation layer.
                 string movingWater = MovingWaterImage(tile.Model, m_Session.WorldTime.TurnCounter);
                 if (movingWater != null)
-                    m_UI.UI_DrawGrayLevelImage(movingWater, screen.X, screen.Y);
+                    m_UI.DrawGrayLevelImage(movingWater, screen.X, screen.Y);
 
                 // deocrations.
                 if (tile.HasDecorations)
                     foreach (string deco in tile.Decorations)
-                        m_UI.UI_DrawGrayLevelImage(deco, screen.X, screen.Y);
+                        m_UI.DrawGrayLevelImage(deco, screen.X, screen.Y);
             }
         }
 
@@ -17795,23 +17697,23 @@ namespace RogueSurvivor.Engine
             if (tile.IsInView)  // visible
             {
                 // tile.
-                m_UI.UI_DrawImage(tile.Model.WaterCoverImageID, screen.X, screen.Y, tint);
+                m_UI.DrawImage(tile.Model.WaterCoverImageID, screen.X, screen.Y, tint);
             }
             else if (tile.IsVisited && !IsPlayerSleeping()) // memorized
             {
                 // tile.
-                m_UI.UI_DrawGrayLevelImage(tile.Model.WaterCoverImageID, screen.X, screen.Y);
+                m_UI.DrawGrayLevelImage(tile.Model.WaterCoverImageID, screen.X, screen.Y);
             }
         }
 
         public void DrawExit(Point screen)
         {
-            m_UI.UI_DrawImage(GameImages.MAP_EXIT, screen.X, screen.Y);
+            m_UI.DrawImage(GameImages.MAP_EXIT, screen.X, screen.Y);
         }
 
         public void DrawTileRectangle(Point mapPosition, Color color)
         {
-            m_UI.UI_DrawRect(color, new Rectangle(MapToScreen(mapPosition), new Size(TILE_SIZE, TILE_SIZE)));
+            m_UI.DrawRect(color, new Rectangle(MapToScreen(mapPosition), new Size(TILE_SIZE, TILE_SIZE)));
         }
 
         public void DrawMapObject(MapObject mapObj, Point screen, Color tint)
@@ -17825,7 +17727,7 @@ namespace RogueSurvivor.Engine
 
             if (IsVisibleToPlayer(mapObj))
             {
-                DrawMapObject(mapObj, screen, mapObj.ImageID, (imageID, gx, gy) => m_UI.UI_DrawImage(imageID, gx, gy, tint));
+                DrawMapObject(mapObj, screen, mapObj.ImageID, (imageID, gx, gy) => m_UI.DrawImage(imageID, gx, gy, tint));
 
                 if (mapObj.HitPoints < mapObj.MaxHitPoints && mapObj.HitPoints > 0)
                     DrawMapHealthBar(mapObj.HitPoints, mapObj.MaxHitPoints, screen.X, screen.Y);
@@ -17834,12 +17736,12 @@ namespace RogueSurvivor.Engine
                 if (door != null && door.BarricadePoints > 0)
                 {
                     DrawMapHealthBar(door.BarricadePoints, Rules.BARRICADING_MAX, screen.X, screen.Y, Color.Green);
-                    m_UI.UI_DrawImage(GameImages.EFFECT_BARRICADED, screen.X, screen.Y, tint);
+                    m_UI.DrawImage(GameImages.EFFECT_BARRICADED, screen.X, screen.Y, tint);
                 }
             }
             else if (IsKnownToPlayer(mapObj) && !IsPlayerSleeping())
             {
-                DrawMapObject(mapObj, screen, mapObj.HiddenImageID, (imageID, gx, gy) => m_UI.UI_DrawGrayLevelImage(imageID, gx, gy));
+                DrawMapObject(mapObj, screen, mapObj.HiddenImageID, (imageID, gx, gy) => m_UI.DrawGrayLevelImage(imageID, gx, gy));
             }
         }
 
@@ -17862,11 +17764,11 @@ namespace RogueSurvivor.Engine
             if (actor.Leader != null && actor.Leader == m_Player)
             {
                 if (m_Rules.HasActorBondWith(actor, m_Player))
-                    m_UI.UI_DrawImage(GameImages.PLAYER_FOLLOWER_BOND, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.PLAYER_FOLLOWER_BOND, gx, gy, tint);
                 else if (m_Rules.IsActorTrustingLeader(actor))
-                    m_UI.UI_DrawImage(GameImages.PLAYER_FOLLOWER_TRUST, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.PLAYER_FOLLOWER_TRUST, gx, gy, tint);
                 else
-                    m_UI.UI_DrawImage(GameImages.PLAYER_FOLLOWER, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.PLAYER_FOLLOWER, gx, gy, tint);
             }
 
             gx += ACTOR_OFFSET;
@@ -17874,7 +17776,7 @@ namespace RogueSurvivor.Engine
 
             // model
             if (actor.Model.ImageID != null)
-                m_UI.UI_DrawImage(actor.Model.ImageID, gx, gy, tint);
+                m_UI.DrawImage(actor.Model.ImageID, gx, gy, tint);
 
             // skinning/clothing and body equipment.
             DrawActorDecoration(actor, gx, gy, DollPart.SKIN, tint);
@@ -17901,11 +17803,11 @@ namespace RogueSurvivor.Engine
                 bool imTheAggressor = m_Player.IsAggressorOf(actor);
                 bool groupEnemies = !m_Player.Faction.IsEnemyOf(actor.Faction) && m_Rules.AreGroupEnemies(m_Player, actor); // alpha10
                 if (imSelfDefence)
-                    m_UI.UI_DrawImage(GameImages.ICON_SELF_DEFENCE, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ICON_SELF_DEFENCE, gx, gy, tint);
                 else if (imTheAggressor)
-                    m_UI.UI_DrawImage(GameImages.ICON_AGGRESSOR, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ICON_AGGRESSOR, gx, gy, tint);
                 else if (groupEnemies)
-                    m_UI.UI_DrawImage(GameImages.ICON_INDIRECT_ENEMIES, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ICON_INDIRECT_ENEMIES, gx, gy, tint);
             }
 
             // activity
@@ -17922,30 +17824,30 @@ namespace RogueSurvivor.Engine
                         break;
 
                     if (actor.TargetActor != null && actor.TargetActor == m_Player)
-                        m_UI.UI_DrawImage(GameImages.ACTIVITY_CHASING_PLAYER, gx, gy, tint);
+                        m_UI.DrawImage(GameImages.ACTIVITY_CHASING_PLAYER, gx, gy, tint);
                     else
-                        m_UI.UI_DrawImage(GameImages.ACTIVITY_CHASING, gx, gy, tint);
+                        m_UI.DrawImage(GameImages.ACTIVITY_CHASING, gx, gy, tint);
                     break;
 
                 case Activity.TRACKING:
                     if (actor.IsPlayer)
                         break;
 
-                    m_UI.UI_DrawImage(GameImages.ACTIVITY_TRACKING, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ACTIVITY_TRACKING, gx, gy, tint);
                     break;
 
                 case Activity.FLEEING:
                     if (actor.IsPlayer)
                         break;
 
-                    m_UI.UI_DrawImage(GameImages.ACTIVITY_FLEEING, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ACTIVITY_FLEEING, gx, gy, tint);
                     break;
 
                 case Activity.FLEEING_FROM_EXPLOSIVE:
                     if (actor.IsPlayer)
                         break;
 
-                    m_UI.UI_DrawImage(GameImages.ACTIVITY_FLEEING_FROM_EXPLOSIVE, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ACTIVITY_FLEEING_FROM_EXPLOSIVE, gx, gy, tint);
                     break;
 
                 case Activity.FOLLOWING:
@@ -17955,19 +17857,19 @@ namespace RogueSurvivor.Engine
                         break;
 
                     if (actor.TargetActor.IsPlayer)
-                        m_UI.UI_DrawImage(GameImages.ACTIVITY_FOLLOWING_PLAYER, gx, gy);
+                        m_UI.DrawImage(GameImages.ACTIVITY_FOLLOWING_PLAYER, gx, gy);
                     else if (actor.TargetActor == actor.Leader) // alpha10
-                        m_UI.UI_DrawImage(GameImages.ACTIVITY_FOLLOWING_LEADER, gx, gy);
+                        m_UI.DrawImage(GameImages.ACTIVITY_FOLLOWING_LEADER, gx, gy);
                     else
-                        m_UI.UI_DrawImage(GameImages.ACTIVITY_FOLLOWING, gx, gy);
+                        m_UI.DrawImage(GameImages.ACTIVITY_FOLLOWING, gx, gy);
                     break;
 
                 case Activity.FOLLOWING_ORDER:
-                    m_UI.UI_DrawImage(GameImages.ACTIVITY_FOLLOWING_ORDER, gx, gy);
+                    m_UI.DrawImage(GameImages.ACTIVITY_FOLLOWING_ORDER, gx, gy);
                     break;
 
                 case Activity.SLEEPING:
-                    m_UI.UI_DrawImage(GameImages.ACTIVITY_SLEEPING, gx, gy);
+                    m_UI.DrawImage(GameImages.ACTIVITY_SLEEPING, gx, gy);
                     break;
 
                 default:
@@ -17983,46 +17885,46 @@ namespace RogueSurvivor.Engine
 
             // run/tired icon.
             if (actor.IsRunning)
-                m_UI.UI_DrawImage(GameImages.ICON_RUNNING, gx, gy, tint);
+                m_UI.DrawImage(GameImages.ICON_RUNNING, gx, gy, tint);
             else if (actor.Model.Abilities.CanRun && !m_Rules.CanActorRun(actor))
-                m_UI.UI_DrawImage(GameImages.ICON_CANT_RUN, gx, gy, tint);
+                m_UI.DrawImage(GameImages.ICON_CANT_RUN, gx, gy, tint);
 
             // sleepy, hungry & insane icons.
             if (actor.Model.Abilities.HasToSleep)
             {
                 if (m_Rules.IsActorExhausted(actor))
-                    m_UI.UI_DrawImage(GameImages.ICON_SLEEP_EXHAUSTED, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ICON_SLEEP_EXHAUSTED, gx, gy, tint);
                 else if (m_Rules.IsActorSleepy(actor))
-                    m_UI.UI_DrawImage(GameImages.ICON_SLEEP_SLEEPY, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ICON_SLEEP_SLEEPY, gx, gy, tint);
                 else if (m_Rules.IsAlmostSleepy(actor))
-                    m_UI.UI_DrawImage(GameImages.ICON_SLEEP_ALMOST_SLEEPY, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ICON_SLEEP_ALMOST_SLEEPY, gx, gy, tint);
             }
 
             if (actor.Model.Abilities.HasToEat)
             {
                 if (m_Rules.IsActorStarving(actor))
-                    m_UI.UI_DrawImage(GameImages.ICON_FOOD_STARVING, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ICON_FOOD_STARVING, gx, gy, tint);
                 else if (m_Rules.IsActorHungry(actor))
-                    m_UI.UI_DrawImage(GameImages.ICON_FOOD_HUNGRY, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ICON_FOOD_HUNGRY, gx, gy, tint);
                 else if (IsAlmostHungry(actor))
-                    m_UI.UI_DrawImage(GameImages.ICON_FOOD_ALMOST_HUNGRY, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ICON_FOOD_ALMOST_HUNGRY, gx, gy, tint);
             }
             else if (actor.Model.Abilities.IsRotting)
             {
                 if (m_Rules.IsRottingActorStarving(actor))
-                    m_UI.UI_DrawImage(GameImages.ICON_ROT_STARVING, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ICON_ROT_STARVING, gx, gy, tint);
                 else if (m_Rules.IsRottingActorHungry(actor))
-                    m_UI.UI_DrawImage(GameImages.ICON_ROT_HUNGRY, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ICON_ROT_HUNGRY, gx, gy, tint);
                 else if (IsAlmostRotHungry(actor))
-                    m_UI.UI_DrawImage(GameImages.ICON_ROT_ALMOST_HUNGRY, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ICON_ROT_ALMOST_HUNGRY, gx, gy, tint);
             }
 
             if (actor.Model.Abilities.HasSanity)
             {
                 if (m_Rules.IsActorInsane(actor))
-                    m_UI.UI_DrawImage(GameImages.ICON_SANITY_INSANE, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ICON_SANITY_INSANE, gx, gy, tint);
                 else if (m_Rules.IsActorDisturbed(actor))
-                    m_UI.UI_DrawImage(GameImages.ICON_SANITY_DISTURBED, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ICON_SANITY_DISTURBED, gx, gy, tint);
             }
 
             // can trade with player icon.
@@ -18030,27 +17932,27 @@ namespace RogueSurvivor.Engine
             if (m_Player != null)
             {
                 if (actor != m_Player && !m_Player.Model.Abilities.IsUndead && ActorHasVitalItemForPlayer(actor))
-                    m_UI.UI_DrawImage(GameImages.ICON_HAS_VITAL_ITEM, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ICON_HAS_VITAL_ITEM, gx, gy, tint);
                 else if (m_Rules.CanActorInitiateTradeWith(m_Player, actor))
-                    m_UI.UI_DrawImage(GameImages.ICON_CAN_TRADE, gx, gy, tint);
+                    m_UI.DrawImage(GameImages.ICON_CAN_TRADE, gx, gy, tint);
             }
 
             // alpha10 odor suppressed icon (will overlap with sleep healing but its fine)
             if (actor.OdorSuppressorCounter > 0)
-                m_UI.UI_DrawImage(GameImages.ICON_ODOR_SUPPRESSED, gx, gy, tint);
+                m_UI.DrawImage(GameImages.ICON_ODOR_SUPPRESSED, gx, gy, tint);
 
             // sleep-healing icon.
             if (actor.IsSleeping && (m_Rules.IsOnCouch(actor) || m_Rules.ActorHealChanceBonus(actor) > 0))
-                m_UI.UI_DrawImage(GameImages.ICON_HEALING, gx, gy, tint);
+                m_UI.DrawImage(GameImages.ICON_HEALING, gx, gy, tint);
 
             // is a leader icon.
             if (actor.CountFollowers > 0)
-                m_UI.UI_DrawImage(GameImages.ICON_LEADER, gx, gy, tint);
+                m_UI.DrawImage(GameImages.ICON_LEADER, gx, gy, tint);
 
             // alpha10
             // z-grab skill warning icon
             if (actor.Sheet.SkillTable.GetSkillLevel((int)Skills.IDs.Z_GRAB) > 0)
-                m_UI.UI_DrawImage(GameImages.ICON_ZGRAB, gx, gy, tint);
+                m_UI.DrawImage(GameImages.ICON_ZGRAB, gx, gy, tint);
 
             // combat assitant helper.
             if (s_Options.IsCombatAssistantOn)
@@ -18058,11 +17960,11 @@ namespace RogueSurvivor.Engine
                 if (actor != m_Player && m_Player != null && m_Rules.AreEnemies(actor, m_Player))
                 {
                     if (m_Rules.WillActorActAgainBefore(m_Player, actor))
-                        m_UI.UI_DrawImage(GameImages.ICON_THREAT_SAFE, gx, gy, tint);
+                        m_UI.DrawImage(GameImages.ICON_THREAT_SAFE, gx, gy, tint);
                     else if (m_Rules.WillOtherActTwiceBefore(m_Player, actor))
-                        m_UI.UI_DrawImage(GameImages.ICON_THREAT_HIGH_DANGER, gx, gy, tint);
+                        m_UI.DrawImage(GameImages.ICON_THREAT_HIGH_DANGER, gx, gy, tint);
                     else
-                        m_UI.UI_DrawImage(GameImages.ICON_THREAT_DANGER, gx, gy, tint);
+                        m_UI.DrawImage(GameImages.ICON_THREAT_DANGER, gx, gy, tint);
                 }
             }
         }
@@ -18115,7 +18017,7 @@ namespace RogueSurvivor.Engine
                 return;
 
             foreach (string imageID in decos)
-                m_UI.UI_DrawImage(imageID, gx, gy, tint);
+                m_UI.DrawImage(imageID, gx, gy, tint);
         }
 
         public void DrawActorDecoration(Actor actor, int gx, int gy, DollPart part, float rotation, float scale)
@@ -18125,7 +18027,7 @@ namespace RogueSurvivor.Engine
                 return;
 
             foreach (string imageID in decos)
-                m_UI.UI_DrawImageTransform(imageID, gx, gy, rotation, scale);
+                m_UI.DrawImageTransform(imageID, gx, gy, rotation, scale);
         }
 
         public void DrawActorEquipment(Actor actor, int gx, int gy, DollPart part, Color tint)
@@ -18134,7 +18036,7 @@ namespace RogueSurvivor.Engine
             if (it == null)
                 return;
 
-            m_UI.UI_DrawImage(it.ImageID, gx, gy, tint);
+            m_UI.DrawImage(it.ImageID, gx, gy, tint);
         }
 
         public void DrawCorpse(Corpse c, int gx, int gy, Color tint)
@@ -18150,7 +18052,7 @@ namespace RogueSurvivor.Engine
 
             // model.
             if (actor.Model.ImageID != null)
-                m_UI.UI_DrawImageTransform(actor.Model.ImageID, gx, gy, rotation, scale);
+                m_UI.DrawImageTransform(actor.Model.ImageID, gx, gy, rotation, scale);
 
             // skinning/clothing.
             DrawActorDecoration(actor, gx, gy, DollPart.SKIN, rotation, scale);
@@ -18184,7 +18086,7 @@ namespace RogueSurvivor.Engine
                 // a bit of offset for a nice flies movement effect.
                 int rotdx = (m_Session.WorldTime.TurnCounter % 5) - 2;
                 int rotdy = ((m_Session.WorldTime.TurnCounter / 3) % 5) - 2;
-                m_UI.UI_DrawImage(img, gx + rotdx, gy + rotdy);
+                m_UI.DrawImage(img, gx + rotdx, gy + rotdy);
             }
         }
 
@@ -18196,15 +18098,15 @@ namespace RogueSurvivor.Engine
             // Draw title.
             int n = (list == null ? 0 : list.Count);
             if (n > 0) title += " : " + n;
-            gy -= BOLD_LINE_SPACING;
+            gy -= Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.White, title, gx, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
 
             // Draw slots.
             x = gx; y = gy; slot = 0;
             for (int i = 0; i < slots; i++)
             {
-                m_UI.UI_DrawImage(GameImages.ITEM_SLOT, x, y);
+                m_UI.DrawImage(GameImages.ITEM_SLOT, x, y);
                 x += TILE_SIZE;
             }
 
@@ -18216,7 +18118,7 @@ namespace RogueSurvivor.Engine
             foreach (Corpse c in list)
             {
                 if (c.IsDragged)
-                    m_UI.UI_DrawImage(GameImages.CORPSE_DRAGGED, x, y);
+                    m_UI.DrawImage(GameImages.CORPSE_DRAGGED, x, y);
                 DrawCorpse(c, x, y, Color.White);
                 if (++slot >= slots)
                     break;
@@ -18276,7 +18178,7 @@ namespace RogueSurvivor.Engine
             if (player.TargetActor != null && !player.TargetActor.IsDead && IsVisibleToPlayer(player.TargetActor))
             {
                 Point gpos = MapToScreen(player.TargetActor.Location.Position);
-                m_UI.UI_DrawImage(GameImages.ICON_IS_TARGET, gpos.X, gpos.Y);
+                m_UI.DrawImage(GameImages.ICON_IS_TARGET, gpos.X, gpos.Y);
             }
             foreach (Actor a in player.Location.Map.Actors)
             {
@@ -18285,7 +18187,7 @@ namespace RogueSurvivor.Engine
                 if (a.TargetActor == player && (a.Activity == Activity.CHASING || a.Activity == Activity.FIGHTING))
                 {
                     Point gpos = MapToScreen(player.Location.Position);
-                    m_UI.UI_DrawImage(GameImages.ICON_IS_TARGETTED, gpos.X, gpos.Y);
+                    m_UI.DrawImage(GameImages.ICON_IS_TARGETTED, gpos.X, gpos.Y);
                     break;
                 }
             }
@@ -18302,7 +18204,7 @@ namespace RogueSurvivor.Engine
 
         public void DrawMapIcon(Point position, string imageID)
         {
-            m_UI.UI_DrawImage(imageID, position.X * RogueGame.TILE_SIZE, position.Y * RogueGame.TILE_SIZE);
+            m_UI.DrawImage(imageID, position.X * RogueGame.TILE_SIZE, position.Y * RogueGame.TILE_SIZE);
         }
 
         public void DrawMapHealthBar(int hitPoints, int maxHitPoints, int gx, int gy)
@@ -18315,16 +18217,16 @@ namespace RogueSurvivor.Engine
             int hpX = gx + 4;
             int hpY = gy + TILE_SIZE - 4;
             int barLength = (int)(20 * (float)hitPoints / (float)maxHitPoints);
-            m_UI.UI_FillRect(Color.Black, new Rectangle(hpX, hpY, 20, 4));
+            m_UI.FillRect(Color.Black, new Rectangle(hpX, hpY, 20, 4));
             if (barLength > 0)
-                m_UI.UI_FillRect(barColor, new Rectangle(hpX + 1, hpY + 1, barLength, 2));
+                m_UI.FillRect(barColor, new Rectangle(hpX + 1, hpY + 1, barLength, 2));
 
         }
 
         public void DrawBar(int value, int previousValue, int maxValue, int refValue, int maxWidth, int height, int gx, int gy,
             Color fillColor, Color lossFillColor, Color gainFillColor, Color emptyColor)
         {
-            m_UI.UI_FillRect(emptyColor, new Rectangle(gx, gy, maxWidth, height));
+            m_UI.FillRect(emptyColor, new Rectangle(gx, gy, maxWidth, height));
 
             int prevBarLength = (int)(maxWidth * (float)previousValue / (float)maxValue);
             int barLength = (int)(maxWidth * (float)value / (float)maxValue);
@@ -18333,28 +18235,28 @@ namespace RogueSurvivor.Engine
             {
                 // gain
                 if (barLength > 0)
-                    m_UI.UI_FillRect(gainFillColor, new Rectangle(gx, gy, barLength, height));
+                    m_UI.FillRect(gainFillColor, new Rectangle(gx, gy, barLength, height));
                 if (prevBarLength > 0)
-                    m_UI.UI_FillRect(fillColor, new Rectangle(gx, gy, prevBarLength, height));
+                    m_UI.FillRect(fillColor, new Rectangle(gx, gy, prevBarLength, height));
             }
             else if (value < previousValue)
             {
                 // loss
                 if (prevBarLength > 0)
-                    m_UI.UI_FillRect(lossFillColor, new Rectangle(gx, gy, prevBarLength, height));
+                    m_UI.FillRect(lossFillColor, new Rectangle(gx, gy, prevBarLength, height));
                 if (barLength > 0)
-                    m_UI.UI_FillRect(fillColor, new Rectangle(gx, gy, barLength, height));
+                    m_UI.FillRect(fillColor, new Rectangle(gx, gy, barLength, height));
             }
             else
             {
                 // no change.
                 if (barLength > 0)
-                    m_UI.UI_FillRect(fillColor, new Rectangle(gx, gy, barLength, height));
+                    m_UI.FillRect(fillColor, new Rectangle(gx, gy, barLength, height));
             }
 
             // reference line.
             int refLength = (int)(maxWidth * (float)refValue / (float)maxValue);
-            m_UI.UI_DrawLine(Color.White, gx + refLength, gy, gx + refLength, gy + height);
+            m_UI.DrawLine(Color.White, gx + refLength, gy, gx + refLength, gy + height);
         }
 
         public void DrawMiniMap(Map map)
@@ -18395,7 +18297,7 @@ namespace RogueSurvivor.Engine
             }
 
             // show view rect.
-            m_UI.UI_DrawRect(Color.White, new Rectangle(MINIMAP_X + m_MapViewRect.Left * MINITILE_SIZE, MINIMAP_Y + m_MapViewRect.Top * MINITILE_SIZE, m_MapViewRect.Width * MINITILE_SIZE, m_MapViewRect.Height * MINITILE_SIZE));
+            m_UI.DrawRect(Color.White, new Rectangle(MINIMAP_X + m_MapViewRect.Left * MINITILE_SIZE, MINIMAP_Y + m_MapViewRect.Top * MINITILE_SIZE, m_MapViewRect.Width * MINITILE_SIZE, m_MapViewRect.Height * MINITILE_SIZE));
 
             // show player tags.
             if (s_Options.ShowPlayerTagsOnMinimap)
@@ -18418,7 +18320,7 @@ namespace RogueSurvivor.Engine
                             if (minitag != null)
                             {
                                 Point pos = new Point(MINIMAP_X + x * MINITILE_SIZE, MINIMAP_Y + y * MINITILE_SIZE);
-                                m_UI.UI_DrawImage(minitag, pos.X - MINI_TRACKER_OFFSET, pos.Y - MINI_TRACKER_OFFSET);
+                                m_UI.DrawImage(minitag, pos.X - MINI_TRACKER_OFFSET, pos.Y - MINI_TRACKER_OFFSET);
                             }
                         }
                     }
@@ -18450,13 +18352,13 @@ namespace RogueSurvivor.Engine
                                 {
                                     // show follower position.
                                     Point foMiniPos = new Point(MINIMAP_X + fo.Location.Position.X * MINITILE_SIZE, MINIMAP_Y + fo.Location.Position.Y * MINITILE_SIZE);
-                                    m_UI.UI_DrawImage(GameImages.MINI_FOLLOWER_POSITION, foMiniPos.X - MINI_TRACKER_OFFSET, foMiniPos.Y - MINI_TRACKER_OFFSET);
+                                    m_UI.DrawImage(GameImages.MINI_FOLLOWER_POSITION, foMiniPos.X - MINI_TRACKER_OFFSET, foMiniPos.Y - MINI_TRACKER_OFFSET);
 
                                     // if out of FoV but in view,, draw on map.
                                     if (IsInViewRect(fo.Location.Position) && !IsVisibleToPlayer(fo))
                                     {
                                         Point screenPos = MapToScreen(fo.Location.Position);
-                                        m_UI.UI_DrawImage(GameImages.TRACK_FOLLOWER_POSITION, screenPos.X, screenPos.Y);
+                                        m_UI.DrawImage(GameImages.TRACK_FOLLOWER_POSITION, screenPos.X, screenPos.Y);
                                     }
                                 }
                             }
@@ -18479,13 +18381,13 @@ namespace RogueSurvivor.Engine
 
                                 // close undead, show it.
                                 Point undeadPos = new Point(MINIMAP_X + other.Location.Position.X * MINITILE_SIZE, MINIMAP_Y + other.Location.Position.Y * MINITILE_SIZE);
-                                m_UI.UI_DrawImage(GameImages.MINI_UNDEAD_POSITION, undeadPos.X - MINI_TRACKER_OFFSET, undeadPos.Y - MINI_TRACKER_OFFSET);
+                                m_UI.DrawImage(GameImages.MINI_UNDEAD_POSITION, undeadPos.X - MINI_TRACKER_OFFSET, undeadPos.Y - MINI_TRACKER_OFFSET);
 
                                 // if out of FoV but in view,, draw on map.
                                 if (IsInViewRect(other.Location.Position) && !IsVisibleToPlayer(other))
                                 {
                                     Point screenPos = MapToScreen(other.Location.Position);
-                                    m_UI.UI_DrawImage(GameImages.TRACK_UNDEAD_POSITION, screenPos.X, screenPos.Y);
+                                    m_UI.DrawImage(GameImages.TRACK_UNDEAD_POSITION, screenPos.X, screenPos.Y);
                                 }
                             }
                         }
@@ -18505,13 +18407,13 @@ namespace RogueSurvivor.Engine
 
                                 // blackop, show it.
                                 Point boPos = new Point(MINIMAP_X + other.Location.Position.X * MINITILE_SIZE, MINIMAP_Y + other.Location.Position.Y * MINITILE_SIZE);
-                                m_UI.UI_DrawImage(GameImages.MINI_BLACKOPS_POSITION, boPos.X - MINI_TRACKER_OFFSET, boPos.Y - MINI_TRACKER_OFFSET);
+                                m_UI.DrawImage(GameImages.MINI_BLACKOPS_POSITION, boPos.X - MINI_TRACKER_OFFSET, boPos.Y - MINI_TRACKER_OFFSET);
 
                                 // if out of FoV but in view,, draw on map.
                                 if (IsInViewRect(other.Location.Position) && !IsVisibleToPlayer(other))
                                 {
                                     Point screenPos = MapToScreen(other.Location.Position);
-                                    m_UI.UI_DrawImage(GameImages.TRACK_BLACKOPS_POSITION, screenPos.X, screenPos.Y);
+                                    m_UI.DrawImage(GameImages.TRACK_BLACKOPS_POSITION, screenPos.X, screenPos.Y);
                                 }
                             }
                         }
@@ -18531,13 +18433,13 @@ namespace RogueSurvivor.Engine
 
                                 // policeman, show it.
                                 Point boPos = new Point(MINIMAP_X + other.Location.Position.X * MINITILE_SIZE, MINIMAP_Y + other.Location.Position.Y * MINITILE_SIZE);
-                                m_UI.UI_DrawImage(GameImages.MINI_POLICE_POSITION, boPos.X - MINI_TRACKER_OFFSET, boPos.Y - MINI_TRACKER_OFFSET);
+                                m_UI.DrawImage(GameImages.MINI_POLICE_POSITION, boPos.X - MINI_TRACKER_OFFSET, boPos.Y - MINI_TRACKER_OFFSET);
 
                                 // if out of FoV but in view,, draw on map.
                                 if (IsInViewRect(other.Location.Position) && !IsVisibleToPlayer(other))
                                 {
                                     Point screenPos = MapToScreen(other.Location.Position);
-                                    m_UI.UI_DrawImage(GameImages.TRACK_POLICE_POSITION, screenPos.X, screenPos.Y);
+                                    m_UI.DrawImage(GameImages.TRACK_POLICE_POSITION, screenPos.X, screenPos.Y);
                                 }
                             }
                         }
@@ -18546,7 +18448,7 @@ namespace RogueSurvivor.Engine
 
                 // player.
                 Point pos = new Point(MINIMAP_X + m_Player.Location.Position.X * MINITILE_SIZE, MINIMAP_Y + m_Player.Location.Position.Y * MINITILE_SIZE);
-                m_UI.UI_DrawImage(GameImages.MINI_PLAYER_POSITION, pos.X - MINI_TRACKER_OFFSET, pos.Y - MINI_TRACKER_OFFSET);
+                m_UI.DrawImage(GameImages.MINI_PLAYER_POSITION, pos.X - MINI_TRACKER_OFFSET, pos.Y - MINI_TRACKER_OFFSET);
             }
         }
 
@@ -18556,114 +18458,114 @@ namespace RogueSurvivor.Engine
             m_UI.DrawStringBold(actor.IsInvincible ? Color.LightGreen : Color.White, String.Format("{0}, {1}", actor.Name, actor.Faction.MemberName), gx, gy);
 
             // 2. Bars: Health, Stamina, Food, Sleep, Infection.
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             int maxHP = m_Rules.ActorMaxHPs(actor);
             m_UI.DrawStringBold(Color.White, String.Format("HP  {0}", actor.HitPoints), gx, gy);
-            DrawBar(actor.HitPoints, actor.PreviousHitPoints, maxHP, 0, 100, BOLD_LINE_SPACING, gx + BOLD_LINE_SPACING * 5, gy, Color.Red, Color.DarkRed, Color.OrangeRed, Color.Gray);
-            m_UI.DrawStringBold(Color.White, String.Format("{0}", maxHP), gx + BOLD_LINE_SPACING * 6 + 100, gy);
+            DrawBar(actor.HitPoints, actor.PreviousHitPoints, maxHP, 0, 100, Ui.BOLD_LINE_SPACING, gx + Ui.BOLD_LINE_SPACING * 5, gy, Color.Red, Color.DarkRed, Color.OrangeRed, Color.Gray);
+            m_UI.DrawStringBold(Color.White, String.Format("{0}", maxHP), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
 
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             if (actor.Model.Abilities.CanTire)
             {
                 int maxSTA = m_Rules.ActorMaxSTA(actor);
                 m_UI.DrawStringBold(Color.White, String.Format("STA {0}", actor.StaminaPoints), gx, gy);
-                DrawBar(actor.StaminaPoints, actor.PreviousStaminaPoints, maxSTA, Rules.STAMINA_MIN_FOR_ACTIVITY, 100, BOLD_LINE_SPACING, gx + BOLD_LINE_SPACING * 5, gy, Color.Green, Color.DarkGreen, Color.LightGreen, Color.Gray);
-                m_UI.DrawStringBold(Color.White, String.Format("{0}", maxSTA), gx + BOLD_LINE_SPACING * 6 + 100, gy);
+                DrawBar(actor.StaminaPoints, actor.PreviousStaminaPoints, maxSTA, Rules.STAMINA_MIN_FOR_ACTIVITY, 100, Ui.BOLD_LINE_SPACING, gx + Ui.BOLD_LINE_SPACING * 5, gy, Color.Green, Color.DarkGreen, Color.LightGreen, Color.Gray);
+                m_UI.DrawStringBold(Color.White, String.Format("{0}", maxSTA), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
                 if (actor.IsRunning)
-                    m_UI.DrawStringBold(Color.LightGreen, "RUNNING!", gx + BOLD_LINE_SPACING * 9 + 100, gy);
+                    m_UI.DrawStringBold(Color.LightGreen, "RUNNING!", gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
                 else if (m_Rules.CanActorRun(actor))
-                    m_UI.DrawStringBold(Color.Green, "can run", gx + BOLD_LINE_SPACING * 9 + 100, gy);
+                    m_UI.DrawStringBold(Color.Green, "can run", gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
                 else if (m_Rules.IsActorTired(actor))
-                    m_UI.DrawStringBold(Color.Gray, "TIRED", gx + BOLD_LINE_SPACING * 9 + 100, gy);
+                    m_UI.DrawStringBold(Color.Gray, "TIRED", gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
             }
 
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             if (actor.Model.Abilities.HasToEat)
             {
                 int maxFood = m_Rules.ActorMaxFood(actor);
                 m_UI.DrawStringBold(Color.White, String.Format("FOO {0}", actor.FoodPoints), gx, gy);
-                DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxFood, Rules.FOOD_HUNGRY_LEVEL, 100, BOLD_LINE_SPACING, gx + BOLD_LINE_SPACING * 5, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
-                m_UI.DrawStringBold(Color.White, String.Format("{0}", maxFood), gx + BOLD_LINE_SPACING * 6 + 100, gy);
+                DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxFood, Rules.FOOD_HUNGRY_LEVEL, 100, Ui.BOLD_LINE_SPACING, gx + Ui.BOLD_LINE_SPACING * 5, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
+                m_UI.DrawStringBold(Color.White, String.Format("{0}", maxFood), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
                 if (m_Rules.IsActorHungry(actor))
                 {
                     if (m_Rules.IsActorStarving(actor))
-                        m_UI.DrawStringBold(Color.Red, "STARVING!", gx + BOLD_LINE_SPACING * 9 + 100, gy);
+                        m_UI.DrawStringBold(Color.Red, "STARVING!", gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
                     else
-                        m_UI.DrawStringBold(Color.Yellow, "Hungry", gx + BOLD_LINE_SPACING * 9 + 100, gy);
+                        m_UI.DrawStringBold(Color.Yellow, "Hungry", gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
                 }
                 else
-                    m_UI.DrawStringBold(Color.White, String.Format("{0}h", FoodToHoursUntilHungry(actor.FoodPoints)), gx + BOLD_LINE_SPACING * 9 + 100, gy);
+                    m_UI.DrawStringBold(Color.White, String.Format("{0}h", FoodToHoursUntilHungry(actor.FoodPoints)), gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
             }
             else if (actor.Model.Abilities.IsRotting)
             {
                 int maxFood = m_Rules.ActorMaxRot(actor);
                 m_UI.DrawStringBold(Color.White, String.Format("ROT {0}", actor.FoodPoints), gx, gy);
-                DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxFood, Rules.ROT_HUNGRY_LEVEL, 100, BOLD_LINE_SPACING, gx + BOLD_LINE_SPACING * 5, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
-                m_UI.DrawStringBold(Color.White, String.Format("{0}", maxFood), gx + BOLD_LINE_SPACING * 6 + 100, gy);
+                DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxFood, Rules.ROT_HUNGRY_LEVEL, 100, Ui.BOLD_LINE_SPACING, gx + Ui.BOLD_LINE_SPACING * 5, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
+                m_UI.DrawStringBold(Color.White, String.Format("{0}", maxFood), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
                 if (m_Rules.IsRottingActorHungry(actor))
                 {
                     if (m_Rules.IsRottingActorStarving(actor))
-                        m_UI.DrawStringBold(Color.Red, "STARVING!", gx + BOLD_LINE_SPACING * 9 + 100, gy);
+                        m_UI.DrawStringBold(Color.Red, "STARVING!", gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
                     else
-                        m_UI.DrawStringBold(Color.Yellow, "Hungry", gx + BOLD_LINE_SPACING * 9 + 100, gy);
+                        m_UI.DrawStringBold(Color.Yellow, "Hungry", gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
                 }
                 else
-                    m_UI.DrawStringBold(Color.White, String.Format("{0}h", FoodToHoursUntilRotHungry(actor.FoodPoints)), gx + BOLD_LINE_SPACING * 9 + 100, gy);
+                    m_UI.DrawStringBold(Color.White, String.Format("{0}h", FoodToHoursUntilRotHungry(actor.FoodPoints)), gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
             }
 
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             if (actor.Model.Abilities.HasToSleep)
             {
                 int maxSleep = m_Rules.ActorMaxSleep(actor);
                 m_UI.DrawStringBold(Color.White, String.Format("SLP {0}", actor.SleepPoints), gx, gy);
-                DrawBar(actor.SleepPoints, actor.PreviousSleepPoints, maxSleep, Rules.SLEEP_SLEEPY_LEVEL, 100, BOLD_LINE_SPACING, gx + BOLD_LINE_SPACING * 5, gy, Color.Blue, Color.DarkBlue, Color.LightBlue, Color.Gray);
-                m_UI.DrawStringBold(Color.White, String.Format("{0}", maxSleep), gx + BOLD_LINE_SPACING * 6 + 100, gy);
+                DrawBar(actor.SleepPoints, actor.PreviousSleepPoints, maxSleep, Rules.SLEEP_SLEEPY_LEVEL, 100, Ui.BOLD_LINE_SPACING, gx + Ui.BOLD_LINE_SPACING * 5, gy, Color.Blue, Color.DarkBlue, Color.LightBlue, Color.Gray);
+                m_UI.DrawStringBold(Color.White, String.Format("{0}", maxSleep), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
                 if (m_Rules.IsActorSleepy(actor))
                 {
                     if (m_Rules.IsActorExhausted(actor))
-                        m_UI.DrawStringBold(Color.Red, "EXHAUSTED!", gx + BOLD_LINE_SPACING * 9 + 100, gy);
+                        m_UI.DrawStringBold(Color.Red, "EXHAUSTED!", gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
                     else
-                        m_UI.DrawStringBold(Color.Yellow, "Sleepy", gx + BOLD_LINE_SPACING * 9 + 100, gy);
+                        m_UI.DrawStringBold(Color.Yellow, "Sleepy", gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
                 }
                 else
-                    m_UI.DrawStringBold(Color.White, String.Format("{0}h", m_Rules.SleepToHoursUntilSleepy(actor.SleepPoints, m_Session.WorldTime.IsNight)), gx + BOLD_LINE_SPACING * 9 + 100, gy);
+                    m_UI.DrawStringBold(Color.White, String.Format("{0}h", m_Rules.SleepToHoursUntilSleepy(actor.SleepPoints, m_Session.WorldTime.IsNight)), gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
             }
 
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             if (actor.Model.Abilities.HasSanity)
             {
                 int maxSan = m_Rules.ActorMaxSanity(actor);
                 m_UI.DrawStringBold(Color.White, String.Format("SAN {0}", actor.Sanity), gx, gy);
-                DrawBar(actor.Sanity, actor.PreviousSanity, maxSan, m_Rules.ActorDisturbedLevel(actor), 100, BOLD_LINE_SPACING, gx + BOLD_LINE_SPACING * 5, gy, Color.Orange, Color.DarkOrange, Color.OrangeRed, Color.Gray);
-                m_UI.DrawStringBold(Color.White, String.Format("{0}", maxSan), gx + BOLD_LINE_SPACING * 6 + 100, gy);
+                DrawBar(actor.Sanity, actor.PreviousSanity, maxSan, m_Rules.ActorDisturbedLevel(actor), 100, Ui.BOLD_LINE_SPACING, gx + Ui.BOLD_LINE_SPACING * 5, gy, Color.Orange, Color.DarkOrange, Color.OrangeRed, Color.Gray);
+                m_UI.DrawStringBold(Color.White, String.Format("{0}", maxSan), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
                 if (m_Rules.IsActorDisturbed(actor))
                 {
                     if (m_Rules.IsActorInsane(actor))
-                        m_UI.DrawStringBold(Color.Red, "INSANE!", gx + BOLD_LINE_SPACING * 9 + 100, gy);
+                        m_UI.DrawStringBold(Color.Red, "INSANE!", gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
                     else
-                        m_UI.DrawStringBold(Color.Yellow, "Disturbed", gx + BOLD_LINE_SPACING * 9 + 100, gy);
+                        m_UI.DrawStringBold(Color.Yellow, "Disturbed", gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
                 }
                 else
-                    m_UI.DrawStringBold(Color.White, String.Format("{0}h", m_Rules.SanityToHoursUntilUnstable(actor)), gx + BOLD_LINE_SPACING * 9 + 100, gy);
+                    m_UI.DrawStringBold(Color.White, String.Format("{0}h", m_Rules.SanityToHoursUntilUnstable(actor)), gx + Ui.BOLD_LINE_SPACING * 9 + 100, gy);
             }
 
             if (Rules.HasInfection(m_Session.GameMode) && !actor.Model.Abilities.IsUndead)
             {
                 int maxInf = m_Rules.ActorInfectionHPs(actor);
                 int refInf = (Rules.INFECTION_LEVEL_1_WEAK * maxInf) / 100;
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.White, String.Format("INF {0}", actor.Infection), gx, gy);
-                DrawBar(actor.Infection, actor.Infection, maxInf, refInf, 100, BOLD_LINE_SPACING, gx + BOLD_LINE_SPACING * 5, gy, Color.Purple, Color.Black, Color.Black, Color.Gray);
-                m_UI.DrawStringBold(Color.White, String.Format("{0}%", m_Rules.ActorInfectionPercent(actor)), gx + BOLD_LINE_SPACING * 6 + 100, gy);
+                DrawBar(actor.Infection, actor.Infection, maxInf, refInf, 100, Ui.BOLD_LINE_SPACING, gx + Ui.BOLD_LINE_SPACING * 5, gy, Color.Purple, Color.Black, Color.Black, Color.Gray);
+                m_UI.DrawStringBold(Color.White, String.Format("{0}%", m_Rules.ActorInfectionPercent(actor)), gx + Ui.BOLD_LINE_SPACING * 6 + 100, gy);
             }
 
             // 3. Melee & Ranged Attacks.
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             Attack melee = m_Rules.ActorMeleeAttack(actor, actor.CurrentMeleeAttack, null);
             int dmgBonusVsUndead = m_Rules.ActorDamageBonusVsUndeads(actor);
             m_UI.DrawStringBold(Color.White, String.Format("Melee  Atk {0:D2}  Dmg {1:D2}/{2:D2}", melee.HitValue, melee.DamageValue, melee.DamageValue + dmgBonusVsUndead), gx, gy);
 
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             Attack ranged = m_Rules.ActorRangedAttack(actor, actor.CurrentRangedAttack, actor.CurrentRangedAttack.EfficientRange, null);
             ItemRangedWeapon rangedWeapon = actor.GetEquippedWeapon() as ItemRangedWeapon;
             int ammo, maxAmmo;
@@ -18677,7 +18579,7 @@ namespace RogueSurvivor.Engine
             }
 
             // 4. (living)Def, Pro, Spd, FoV & Nb of followers / (undead)Def, Spd, Fov, Sml, Kills
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             Defence defence = m_Rules.ActorDefence(actor, actor.CurrentDefence);
 
             if (actor.Model.Abilities.IsUndead)
@@ -18702,7 +18604,7 @@ namespace RogueSurvivor.Engine
             }
 
             // 5. Odor suppressor // alpha10
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             if (actor.OdorSuppressorCounter > 0)
                 m_UI.DrawStringBold(Color.LightBlue, string.Format("Odor suppr : {0} -{1}", actor.OdorSuppressorCounter, m_Rules.OdorsDecay(actor.Location.Map, actor.Location.Position, m_Session.World.Weather)), gx, gy);
         }
@@ -18713,15 +18615,15 @@ namespace RogueSurvivor.Engine
             int slot = 0;
 
             // Draw title.
-            gy -= BOLD_LINE_SPACING;
+            gy -= Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.White, title, gx, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
 
             // Draw slots.
             x = gx; y = gy; slot = 0;
             for (int i = 0; i < maxSlots; i++)
             {
-                m_UI.UI_DrawImage(GameImages.ITEM_SLOT, x, y);
+                m_UI.DrawImage(GameImages.ITEM_SLOT, x, y);
                 if (++slot >= slotsPerLine)
                 {
                     slot = 0;
@@ -18740,12 +18642,12 @@ namespace RogueSurvivor.Engine
             foreach (Item it in inventory.Items)
             {
                 if (it.IsEquipped)
-                    m_UI.UI_DrawImage(GameImages.ITEM_EQUIPPED, x, y);
+                    m_UI.DrawImage(GameImages.ITEM_EQUIPPED, x, y);
                 if (it is ItemRangedWeapon)
                 {
                     ItemRangedWeapon w = it as ItemRangedWeapon;
                     if (w.Ammo <= 0)
-                        m_UI.UI_DrawImage(GameImages.ICON_OUT_OF_AMMO, x, y);
+                        m_UI.DrawImage(GameImages.ICON_OUT_OF_AMMO, x, y);
                     DrawBar(w.Ammo, w.Ammo, (w.Model as ItemRangedWeaponModel).MaxAmmo, 0, 28, 3, x + 2, y + 27, Color.Blue, Color.Blue, Color.Blue, Color.DarkGray);
                 }
                 else if (it is ItemSprayPaint)
@@ -18762,23 +18664,23 @@ namespace RogueSurvivor.Engine
                 {
                     ItemLight lt = it as ItemLight;
                     if (lt.Batteries <= 0)
-                        m_UI.UI_DrawImage(GameImages.ICON_OUT_OF_BATTERIES, x, y);
+                        m_UI.DrawImage(GameImages.ICON_OUT_OF_BATTERIES, x, y);
                     DrawBar(lt.Batteries, lt.Batteries, (lt.Model as ItemLightModel).MaxBatteries, 0, 28, 3, x + 2, y + 27, Color.Yellow, Color.Yellow, Color.Yellow, Color.DarkGray);
                 }
                 else if (it is ItemTracker)
                 {
                     ItemTracker tr = it as ItemTracker;
                     if (tr.Batteries <= 0)
-                        m_UI.UI_DrawImage(GameImages.ICON_OUT_OF_BATTERIES, x, y);
+                        m_UI.DrawImage(GameImages.ICON_OUT_OF_BATTERIES, x, y);
                     DrawBar(tr.Batteries, tr.Batteries, (tr.Model as ItemTrackerModel).MaxBatteries, 0, 28, 3, x + 2, y + 27, Color.Pink, Color.Pink, Color.Pink, Color.DarkGray);
                 }
                 else if (it is ItemFood)
                 {
                     ItemFood food = it as ItemFood;
                     if (m_Rules.IsFoodExpired(food, m_Session.WorldTime.TurnCounter))
-                        m_UI.UI_DrawImage(GameImages.ICON_EXPIRED_FOOD, x, y);
+                        m_UI.DrawImage(GameImages.ICON_EXPIRED_FOOD, x, y);
                     else if (m_Rules.IsFoodSpoiled(food, m_Session.WorldTime.TurnCounter))
-                        m_UI.UI_DrawImage(GameImages.ICON_SPOILED_FOOD, x, y);
+                        m_UI.DrawImage(GameImages.ICON_SPOILED_FOOD, x, y);
                 }
                 else if (it is ItemTrap)
                 {
@@ -18788,7 +18690,7 @@ namespace RogueSurvivor.Engine
                 else if (it is ItemEntertainment)
                 {
                     if (m_Player != null && ((it as ItemEntertainment).IsBoringFor(m_Player))) // alpha10 boring items item centric
-                        m_UI.UI_DrawImage(GameImages.ICON_BORING_ITEM, x, y);
+                        m_UI.DrawImage(GameImages.ICON_BORING_ITEM, x, y);
                 }
                 DrawItem(it, x, y);
 
@@ -18808,7 +18710,7 @@ namespace RogueSurvivor.Engine
                 x = gx + 4; y = gy + TILE_SIZE;
                 for (int i = 0; i < inventory.MaxCapacity; i++)
                 {
-                    m_UI.UI_DrawString(Color.White, (i + 1).ToString(), x, y);
+                    m_UI.DrawString(Color.White, (i + 1).ToString(), x, y);
                     x += TILE_SIZE;
                 }
 
@@ -18822,7 +18724,7 @@ namespace RogueSurvivor.Engine
 
         public void DrawItem(Item it, int gx, int gy, Color tint)
         {
-            m_UI.UI_DrawImage(it.ImageID, gx, gy, tint);
+            m_UI.DrawImage(it.ImageID, gx, gy, tint);
 
             if (it.Model.IsStackable)
             {
@@ -18832,8 +18734,8 @@ namespace RogueSurvivor.Engine
                     tx -= 10;
                 else if (it.Quantity > 10)
                     tx -= 4;
-                m_UI.UI_DrawString(Color.DarkGray, q, tx + 1, gy + 1);
-                m_UI.UI_DrawString(Color.White, q, tx, gy);
+                m_UI.DrawString(Color.DarkGray, q, tx + 1, gy + 1);
+                m_UI.DrawString(Color.White, q, tx, gy);
             }
             if (it is ItemTrap)
             {
@@ -18848,29 +18750,29 @@ namespace RogueSurvivor.Engine
             {
                 // alpha10
                 if (trap.Owner == m_Player)
-                    m_UI.UI_DrawImage(GameImages.ICON_TRAP_TRIGGERED_SAFE_PLAYER, gx, gy);
+                    m_UI.DrawImage(GameImages.ICON_TRAP_TRIGGERED_SAFE_PLAYER, gx, gy);
                 else if (m_Rules.IsSafeFromTrap(trap, m_Player))
-                    m_UI.UI_DrawImage(GameImages.ICON_TRAP_TRIGGERED_SAFE_GROUP, gx, gy);
+                    m_UI.DrawImage(GameImages.ICON_TRAP_TRIGGERED_SAFE_GROUP, gx, gy);
                 else
-                    m_UI.UI_DrawImage(GameImages.ICON_TRAP_TRIGGERED, gx, gy);
+                    m_UI.DrawImage(GameImages.ICON_TRAP_TRIGGERED, gx, gy);
             }
             else if (trap.IsActivated)
             {
                 // alpha10
                 if (trap.Owner == m_Player)
-                    m_UI.UI_DrawImage(GameImages.ICON_TRAP_ACTIVATED_SAFE_PLAYER, gx, gy);
+                    m_UI.DrawImage(GameImages.ICON_TRAP_ACTIVATED_SAFE_PLAYER, gx, gy);
                 else if (m_Rules.IsSafeFromTrap(trap, m_Player))
-                    m_UI.UI_DrawImage(GameImages.ICON_TRAP_ACTIVATED_SAFE_GROUP, gx, gy);
+                    m_UI.DrawImage(GameImages.ICON_TRAP_ACTIVATED_SAFE_GROUP, gx, gy);
                 else
-                    m_UI.UI_DrawImage(GameImages.ICON_TRAP_ACTIVATED, gx, gy);
+                    m_UI.DrawImage(GameImages.ICON_TRAP_ACTIVATED, gx, gy);
             }
         }
 
         public void DrawActorSkillTable(Actor actor, int gx, int gy)
         {
-            gy -= BOLD_LINE_SPACING;
+            gy -= Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.White, "Skills", gx, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
 
             IEnumerable<Skill> skills = actor.Sheet.SkillTable.Skills;
             if (skills == null)
@@ -18894,9 +18796,9 @@ namespace RogueSurvivor.Engine
                         break;
                 }
 
-                m_UI.UI_DrawString(skColor, String.Format("{0}-", sk.Level), x, y);
+                m_UI.DrawString(skColor, String.Format("{0}-", sk.Level), x, y);
                 x += 16;
-                m_UI.UI_DrawString(skColor, Skills.Name(sk.ID), x, y);
+                m_UI.DrawString(skColor, Skills.Name(sk.ID), x, y);
                 x -= 16;
 
                 if (++count >= SKILLTABLE_LINES)
@@ -18906,7 +18808,7 @@ namespace RogueSurvivor.Engine
                     x += 120;
                 }
                 else
-                    y += LINE_SPACING;
+                    y += Ui.LINE_SPACING;
             }
         }
 
@@ -19219,68 +19121,6 @@ namespace RogueSurvivor.Engine
             GameHintsStatus.Save(s_Hints, GetUserConfigPath() + "hints.dat");
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="entries">choices text</param>
-        /// <param name="values">(options values) can be null, array must be same length as choices</param>
-        /// <param name="gx"></param>
-        /// <param name="gy"></param>
-        /// <param name="valuesOnNewLine">false: draw values on same line as entries; true: draw values on new lines</param>
-        /// <param param name="rightPadding">x padding to add when displaying values</param>
-        /// <returns></returns>
-        void DrawMenuOrOptions(int currentChoice, Color entriesColor, string[] entries, Color valuesColor, string[] values, int gx, ref int gy, bool valuesOnNewLine = false, int rightPadding = 256)
-        {
-            int right = gx + rightPadding;
-
-            if (values != null && entries.Length != values.Length)
-                throw new ArgumentException("values length!= choices length");
-
-            // display.
-            Color entriesShadowColor = Color.FromArgb(entriesColor.A, entriesColor.R / 2, entriesColor.G / 2, entriesColor.B / 2);
-            for (int i = 0; i < entries.Length; i++)
-            {
-                string choiceStr;
-                if (i == currentChoice)
-                    choiceStr = String.Format("---> {0}", entries[i]);
-                else
-                    choiceStr = String.Format("     {0}", entries[i]);
-                m_UI.DrawStringBold(entriesColor, choiceStr, gx, gy, entriesShadowColor);
-
-                if (values != null)
-                {
-                    string valueStr;
-                    if (i == currentChoice && !valuesOnNewLine)
-                        valueStr = String.Format("{0} <---", values[i]);
-                    else
-                        valueStr = values[i];
-
-                    if (valuesOnNewLine)
-                    {
-                        gy += BOLD_LINE_SPACING;
-                        m_UI.DrawStringBold(valuesColor, valueStr, gx + right, gy);
-                    }
-                    else
-                    {
-                        m_UI.DrawStringBold(valuesColor, valueStr, right, gy);
-                    }
-                }
-
-                gy += BOLD_LINE_SPACING;
-            }
-        }
-
-        void DrawHeader()
-        {
-            m_UI.DrawStringBold(Color.Red, "ROGUE SURVIVOR REANIMATED - " + SetupConfig.GAME_VERSION, 0, 0, Color.DarkRed);
-        }
-
-        void DrawFootnote(Color color, string text)
-        {
-            Color shadowColor = Color.FromArgb(color.A, color.R / 2, color.G / 2, color.B / 2);
-            m_UI.DrawStringBold(color, String.Format("<{0}>", text), 0, CANVAS_HEIGHT - BOLD_LINE_SPACING, shadowColor);
-        }
-
         public static string GetUserBasePath()
         {
             return SetupConfig.DirPath;
@@ -19384,12 +19224,12 @@ namespace RogueSurvivor.Engine
 
         bool CheckDirectory(string path, string description, ref int gy)
         {
-            m_UI.UI_DrawString(Color.White, String.Format("{0} : {1}...", description, path), 0, gy);
-            gy += BOLD_LINE_SPACING;
+            m_UI.DrawString(Color.White, String.Format("{0} : {1}...", description, path), 0, gy);
+            gy += Ui.BOLD_LINE_SPACING;
             m_UI.UI_Repaint();
             bool created = CreateDirectory(path);
-            m_UI.UI_DrawString(Color.White, "ok.", 0, gy);
-            gy += BOLD_LINE_SPACING;
+            m_UI.DrawString(Color.White, "ok.", 0, gy);
+            gy += Ui.BOLD_LINE_SPACING;
             m_UI.UI_Repaint();
 
             return created;
@@ -20552,7 +20392,7 @@ namespace RogueSurvivor.Engine
                             break;
 
                         // check for abort.
-                        Key key = m_UI.UI_PeekKey();
+                        Key key = m_UI.ReadKey();
                         if (key == Key.Escape)
                         {
                             // jump in time for each map.
@@ -21194,7 +21034,7 @@ namespace RogueSurvivor.Engine
             // Waiting screen...
             m_UI.Clear(Color.Black);
             m_UI.DrawStringBold(Color.Yellow, "Reincarnation - Purgatory", 0, 0);
-            m_UI.DrawStringBold(Color.White, "(preparing reincarnations, please wait...)", 0, 2 * BOLD_LINE_SPACING);
+            m_UI.DrawStringBold(Color.White, "(preparing reincarnations, please wait...)", 0, 2 * Ui.BOLD_LINE_SPACING);
             m_UI.UI_Repaint();
 
             // Decide available reincarnation targets.
@@ -21242,27 +21082,27 @@ namespace RogueSurvivor.Engine
                 gx = gy = 0;
                 m_UI.Clear(Color.Black);
                 m_UI.DrawStringBold(Color.Yellow, "Reincarnation - Choose Avatar", gx, gy);
-                gy += 2 * BOLD_LINE_SPACING;
+                gy += 2 * Ui.BOLD_LINE_SPACING;
 
-                DrawMenuOrOptions(selected, Color.White, entries, Color.LightGreen, values, gx, ref gy);
-                gy += 2 * BOLD_LINE_SPACING;
+                m_UI.DrawMenuOrOptions(selected, Color.White, entries, Color.LightGreen, values, gx, ref gy);
+                gy += 2 * Ui.BOLD_LINE_SPACING;
 
                 m_UI.DrawStringBold(Color.Pink, ".-* District Fun Facts! *-.", gx, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.Pink, String.Format("at current date : {0}.", new WorldTime(m_Session.WorldTime.TurnCounter).ToString()), gx, gy);
-                gy += 2 * BOLD_LINE_SPACING;
+                gy += 2 * Ui.BOLD_LINE_SPACING;
                 for (int i = 0; i < funFacts.Length; i++)
                 {
                     m_UI.DrawStringBold(Color.Pink, funFacts[i], gx, gy);
-                    gy += BOLD_LINE_SPACING;
+                    gy += Ui.BOLD_LINE_SPACING;
                 }
 
-                DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel and end game");
+                m_UI.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel and end game");
 
                 m_UI.UI_Repaint();
 
                 // get menu action.
-                Key key = m_UI.UI_WaitKey();
+                Key key = m_UI.ReadKey();
                 switch (key)
                 {
                     case Key.Up:       // move up
@@ -21374,27 +21214,27 @@ namespace RogueSurvivor.Engine
             gx = gy = 0;
             m_UI.Clear(Color.Black);
             m_UI.DrawStringBold(Color.Yellow, "Limbo", gx, gy);
-            gy += 2 * BOLD_LINE_SPACING;
+            gy += 2 * Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.White, String.Format("Leave body {0}/{1}.", (1 + m_Session.Scoring.ReincarnationNumber), (1 + s_Options.MaxReincarnations)), gx, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.White, "Remember lives.", gx, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.White, "Remember purpose.", gx, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
             m_UI.DrawStringBold(Color.White, "Clear again.", gx, gy);
-            gy += BOLD_LINE_SPACING;
+            gy += Ui.BOLD_LINE_SPACING;
 
             // ask question or no more lives left.
             if (m_Session.Scoring.ReincarnationNumber >= s_Options.MaxReincarnations)
             {
                 // no more lives left.
                 m_UI.DrawStringBold(Color.LightGreen, "Humans interesting.", gx, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.LightGreen, "Time to leave.", gx, gy);
-                gy += BOLD_LINE_SPACING;
-                gy += 2 * BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
+                gy += 2 * Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.Yellow, "No more reincarnations left.", gx, gy);
-                DrawFootnote(Color.White, "press ENTER");
+                m_UI.DrawFootnote(Color.White, "press ENTER");
                 m_UI.UI_Repaint();
                 WaitEnter();
                 return false;
@@ -21403,10 +21243,10 @@ namespace RogueSurvivor.Engine
             {
                 // one more life available.
                 m_UI.DrawStringBold(Color.White, "Leave?", gx, gy);
-                gy += BOLD_LINE_SPACING;
+                gy += Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.White, "Live?", gx, gy);
 
-                gy += 2 * BOLD_LINE_SPACING;
+                gy += 2 * Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.Yellow, "Reincarnate? Y to confirm, N to cancel.", gx, gy);
                 m_UI.UI_Repaint();
 

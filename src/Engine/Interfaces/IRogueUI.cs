@@ -5,6 +5,9 @@ namespace RogueSurvivor.Engine.Interfaces
 {
     class Ui
     {
+        public const int CANVAS_WIDTH = 1024;
+        public const int CANVAS_HEIGHT = 768;
+        public const int LINE_SPACING = 12;
         public const int BOLD_LINE_SPACING = 14;
     }
 
@@ -13,28 +16,39 @@ namespace RogueSurvivor.Engine.Interfaces
     /// </summary>
     interface IRogueUI
     {
-        Microsoft.Xna.Framework.GraphicsDeviceManager Graphics { get; }
+        Microsoft.Xna.Framework.Graphics.GraphicsDevice Graphics { get; }
 
-        Key UI_WaitKey();
-        Key UI_PeekKey();
-        Point UI_GetMousePosition();
-        MouseButton UI_PeekMouseButtons();
+        // Input
+
+        Key ReadKey();
+        Point GetMousePosition();
+        MouseButton ReadMouseButton();
+
+        // !FIXME
         void UI_Wait(int msecs);
         void UI_Repaint();
+
+        // Drawing
+
+        void ToggleFullscreen();
         void Clear(Color clearColor);
-        void UI_DrawImage(string imageID, int gx, int gy);
-        void UI_DrawImage(string imageID, int gx, int gy, Color tint);
-        void UI_DrawImageTransform(string imageID, int gx, int gy, float rotation, float scale);
-        void UI_DrawGrayLevelImage(string imageID, int gx, int gy);
-        void UI_DrawTransparentImage(float alpha, string imageID, int gx, int gy);
-        void UI_DrawLine(Color color, int gxFrom, int gyFrom, int gxTo, int gyTo);
-        void UI_DrawRect(Color color, Rectangle rect);
-        void UI_FillRect(Color color, Rectangle rect);
-        void UI_DrawString(Color color, string text, int gx, int gy, Color? shadowColor = null);
+        void DrawImage(string imageID, int gx, int gy);
+        void DrawImage(string imageID, int gx, int gy, Color tint);
+        void DrawImageTransform(string imageID, int gx, int gy, float rotation, float scale);
+        void DrawGrayLevelImage(string imageID, int gx, int gy);
+        void DrawTransparentImage(float alpha, string imageID, int gx, int gy);
+        void DrawLine(Color color, int gxFrom, int gyFrom, int gxTo, int gyTo);
+        void DrawRect(Color color, Rectangle rect);
+        void FillRect(Color color, Rectangle rect);
+        void DrawString(Color color, string text, int gx, int gy, Color? shadowColor = null);
         void DrawStringBold(Color color, string text, int gx, int gy, Color? shadowColor = null);
-        void UI_DrawPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy);
-        void UI_DrawPopupTitle(string title, Color titleColor, string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy);
-        void UI_DrawPopupTitleColors(string title, Color titleColor, string[] lines, Color[] colors, Color boxBorderColor, Color boxFillColor, int gx, int gy);
+        void DrawPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy);
+        void DrawPopupTitle(string title, Color titleColor, string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy);
+        void DrawPopupTitleColors(string title, Color titleColor, string[] lines, Color[] colors, Color boxBorderColor, Color boxFillColor, int gx, int gy);
+        void DrawHeader();
+        void DrawFootnote(Color color, string text);
+        void DrawMenuOrOptions(int currentChoice, Color entriesColor, string[] entries, Color valuesColor, string[] values, int gx, ref int gy, bool valuesOnNewLine = false, int rightPadding = 256);
+
         void UI_ClearMinimap(Color color);
         void UI_SetMinimapColor(int x, int y, Color color);
         void UI_DrawMinimap(int gx, int gy);

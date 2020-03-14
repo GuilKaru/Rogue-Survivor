@@ -77,7 +77,7 @@ namespace RogueSurvivor.Engine
                 if (isLatest)
                     ui.DrawStringBold(dimmedColor, msg.Text, gx, gy);
                 else
-                    ui.UI_DrawString(dimmedColor, msg.Text, gx, gy);
+                    ui.DrawString(dimmedColor, msg.Text, gx, gy);
 
                 gy += m_LinesSpacing;
             }

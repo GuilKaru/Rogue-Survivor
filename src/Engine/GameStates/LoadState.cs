@@ -4,9 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RogueSurvivor.Engine.GameStates
 {
@@ -36,7 +33,7 @@ namespace RogueSurvivor.Engine.GameStates
         public override void Enter()
         {
             Logger.WriteLine(Logger.Stage.INIT, "Preparing items to load...");
-            GameImages.LoadResources(this, ui.GraphicsDevice);
+            GameImages.LoadResources(this, ui.Graphics);
             game.Init(this);
         }
 

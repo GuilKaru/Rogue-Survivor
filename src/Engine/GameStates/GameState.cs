@@ -6,6 +6,7 @@ namespace RogueSurvivor.Engine.GameStates
     {
         public IGame game;
         public IRogueUI ui;
+        public IMusicManager musicManager;
 
         public abstract void Enter();
         public abstract void Update();

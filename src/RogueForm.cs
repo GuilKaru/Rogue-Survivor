@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using RogueSurvivor.Engine;
+using RogueSurvivor.Engine.GameStates;
 using RogueSurvivor.Engine.Interfaces;
 using RogueSurvivor.Extensions;
 using RogueSurvivor.Gameplay;
@@ -23,20 +24,15 @@ namespace RogueSurvivor
 {
     public class RogueForm : Xna.Game, IRogueUI
     {
-        enum State
-        {
-            None,
-            Init,
-            Running
-        }
-
-        class BreakException : Exception { }
         class KeyState
         {
             public Key key;
-            public decimal time;
+            public double time;
             public bool up, handled, received;
         }
+
+        const double KEY_REPEAT = 0.5;
+        const double KEY_REPEAT_INTERVAL = 0.1;
 
         private Xna.GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
@@ -44,24 +40,20 @@ namespace RogueSurvivor
         private Texture2D m_MinimapTexture;
         private Xna.Color[] m_MinimapColors = new Xna.Color[RogueGame.MAP_MAX_WIDTH * RogueGame.MAP_MAX_HEIGHT];
         private MouseState prevMouseState;
-        private bool shutdown, clearCalled;
+        private bool clearCalled;
         private Color lastClearColor;
-        private object window;
-        private MethodInfo updateMouseState;
-        private List<KeyState> keyStates = new List<KeyState>();
-        private Stopwatch stopwatch;
-        private State state;
 
-        RogueGame m_Game;
+        private List<KeyState> keyStates = new List<KeyState>();
+        private Key currentKey;
+        private MouseButton currentButton;
+        private Point cursorPos;
+
         SpriteFont m_NormalFont;
         SpriteFont m_BoldFont;
 
-        internal RogueGame Game
-        {
-            get { return m_Game; }
-        }
+        IGame game;
 
-        public Xna.GraphicsDeviceManager Graphics => graphics;
+        public GraphicsDevice Graphics => graphics.GraphicsDevice;
 
         public RogueForm()
         {
@@ -69,8 +61,8 @@ namespace RogueSurvivor
 
             graphics = new Xna.GraphicsDeviceManager(this)
             {
-                PreferredBackBufferWidth = RogueGame.CANVAS_WIDTH,
-                PreferredBackBufferHeight = RogueGame.CANVAS_HEIGHT,
+                PreferredBackBufferWidth = Ui.CANVAS_WIDTH,
+                PreferredBackBufferHeight = Ui.CANVAS_HEIGHT,
                 HardwareModeSwitch = false,
                 IsFullScreen = false // !FIXME
             };
@@ -85,9 +77,6 @@ namespace RogueSurvivor
             Window.Title = "Rogue Survivor Reanimated - " + SetupConfig.GAME_VERSION;
             IsMouseVisible = true;
 
-            Forms.Form form = (Forms.Form)Forms.Control.FromHandle(Window.Handle);
-            form.FormClosed += Form_FormClosed;
-
             spriteBatch = new SpriteBatch(graphics.GraphicsDevice);
 
             m_MinimapTexture = new Texture2D(graphics.GraphicsDevice, RogueGame.MAP_MAX_WIDTH, RogueGame.MAP_MAX_HEIGHT);
@@ -96,21 +85,20 @@ namespace RogueSurvivor
             m_NormalFont = Content.Load<SpriteFont>("NormalFont");
             m_BoldFont = Content.Load<SpriteFont>("BoldFont");
 
-            stopwatch = Stopwatch.StartNew();
-            stopwatch.Start();
-            m_Game = new RogueGame(this);
-        }
-
-        private void Form_FormClosed(object sender, Forms.FormClosedEventArgs e)
-        {
-            shutdown = true;
+            game = new RogueGame(this);
+            game.SetState<LoadState>();
         }
 
         protected override void Update(Xna.GameTime gameTime)
         {
             base.Update(gameTime);
 
-            try
+            HandleInput(gameTime.ElapsedGameTime.TotalSeconds);
+
+            if (!game.Update())
+                Exit();
+
+            /*try
             {
                 switch (state)
                 {
@@ -136,7 +124,7 @@ namespace RogueSurvivor
                 Logger.WriteLine(Logger.Stage.CLEAN, "Window closed, shutting down...");
                 m_Game.Exit();
                 Exit();
-            }
+            }*/
         }
 
         protected override void Draw(Xna.GameTime gameTime)
@@ -147,70 +135,41 @@ namespace RogueSurvivor
             if (graphics.IsFullScreen)
             {
                 matrix = Xna.Matrix.CreateScale(new Xna.Vector3(
-                    (float)Graphics.GraphicsDevice.DisplayMode.Width / RogueGame.CANVAS_WIDTH,
-                    (float)Graphics.GraphicsDevice.DisplayMode.Height / RogueGame.CANVAS_HEIGHT,
+                    (float)Graphics.DisplayMode.Width / Ui.CANVAS_WIDTH,
+                    (float)Graphics.DisplayMode.Height / Ui.CANVAS_HEIGHT,
                     1f));
             }
             else
                 matrix = Xna.Matrix.Identity;
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, transformMatrix: matrix);
 
-            switch (state)
-            {
-                case State.None:
-                    UI_Clear(Color.Black);
-                    break;
-                case State.Init:
-                    loader.Draw(this);
-                    break;
-                case State.Running:
-                    m_Game.Draw();
-                    break;
-            }
+            game.Draw();
 
             spriteBatch.End();
         }
 
-        public Key UI_WaitKey()
+        private void HandleInput(double dt)
         {
-            while (true)
-            {
-                Key key = UI_PeekKey();
-                if (key != Key.None)
-                    return key;
-                Thread.Sleep(10);
-            }
-        }
-
-        private const decimal KEY_REPEAT = 0.5M;
-        private const decimal KEY_REPEAT_INTERVAL = 0.1M;
-        public Key UI_PeekKey()
-        {
-            Forms.Application.DoEvents();
-            if (shutdown)
-                throw new BreakException();
-
-            decimal dt = stopwatch.ElapsedMilliseconds / 1000M;
-            stopwatch.Restart();
-
+            // Keyboard
             KeyboardState keyboardState = Keyboard.GetState();
             Keys[] keys = keyboardState.GetPressedKeys();
-            bool control = false, alt = false, shift = false;
+            Key keyModifiers = Key.None;
+
             keys = keys.Where(k =>
             {
                 switch (k)
                 {
                     case Keys.LeftControl:
                     case Keys.RightControl:
-                        control = true;
+                        keyModifiers |= Key.Control;
                         return false;
                     case Keys.LeftShift:
                     case Keys.RightShift:
-                        shift = true;
+                        keyModifiers |= Key.Shift;
                         return false;
                     case Keys.LeftAlt:
                     case Keys.RightAlt:
-                        alt = true;
+                        keyModifiers |= Key.Alt;
                         return false;
                     default:
                         return true;
@@ -247,12 +206,12 @@ namespace RogueSurvivor
                 }
             }
 
-            Key key = Key.None;
+            currentKey = Key.None;
             foreach (KeyState keyState in keyStates)
             {
-                if (!keyState.received && key == Key.None)
+                if (!keyState.received && currentKey == Key.None)
                 {
-                    key = keyState.key;
+                    currentKey = keyState.key;
                     keyState.received = true;
                 }
                 if (!keyState.handled)
@@ -260,33 +219,47 @@ namespace RogueSurvivor
             }
             keyStates.RemoveAll(x => x.received && x.up);
 
-            if (key != Key.None)
+            if (currentKey != Key.None)
+                currentKey |= keyModifiers;
+
+            // Mouse
+            MouseState mouseState = Mouse.GetState();
+            Xna.Point point = mouseState.Position;
+            float scaleX = (float)Graphics.DisplayMode.Width / Ui.CANVAS_WIDTH;
+            float scaleY = (float)Graphics.DisplayMode.Height / Ui.CANVAS_HEIGHT;
+            cursorPos = new Point((int)(point.X / scaleX), (int)(point.Y / scaleY));
+
+            if (prevMouseState != null)
             {
-                if (control)
-                    key |= Key.Control;
-                if (shift)
-                    key |= Key.Shift;
-                if (alt)
-                    key |= Key.Alt;
+                currentButton = MouseButton.None;
+                if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
+                    currentButton = MouseButton.Left;
+                else if (mouseState.RightButton == ButtonState.Pressed && prevMouseState.RightButton == ButtonState.Released)
+                    currentButton = MouseButton.Right;
             }
+            prevMouseState = mouseState;
+        }
 
-            if (key == (Key.Enter | Key.Alt))
-            {
-                graphics.ToggleFullScreen();
-                Forms.Application.DoEvents();
-                UI_Repaint();
-            }
+        public Key ReadKey()
+        {
+            return currentKey;
+        }
 
-            HandleDebugKey(key);
+        public Point GetMousePosition()
+        {
+            return cursorPos;
+        }
 
-            return key;
+        public MouseButton ReadMouseButton()
+        {
+            return currentButton;
         }
 
         [Conditional("DEBUG")]
         private void HandleDebugKey(Key key)
         {
             // F6 - CHEAT - reveal all
-            if (key == Key.F6)
+            /*if (key == Key.F6)
             {
                 if (m_Game.Session != null && m_Game.Session.CurrentMap != null)
                 {
@@ -363,51 +336,8 @@ namespace RogueSurvivor
                 UI_Repaint();
             }
 #endif
-        }
-
-        private void RefreshMouse()
-        {
-            if (shutdown)
-                throw new BreakException();
-
-            if (updateMouseState == null)
-            {
-                object platform = GetType()
-                    .GetField("Platform", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField)
-                    .GetValue(this);
-                window = platform.GetType()
-                    .GetField("_window", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField)
-                    .GetValue(platform);
-                updateMouseState = window.GetType().GetMethod("UpdateMouseState", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod);
-            }
-
-            updateMouseState.Invoke(window, new object[0]);
-        }
-
-        public Point UI_GetMousePosition()
-        {
-            RefreshMouse();
-            Xna.Point point = Mouse.GetState().Position;
-            float scaleX = (float)Graphics.GraphicsDevice.DisplayMode.Width / RogueGame.CANVAS_WIDTH;
-            float scaleY = (float)Graphics.GraphicsDevice.DisplayMode.Height / RogueGame.CANVAS_HEIGHT;
-            return new Point((int)(point.X / scaleX), (int)(point.Y / scaleY));
-        }
-
-        public MouseButton UI_PeekMouseButtons()
-        {
-            MouseState mouseState = Mouse.GetState();
-            if (prevMouseState == null)
-            {
-                prevMouseState = mouseState;
-                return MouseButton.None;
-            }
-            MouseButton button = MouseButton.None;
-            if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
-                button = MouseButton.Left;
-            else if (mouseState.RightButton == ButtonState.Pressed && prevMouseState.RightButton == ButtonState.Released)
-                button = MouseButton.Right;
-            prevMouseState = mouseState;
-            return button;
+*/
+            // !FIXME
         }
 
         public void UI_Wait(int msecs)
@@ -425,8 +355,8 @@ namespace RogueSurvivor
             if (graphics.IsFullScreen)
             {
                 matrix = Xna.Matrix.CreateScale(new Xna.Vector3(
-                    (float)Graphics.GraphicsDevice.DisplayMode.Width / RogueGame.CANVAS_WIDTH,
-                    (float)Graphics.GraphicsDevice.DisplayMode.Height / RogueGame.CANVAS_HEIGHT,
+                    (float)Graphics.DisplayMode.Width / Ui.CANVAS_WIDTH,
+                    (float)Graphics.DisplayMode.Height / Ui.CANVAS_HEIGHT,
                     1f));
             }
             else
@@ -478,6 +408,11 @@ namespace RogueSurvivor
             }
         }
 
+        public void ToggleFullscreen()
+        {
+            graphics.ToggleFullScreen();
+        }
+
         public void Clear(Color clearColor)
         {
             //clearCalled = true;
@@ -486,7 +421,7 @@ namespace RogueSurvivor
             //drawItems.Clear();
         }
 
-        public void UI_DrawImage(string imageID, int gx, int gy)
+        public void DrawImage(string imageID, int gx, int gy)
         {
             drawItems.Add(new DrawImageItem
             {
@@ -496,7 +431,7 @@ namespace RogueSurvivor
             });
         }
 
-        public void UI_DrawImage(string imageID, int gx, int gy, Color tint)
+        public void DrawImage(string imageID, int gx, int gy, Color tint)
         {
             drawItems.Add(new DrawImageItem
             {
@@ -506,7 +441,7 @@ namespace RogueSurvivor
             });
         }
 
-        public void UI_DrawImageTransform(string imageID, int gx, int gy, float rotation, float scale)
+        public void DrawImageTransform(string imageID, int gx, int gy, float rotation, float scale)
         {
             Texture2D image = GameImages.Get(imageID);
             drawItems.Add(new DrawImageItem
@@ -521,7 +456,7 @@ namespace RogueSurvivor
             });
         }
 
-        public void UI_DrawGrayLevelImage(string imageID, int gx, int gy)
+        public void DrawGrayLevelImage(string imageID, int gx, int gy)
         {
             drawItems.Add(new DrawImageItem
             {
@@ -531,7 +466,7 @@ namespace RogueSurvivor
             });
         }
 
-        public void UI_DrawTransparentImage(float alpha, string imageID, int gx, int gy)
+        public void DrawTransparentImage(float alpha, string imageID, int gx, int gy)
         {
             drawItems.Add(new DrawImageItem
             {
@@ -541,7 +476,7 @@ namespace RogueSurvivor
             });
         }
 
-        public void UI_DrawLine(Color color, int gxFrom, int gyFrom, int gxTo, int gyTo)
+        public void DrawLine(Color color, int gxFrom, int gyFrom, int gxTo, int gyTo)
         {
             drawItems.Add(new DrawLineItem
             {
@@ -551,7 +486,7 @@ namespace RogueSurvivor
             });
         }
 
-        public void UI_DrawString(Color color, string text, int gx, int gy, Color? shadowColor)
+        public void DrawString(Color color, string text, int gx, int gy, Color? shadowColor)
         {
             spriteBatch.DrawString(m_NormalFont, text, new Xna.Vector2(gx, gy), color.ToXna());
         }
@@ -563,7 +498,7 @@ namespace RogueSurvivor
             spriteBatch.DrawString(m_BoldFont, text, new Xna.Vector2(gx, gy), color.ToXna());
         }
 
-        public void UI_DrawRect(Color color, Rectangle rect)
+        public void DrawRect(Color color, Rectangle rect)
         {
             if (rect.Width <= 0 || rect.Height <= 0)
                 throw new ArgumentOutOfRangeException("rectangle Width/Height <= 0");
@@ -575,7 +510,7 @@ namespace RogueSurvivor
             });
         }
 
-        public void UI_FillRect(Color color, Rectangle rect)
+        public void FillRect(Color color, Rectangle rect)
         {
             if (rect.Width <= 0 || rect.Height <= 0)
                 throw new ArgumentOutOfRangeException("rectangle Width/Height <= 0");
@@ -587,7 +522,7 @@ namespace RogueSurvivor
             });
         }
 
-        public void UI_DrawPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy)
+        public void DrawPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy)
         {
             /////////////////
             // Measure lines
@@ -614,8 +549,8 @@ namespace RogueSurvivor
             //////////////////
             // Draw popup box
             //////////////////
-            UI_FillRect(boxFillColor, boxRect);
-            UI_DrawRect(boxBorderColor, boxRect);
+            FillRect(boxFillColor, boxRect);
+            DrawRect(boxBorderColor, boxRect);
 
             //////////////
             // Draw lines
@@ -624,12 +559,12 @@ namespace RogueSurvivor
             int lineY = boxPos.Y + BOX_MARGIN;
             for (int i = 0; i < lines.Length; i++)
             {
-                UI_DrawStringBold(textColor, lines[i], lineX, lineY, null);
+                DrawStringBold(textColor, lines[i], lineX, lineY, null);
                 lineY += linesSize[i].Y;
             }
         }
 
-        public void UI_DrawPopupTitle(string title, Color titleColor, string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy)
+        public void DrawPopupTitle(string title, Color titleColor, string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy)
         {
             /////////////////
             // Measure lines
@@ -663,8 +598,8 @@ namespace RogueSurvivor
             //////////////////
             // Draw popup box
             //////////////////
-            UI_FillRect(boxFillColor, boxRect);
-            UI_DrawRect(boxBorderColor, boxRect);
+            FillRect(boxFillColor, boxRect);
+            DrawRect(boxBorderColor, boxRect);
 
             //////////////
             // Draw title
@@ -672,8 +607,8 @@ namespace RogueSurvivor
             int titleX = boxPos.X + BOX_MARGIN + (longestLineWidth - titleSize.X) / 2;
             int titleY = boxPos.Y + BOX_MARGIN;
             int titleLineY = titleY + titleSize.Y + TITLE_BAR_LINE;
-            UI_DrawStringBold(titleColor, title, titleX, titleY, null);
-            UI_DrawLine(boxBorderColor, boxRect.Left, titleLineY, boxRect.Right, titleLineY);
+            DrawStringBold(titleColor, title, titleX, titleY, null);
+            DrawLine(boxBorderColor, boxRect.Left, titleLineY, boxRect.Right, titleLineY);
 
             //////////////
             // Draw lines
@@ -683,12 +618,12 @@ namespace RogueSurvivor
 
             for (int i = 0; i < lines.Length; i++)
             {
-                UI_DrawStringBold(textColor, lines[i], lineX, lineY, null);
+                DrawStringBold(textColor, lines[i], lineX, lineY, null);
                 lineY += linesSize[i].Y;
             }
         }
 
-        public void UI_DrawPopupTitleColors(string title, Color titleColor, string[] lines, Color[] colors, Color boxBorderColor, Color boxFillColor, int gx, int gy)
+        public void DrawPopupTitleColors(string title, Color titleColor, string[] lines, Color[] colors, Color boxBorderColor, Color boxFillColor, int gx, int gy)
         {
             /////////////////
             // Measure lines
@@ -722,8 +657,8 @@ namespace RogueSurvivor
             //////////////////
             // Draw popup box
             //////////////////
-            UI_FillRect(boxFillColor, boxRect);
-            UI_DrawRect(boxBorderColor, boxRect);
+            FillRect(boxFillColor, boxRect);
+            DrawRect(boxBorderColor, boxRect);
 
             //////////////
             // Draw title
@@ -731,8 +666,8 @@ namespace RogueSurvivor
             int titleX = boxPos.X + BOX_MARGIN + (longestLineWidth - titleSize.X) / 2;
             int titleY = boxPos.Y + BOX_MARGIN;
             int titleLineY = titleY + titleSize.Y + TITLE_BAR_LINE;
-            UI_DrawStringBold(titleColor, title, titleX, titleY, null);
-            UI_DrawLine(boxBorderColor, boxRect.Left, titleLineY, boxRect.Right, titleLineY);
+            DrawStringBold(titleColor, title, titleX, titleY, null);
+            DrawLine(boxBorderColor, boxRect.Left, titleLineY, boxRect.Right, titleLineY);
 
             //////////////
             // Draw lines
@@ -742,8 +677,70 @@ namespace RogueSurvivor
 
             for (int i = 0; i < lines.Length; i++)
             {
-                UI_DrawStringBold(colors[i], lines[i], lineX, lineY, null);
+                DrawStringBold(colors[i], lines[i], lineX, lineY, null);
                 lineY += linesSize[i].Y;
+            }
+        }
+
+        public void DrawHeader()
+        {
+            DrawStringBold(Color.Red, "ROGUE SURVIVOR REANIMATED - " + SetupConfig.GAME_VERSION, 0, 0, Color.DarkRed);
+        }
+
+        public void DrawFootnote(Color color, string text)
+        {
+            Color shadowColor = Color.FromArgb(color.A, color.R / 2, color.G / 2, color.B / 2);
+            DrawStringBold(color, String.Format("<{0}>", text), 0, Ui.CANVAS_HEIGHT - Ui.BOLD_LINE_SPACING, shadowColor);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entries">choices text</param>
+        /// <param name="values">(options values) can be null, array must be same length as choices</param>
+        /// <param name="gx"></param>
+        /// <param name="gy"></param>
+        /// <param name="valuesOnNewLine">false: draw values on same line as entries; true: draw values on new lines</param>
+        /// <param param name="rightPadding">x padding to add when displaying values</param>
+        /// <returns></returns>
+        public void DrawMenuOrOptions(int currentChoice, Color entriesColor, string[] entries, Color valuesColor, string[] values, int gx, ref int gy, bool valuesOnNewLine = false, int rightPadding = 256)
+        {
+            int right = gx + rightPadding;
+
+            if (values != null && entries.Length != values.Length)
+                throw new ArgumentException("values length!= choices length");
+
+            // display.
+            Color entriesShadowColor = Color.FromArgb(entriesColor.A, entriesColor.R / 2, entriesColor.G / 2, entriesColor.B / 2);
+            for (int i = 0; i < entries.Length; i++)
+            {
+                string choiceStr;
+                if (i == currentChoice)
+                    choiceStr = String.Format("---> {0}", entries[i]);
+                else
+                    choiceStr = String.Format("     {0}", entries[i]);
+                DrawStringBold(entriesColor, choiceStr, gx, gy, entriesShadowColor);
+
+                if (values != null)
+                {
+                    string valueStr;
+                    if (i == currentChoice && !valuesOnNewLine)
+                        valueStr = String.Format("{0} <---", values[i]);
+                    else
+                        valueStr = values[i];
+
+                    if (valuesOnNewLine)
+                    {
+                        gy += Ui.BOLD_LINE_SPACING;
+                        DrawStringBold(valuesColor, valueStr, gx + right, gy, null);
+                    }
+                    else
+                    {
+                        DrawStringBold(valuesColor, valueStr, right, gy, null);
+                    }
+                }
+
+                gy += Ui.BOLD_LINE_SPACING;
             }
         }
 
