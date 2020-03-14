@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace RogueSurvivor.Engine.GameStates
 {
-    class SelectSkillState : GameState
+    class SelectSkillState : BaseGameState
     {
         Skills.IDs[] allSkills;
         string[] menuEntries;

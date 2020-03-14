@@ -6,7 +6,7 @@ using System.Drawing;
 
 namespace RogueSurvivor.Engine.GameStates
 {
-    class HiScoresState : GameState
+    class HiScoresState : BaseGameState
     {
         public override void Enter()
         {

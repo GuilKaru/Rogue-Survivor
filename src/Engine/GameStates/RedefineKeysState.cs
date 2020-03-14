@@ -5,7 +5,7 @@ using System.Drawing;
 
 namespace RogueSurvivor.Engine.GameStates
 {
-    class RedefineKeysState : GameState
+    class RedefineKeysState : BaseGameState
     {
         const int O_MOVE_N = 0;
         const int O_MOVE_NE = 1;

@@ -6,7 +6,7 @@ using System.Drawing;
 
 namespace RogueSurvivor.Engine.GameStates
 {
-    class HintsState : GameState
+    class HintsState : BaseGameState
     {
         List<string> lines;
         int currentLine;

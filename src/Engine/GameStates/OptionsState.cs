@@ -4,7 +4,7 @@ using System.Drawing;
 
 namespace RogueSurvivor.Engine.GameStates
 {
-    class OptionsState : GameState
+    class OptionsState : BaseGameState
     {
         readonly GameOptions.IDs[] list = new GameOptions.IDs[]
         {

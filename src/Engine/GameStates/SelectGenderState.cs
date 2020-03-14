@@ -5,7 +5,7 @@ using System.Drawing;
 
 namespace RogueSurvivor.Engine.GameStates
 {
-    class SelectGenderState : GameState
+    class SelectGenderState : BaseGameState
     {
         readonly string[] menuEntries = new string[]
         {

@@ -182,6 +182,7 @@
     <Compile Include="Engine\Actions\ActionTrade.cs" />
     <Compile Include="Engine\Actions\ActionReviveCorpse.cs" />
     <Compile Include="Engine\GameStates\CreditsState.cs" />
+    <Compile Include="Engine\GameStates\GameState.cs" />
     <Compile Include="Engine\GameStates\GenerateWorldState.cs" />
     <Compile Include="Engine\GameStates\HelpState.cs" />
     <Compile Include="Engine\GameStates\HintsState.cs" />
@@ -294,7 +295,7 @@
     <Compile Include="Gameplay\AI\SewersThingAI.cs" />
     <Compile Include="Gameplay\AI\SoldierAI.cs" />
     <Compile Include="Gameplay\GameGangs.cs" />
-    <Compile Include="Engine\GameStates\GameState.cs" />
+    <Compile Include="Engine\GameStates\BaseGameState.cs" />
     <Compile Include="Engine\GameStates\LoadState.cs" />
     <Compile Include="Engine\GameStates\MainMenuState.cs" />
     <Compile Include="Gameplay\GameTips.cs" />
@@ -323,7 +324,6 @@
     <Compile Include="Engine\GameOptions.cs" />
     <Compile Include="Extensions\PointExtensions.cs" />
     <Compile Include="SetupConfig.cs" />
-    <Compile Include="UI\DrawItems.cs" />
     <Compile Include="RogueForm.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

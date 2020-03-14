@@ -5,7 +5,7 @@ using System.Drawing;
 
 namespace RogueSurvivor.Engine.GameStates
 {
-    class CreditsState : GameState
+    class CreditsState : BaseGameState
     {
         public override void Enter()
         {

@@ -7,7 +7,7 @@ using System.Drawing;
 
 namespace RogueSurvivor.Engine.GameStates
 {
-    class SelectUndeadTypeState : GameState
+    class SelectUndeadTypeState : BaseGameState
     {
         string[] menuEntries;
         string[] descs;

@@ -6,7 +6,7 @@ using System.Drawing;
 
 namespace RogueSurvivor.Engine.GameStates
 {
-    abstract class LoadScreenState : GameState
+    abstract class LoadScreenState : BaseGameState
     {
         private enum TaskType
         {

@@ -26,17 +26,11 @@ namespace RogueSurvivor.Engine.Interfaces
         Microsoft.Xna.Framework.Graphics.GraphicsDevice Graphics { get; }
 
         // Input
-
         Key ReadKey();
         Point GetMousePosition();
         MouseButton ReadMouseButton();
 
-        // !FIXME
-        void UI_Wait(int msecs);
-        void UI_Repaint();
-
         // Drawing
-
         void ToggleFullscreen();
         void Clear(Color clearColor);
         void DrawImage(string imageID, int gx, int gy);
@@ -56,9 +50,10 @@ namespace RogueSurvivor.Engine.Interfaces
         void DrawFootnote(Color color, string text);
         void DrawMenuOrOptions(int currentChoice, Color entriesColor, string[] entries, Color valuesColor, string[] values, int gx, ref int gy, bool valuesOnNewLine = false, int rightPadding = 256);
 
-        void UI_ClearMinimap(Color color);
-        void UI_SetMinimapColor(int x, int y, Color color);
-        void UI_DrawMinimap(int gx, int gy);
-        bool UI_SaveScreenshot(string filePath);
+        // Misc
+        void ClearMinimap(Color color);
+        void SetMinimapColor(int x, int y, Color color);
+        void DrawMinimap(int gx, int gy);
+        bool SaveScreenshot(string filePath);
     }
 }

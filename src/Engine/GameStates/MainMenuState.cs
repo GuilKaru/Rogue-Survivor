@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace RogueSurvivor.Engine.GameStates
 {
-    class MainMenuState : GameState
+    class MainMenuState : BaseGameState
     {
         int selected;
         bool isLoadEnabled;

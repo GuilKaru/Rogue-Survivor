@@ -4,7 +4,7 @@ using System.Drawing;
 
 namespace RogueSurvivor.Engine.GameStates
 {
-    class SelectRaceState : GameState
+    class SelectRaceState : BaseGameState
     {
         readonly string[] menuEntries = new string[]
         {

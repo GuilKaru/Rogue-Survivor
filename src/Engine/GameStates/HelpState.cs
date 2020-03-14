@@ -6,7 +6,7 @@ using System.Drawing;
 
 namespace RogueSurvivor.Engine.GameStates
 {
-    class HelpState : GameState
+    class HelpState : BaseGameState
     {
         int line;
 

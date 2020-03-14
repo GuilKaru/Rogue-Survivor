@@ -119,8 +119,8 @@ namespace RogueSurvivor.Engine
         const int CREDIT_CHAR_SPACING = 8;
         const int CREDIT_LINE_SPACING = Ui.LINE_SPACING;
 
-        readonly Color NIGHT_COLOR = Color.Cyan;
-        readonly Color DAY_COLOR = Color.Gold;
+        public readonly Color NIGHT_COLOR = Color.Cyan;
+        public readonly Color DAY_COLOR = Color.Gold;
 
         public const string NAME_SUBWAY_STATION = "Subway Station";
         public const string NAME_SEWERS_MAINTENANCE = "Sewers Maintenance";
@@ -671,9 +671,9 @@ namespace RogueSurvivor.Engine
 
         //000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
-        Dictionary<Type, GameState> allStates = new Dictionary<Type, GameState>();
-        List<GameState> states = new List<GameState>();
-        GameState CurrentState => states[states.Count - 1];
+        Dictionary<Type, BaseGameState> allStates = new Dictionary<Type, BaseGameState>();
+        List<BaseGameState> states = new List<BaseGameState>();
+        BaseGameState CurrentState => states[states.Count - 1];
 
         public void Draw()
         {
@@ -692,13 +692,13 @@ namespace RogueSurvivor.Engine
             return m_IsGameRunning;
         }
 
-        GameState GetState<State>()
+        BaseGameState GetState<State>()
         {
             Type type = typeof(State);
-            GameState state;
+            BaseGameState state;
             if (!allStates.TryGetValue(type, out state))
             {
-                state = (GameState)Activator.CreateInstance(type);
+                state = (BaseGameState)Activator.CreateInstance(type);
                 allStates[type] = state;
                 state.game = this;
                 state.ui = m_UI;
@@ -707,23 +707,23 @@ namespace RogueSurvivor.Engine
             return state;
         }
 
-        public void SetState<State>(bool dispose = false) where State : GameState
+        public void SetState<State>(bool dispose = false) where State : BaseGameState
         {
             if (dispose)
             {
-                foreach (GameState s in states)
+                foreach (BaseGameState s in states)
                     allStates.Remove(s.GetType());
             }
             states.Clear();
 
-            GameState state = GetState<State>();
+            BaseGameState state = GetState<State>();
             states.Add(state);
             state.Enter();
         }
 
-        public void PushState<State>() where State : GameState
+        public void PushState<State>() where State : BaseGameState
         {
-            GameState state = GetState<State>();
+            BaseGameState state = GetState<State>();
             states.Add(state);
             state.Enter();
         }
@@ -783,7 +783,7 @@ namespace RogueSurvivor.Engine
                 m_MessageManager.Clear();
 
             // Format message: <turn> <Text>           
-            msg.Text = string.Format("{0} {1}", m_Session.WorldTime.TurnCounter, Capitalize(msg.Text));
+            msg.Text = string.Format("{0} {1}", m_Session.WorldTime.TurnCounter, msg.Text.Capitalize());
 
             // Add.
             m_MessageManager.Add(msg);
@@ -976,11 +976,6 @@ namespace RogueSurvivor.Engine
             m_MessageManager.RemoveLastMessage();
         }
 
-        void DrawMessages()
-        {
-            m_MessageManager.Draw(m_UI, m_Session.LastTurnPlayerActed, MESSAGES_X, MESSAGES_Y);
-        }
-
         // alpha10.1 caller handle bot : check for IsBotPlayer and dont call this
         void AddMessagePressEnter()
         {
@@ -999,16 +994,6 @@ namespace RogueSurvivor.Engine
         string Conjugate(Actor actor, Verb verb)
         {
             return actor.IsProperName && !actor.IsPluralName ? verb.HeForm : verb.YouForm;
-        }
-
-        string Capitalize(string text)
-        {
-            if (text == null)
-                return "";
-            if (text.Length == 1)
-                return string.Format("{0}", Char.ToUpper(text[0]));
-
-            return string.Format("{0}{1}", Char.ToUpper(text[0]), text.Substring(1));
         }
 
         string HisOrHer(Actor actor)
@@ -1043,8 +1028,9 @@ namespace RogueSurvivor.Engine
 
         void AnimDelay(int msecs)
         {
-            if (s_Options.IsAnimDelayOn)
-                m_UI.UI_Wait(msecs);
+            //if (s_Options.IsAnimDelayOn)
+            //    m_UI.UI_Wait(msecs);
+            // !FIXME
         }
 
         /// <summary>
@@ -1073,29 +1059,6 @@ namespace RogueSurvivor.Engine
             m_MusicManager.Stop();
             m_IsGameRunning = false;
         }
-
-        /*public bool Update()
-        {
-            if (inMainMenu)
-                UpdateMainMenu();
-
-            //Tick();
-            // !FIXME
-
-            if (m_IsGameRunning)
-                return true;
-
-            // stop & dispose music.
-            m_MusicManager.Stop();
-
-            return false;
-        }
-
-        public void Draw()
-        {
-            if (inMainMenu)
-                DrawMainMenu();
-        }*/
 
         void Tick()
         {
@@ -1176,69 +1139,28 @@ namespace RogueSurvivor.Engine
         {
             m_UI.Clear(Color.Black);
             m_UI.DrawStringBold(Color.White, "Saving hiscores table...", 0, 0);
-            m_UI.UI_Repaint();
+            //m_UI.UI_Repaint();
 
             HiScoreTable.Save(m_HiScoreTable, GetUserHiScoreFilePath());
 
             m_UI.Clear(Color.Black);
             m_UI.DrawStringBold(Color.White, "Saving hiscores table... done!", 0, 0);
-            m_UI.UI_Repaint();
+            //m_UI.UI_Repaint();
+
+            // !FIXME
         }
 
-        void StartNewGame()
+        public void StartNewGame()
         {
-            bool isUndead = false;// m_CharGen.IsUndead;
+            // !FIXME
 
-            // scoring : hello there.
-            m_Session.Scoring.AddVisit(m_Session.WorldTime.TurnCounter, m_Player.Location.Map);
-            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", m_Player.Location.Map.Name));
+            
 
-            // setup proper scoring mode.
-            m_Session.Scoring.Side = (isUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR);
-
-            // alpha10.1
-            // schedule first autosave.
-            ScheduleNextAutoSave();
-
-            // advisor on?
-            // alpha10 not if undead
-            if (s_Options.IsAdvisorEnabled)
-            {
-                ClearMessages();
-                ClearMessagesHistory();
-                if (m_Player.Model.Abilities.IsUndead)
-                {
-                    AddMessage(new Message("The Advisor is enabled but you will get no hint when playing undead.", 0, Color.Red));
-                }
-                else
-                {
-                    AddMessage(new Message("The Advisor is enabled and will give you hints during the game.", 0, Color.LightGreen));
-                    AddMessage(new Message("The hints help a beginner learning the basic controls.", 0, Color.LightGreen));
-                    AddMessage(new Message("You can disable the Advisor by going to the Options screen.", 0, Color.LightGreen));
-                }
-                AddMessage(new Message(string.Format("Press {0} during the game to change the options.", s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE)), 0, Color.LightGreen));
-                AddMessage(new Message("<press ENTER>", 0, Color.Yellow));
-                RedrawPlayScreen();
-                WaitEnter();
-            }
-
-            // welcome banner.
-            ClearMessages();
-            ClearMessagesHistory();
-            AddMessage(new Message("*****************************", 0, Color.LightGreen));
-            AddMessage(new Message("* Welcome to Rogue Survivor *", 0, Color.LightGreen));
-            AddMessage(new Message("* We hope you like Zombies  *", 0, Color.LightGreen));
-            AddMessage(new Message("*****************************", 0, Color.LightGreen));
-            AddMessage(new Message(string.Format("Press {0} for help", s_KeyBindings.Get(PlayerCommand.HELP_MODE)), 0, Color.LightGreen));
-            AddMessage(new Message(string.Format("Press {0} to redefine keys", s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE)), 0, Color.LightGreen));
-            AddMessage(new Message("<press ENTER>", 0, Color.Yellow));
-            RefreshPlayer();
-            RedrawPlayScreen();
-            WaitEnter();
+            
 
             // wake up!
             ClearMessages();
-            AddMessage(new Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", m_Player.Name), 0, Color.White));
+            //AddMessage(new Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", m_Player.Name), 0, Color.White));
             RedrawPlayScreen();
 
             // reset/cleanup bot from previous session
@@ -1311,7 +1233,7 @@ namespace RogueSurvivor.Engine
                     }
                     else if (prevPhase != newPhase)
                     {
-                        if (canSeeSky) AddMessage(new Message(string.Format("Time passes, it is now {0}...", DescribeDayPhase(newPhase)), m_Session.WorldTime.TurnCounter, isNight ? NIGHT_COLOR : DAY_COLOR));
+                        if (canSeeSky) AddMessage(new Message(string.Format("Time passes, it is now {0}...", newPhase.AsString()), m_Session.WorldTime.TurnCounter, isNight ? NIGHT_COLOR : DAY_COLOR));
                     }
 
 
@@ -3754,8 +3676,8 @@ namespace RogueSurvivor.Engine
                             inputLoop = false;
                         }
                     }
-                    if (inputLoop)
-                        m_UI.UI_Wait(10);
+                    //if (inputLoop)
+                    //    m_UI.UI_Wait(10);
                 }
                 while (inputLoop);
 
@@ -4323,7 +4245,7 @@ namespace RogueSurvivor.Engine
         string DoTakeScreenshot()
         {
             string shotname = GetUserNewScreenshotName();
-            if (m_UI.UI_SaveScreenshot(ScreenshotFilePath(shotname)))
+            if (m_UI.SaveScreenshot(ScreenshotFilePath(shotname)))
                 return shotname;
             else
                 return null;
@@ -4352,7 +4274,7 @@ namespace RogueSurvivor.Engine
             m_UI.DrawFootnote(Color.White, "press ESC to leave");
 
             // wait.
-            m_UI.UI_Repaint();
+            //m_UI.UI_Repaint();
             WaitEscape();
         }
 
@@ -4531,7 +4453,7 @@ namespace RogueSurvivor.Engine
             }
 
             m_UI.DrawFootnote(Color.White, "press ESC to leave");
-            m_UI.UI_Repaint();
+            //m_UI.UI_Repaint();
             WaitEscape();
         }
 
@@ -9257,13 +9179,13 @@ namespace RogueSurvivor.Engine
             if (actor.Faction != null)
             {
                 if (actor.IsInAGang)
-                    lines.Add(string.Format("{0}, {1}-{2}.", Capitalize(actor.Name), actor.Faction.MemberName, GameGangs.NAMES[actor.GangID]));
+                    lines.Add(string.Format("{0}, {1}-{2}.", actor.Name.Capitalize(), actor.Faction.MemberName, GameGangs.NAMES[actor.GangID]));
                 else
-                    lines.Add(string.Format("{0}, {1}.", Capitalize(actor.Name), actor.Faction.MemberName));
+                    lines.Add(string.Format("{0}, {1}.", actor.Name.Capitalize(), actor.Faction.MemberName));
             }
             else
-                lines.Add(string.Format("{0}.", Capitalize(actor.Name)));
-            lines.Add(string.Format("{0}.", Capitalize(actor.Model.Name)));
+                lines.Add(string.Format("{0}.", actor.Name.Capitalize()));
+            lines.Add(string.Format("{0}.", actor.Model.Name.Capitalize()));
 
             lines.Add(string.Format("{0} since {1}.", actor.Model.Abilities.IsUndead ? "Undead" : "Staying alive", new WorldTime(actor.SpawnTime).ToString()));
             AIController ai = actor.Controller as AIController;
@@ -9294,7 +9216,7 @@ namespace RogueSurvivor.Engine
                     lines.Add(string.Format("Inf : {0} {1}%", actor.Infection, m_Rules.ActorInfectionPercent(actor)));
                 }
                 else
-                    lines.Add(string.Format("Leader : {0}.", Capitalize(actor.Leader.Name)));
+                    lines.Add(string.Format("Leader : {0}.", actor.Leader.Name.Capitalize()));
             }
 
             // show murder counter if trusting follower or player is a law enforcer.
@@ -10215,7 +10137,7 @@ namespace RogueSurvivor.Engine
 
             // alpha10
             // 2. Odor & Strength
-            lines.Add(string.Format("Odor     : {0}", Capitalize(sp.Odor.ToString().ToLower())));
+            lines.Add(string.Format("Odor     : {0}", sp.Odor.ToString().ToLower().Capitalize()));
             lines.Add(string.Format("Strength : {0}h", sp.Strength / WorldTime.TURNS_PER_HOUR));
 
             return lines.ToArray();
@@ -10266,7 +10188,7 @@ namespace RogueSurvivor.Engine
                 else if (!tr.IsEquipped)
                     lines.Add("Equip the item to read the time.");
                 else
-                    lines.Add(string.Format("The clock reads: {0}h, {1}", m_Session.WorldTime.Hour, DescribeDayPhase(m_Session.WorldTime.Phase)));
+                    lines.Add(string.Format("The clock reads: {0}h, {1}", m_Session.WorldTime.Hour, m_Session.WorldTime.Phase.AsString()));
             }
 
             return lines.ToArray();
@@ -10348,51 +10270,6 @@ namespace RogueSurvivor.Engine
                 return string.Format("Batteries : {0}/{1} ({2}h)", batteries, maxBatteries, hours);
             else
                 return string.Format("Batteries : {0} MAX ({1}h)", batteries, hours);
-        }
-
-        string DescribeDayPhase(DayPhase phase)
-        {
-            switch (phase)
-            {
-                case DayPhase.AFTERNOON: return "Afternoon";
-                case DayPhase.DEEP_NIGHT: return "Deep Night";
-                case DayPhase.EVENING: return "Evening";
-                case DayPhase.MIDDAY: return "Midday";
-                case DayPhase.MIDNIGHT: return "Midnight";
-                case DayPhase.MORNING: return "Morning";
-                case DayPhase.SUNRISE: return "Sunrise";
-                case DayPhase.SUNSET: return "Sunset";
-
-                default: throw new ArgumentOutOfRangeException("unhandled dayphase");
-            }
-        }
-
-        string DescribeWeather(Weather weather)
-        {
-            switch (weather)
-            {
-                case Weather.CLOUDY: return "Cloudy";
-                case Weather.HEAVY_RAIN: return "Heavy rain";
-                case Weather.RAIN: return "Rain";
-                case Weather.CLEAR: return "Clear";
-
-                default:
-                    throw new ArgumentOutOfRangeException("unhandled weather");
-            }
-        }
-
-        Color WeatherColor(Weather weather)
-        {
-            switch (weather)
-            {
-                case Weather.CLOUDY: return Color.Gray;
-                case Weather.HEAVY_RAIN: return Color.Blue;
-                case Weather.RAIN: return Color.LightBlue;
-                case Weather.CLEAR: return Color.Yellow;
-
-                default:
-                    throw new ArgumentOutOfRangeException("unhandled weather");
-            }
         }
 
         int BatteriesToHours(int batteries)
@@ -10830,7 +10707,7 @@ namespace RogueSurvivor.Engine
                     if (victim != null)
                         AddMessage(MakeMessage(victim, string.Format("stepping on {0} makes a bunch of noise!", trap.AName)));
                     else if (mobj != null)
-                        AddMessage(new Message(string.Format("{0} makes a lot of noise!", Capitalize(trap.TheName)), map.LocalTime.TurnCounter));
+                        AddMessage(new Message(string.Format("{0} makes a lot of noise!", trap.TheName.Capitalize()), map.LocalTime.TurnCounter));
                 }
                 OnLoudNoise(map, pos, model.NoiseName);
             }
@@ -10847,7 +10724,7 @@ namespace RogueSurvivor.Engine
                     if (victim != null)
                         AddMessage(MakeMessage(victim, string.Format("{0} {1}.", Conjugate(victim, VERB_CRUSH), trap.TheName)));
                     else if (mobj != null)
-                        AddMessage(new Message(string.Format("{0} breaks the {1}.", Capitalize(mobj.TheName), trap.TheName), map.LocalTime.TurnCounter));
+                        AddMessage(new Message(string.Format("{0} breaks the {1}.", mobj.TheName.Capitalize(), trap.TheName), map.LocalTime.TurnCounter));
                 }
                 --trap.Quantity;
             }
@@ -14726,7 +14603,7 @@ namespace RogueSurvivor.Engine
             m_UI.Clear(Color.Black);
             m_UI.DrawStringBold(Color.Yellow, "Saving post mortem to graveyard...", 0, 0);
             gy += Ui.BOLD_LINE_SPACING;
-            m_UI.UI_Repaint();
+            //m_UI.UI_Repaint();
             string graveName = GetUserNewGraveyardName();
             string graveFile = GraveFilePath(graveName);
             if (!graveyard.Save(graveFile))
@@ -14742,7 +14619,7 @@ namespace RogueSurvivor.Engine
                 gy += Ui.BOLD_LINE_SPACING;
             }
             m_UI.DrawFootnote(Color.White, "press ENTER");
-            m_UI.UI_Repaint();
+            //m_UI.UI_Repaint();
             WaitEnter();
 
             ///////////////////////////////
@@ -14780,7 +14657,7 @@ namespace RogueSurvivor.Engine
                     m_UI.DrawFootnote(Color.White, "press ENTER to leave");
 
                 // wait.
-                m_UI.UI_Repaint();
+               // m_UI.UI_Repaint();
                 WaitEnter();
 
                 // loop?
@@ -15442,7 +15319,7 @@ namespace RogueSurvivor.Engine
                 AddMessage(new Message(desc, m_Session.WorldTime.TurnCounter, Color.White));
 
             // scoring.
-            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("The weather changed to {0}.", DescribeWeather(m_Session.World.Weather)));
+            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("The weather changed to {0}.", m_Session.World.Weather.AsString()));
         }
 
         /// <summary>
@@ -15564,167 +15441,7 @@ namespace RogueSurvivor.Engine
 
         public void RedrawPlayScreen()
         {
-            // alpha10 dont display some infos
-            bool canSeeSky = m_Rules.CanActorSeeSky(m_Player);
-            bool canKnowTime = m_Rules.CanActorKnowTime(m_Player);
-
-            // get mutex.
-            Monitor.Enter(m_UI);
-
-            m_UI.Clear(Color.Black);
-            {
-                // map & minimap
-                Color mapTint = Color.White; // disabled changing brightness bad for the eyes TintForDayPhase(m_Session.WorldTime.Phase);
-                m_UI.DrawLine(Color.DarkGray, RIGHTPANEL_X, 0, RIGHTPANEL_X, MESSAGES_Y);
-                DrawMap(m_Session.CurrentMap, mapTint);
-
-                m_UI.DrawLine(Color.DarkGray, RIGHTPANEL_X, MINIMAP_Y - 4, Ui.CANVAS_WIDTH, MINIMAP_Y - 4);
-                DrawMiniMap(m_Session.CurrentMap);
-
-                // messages
-                m_UI.DrawLine(Color.DarkGray, MESSAGES_X, MESSAGES_Y - 1, Ui.CANVAS_WIDTH, MESSAGES_Y - 1);
-                DrawMessages();
-
-                // location info.
-                //    x0            x1 
-                // y0 <map name>
-                // y1 <zone name>
-                // y2 <day>        <dayphase>
-                // y3 <hour>       <weather>/<lighting>
-                // y4 <turn>       <scoring>@<difficulty> <mode>
-                // y5 <life>/<lives>
-                // y6 <murders>
-                const int X0 = LOCATIONPANEL_TEXT_X;
-                const int X1 = LOCATIONPANEL_TEXT_X + 128;
-                const int Y0 = LOCATIONPANEL_TEXT_Y;
-                const int Y1 = Y0 + Ui.LINE_SPACING;
-                const int Y2 = Y1 + Ui.LINE_SPACING;
-                const int Y3 = Y2 + Ui.LINE_SPACING;
-                const int Y4 = Y3 + Ui.LINE_SPACING;
-                const int Y5 = Y4 + Ui.LINE_SPACING;
-                const int Y6 = Y5 + Ui.LINE_SPACING;
-
-                m_UI.DrawLine(Color.DarkGray, LOCATIONPANEL_X, LOCATIONPANEL_Y, LOCATIONPANEL_X, Ui.CANVAS_HEIGHT);
-                m_UI.DrawString(Color.White, m_Session.CurrentMap.Name, X0, Y0);
-                m_UI.DrawString(Color.White, LocationText(m_Session.CurrentMap, m_Player), X0, Y1);
-                m_UI.DrawString(Color.White, string.Format("Day  {0}", m_Session.WorldTime.Day), X0, Y2);
-                if (canKnowTime)
-                    m_UI.DrawString(Color.White, string.Format("Hour {0}", m_Session.WorldTime.Hour), X0, Y3);
-                else
-                    m_UI.DrawString(Color.White, "Hour ??", X0, Y3);
-
-                // alpha10 desc day fov effect, not if cant know time
-                string dayPhaseString;
-                if (canKnowTime)
-                {
-                    dayPhaseString = DescribeDayPhase(m_Session.WorldTime.Phase);
-                    int timeFovPenalty = m_Rules.NightFovPenalty(m_Player, m_Session.WorldTime);
-                    if (timeFovPenalty != 0)
-                        dayPhaseString += "  fov -" + timeFovPenalty;
-                }
-                else
-                {
-                    dayPhaseString = "???";
-                }
-
-                m_UI.DrawString(m_Session.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR, dayPhaseString, X1, Y2);
-
-                Color weatherOrLightingColor;
-                string weatherOrLightingString;
-                switch (m_Session.CurrentMap.Lighting)
-                {
-                    case Lighting.OUTSIDE:
-                        weatherOrLightingColor = WeatherColor(m_Session.World.Weather);
-                        // alpha10 only show weather if can see it
-                        if (m_Rules.CanActorSeeSky(m_Player))
-                        {
-                            weatherOrLightingString = DescribeWeather(m_Session.World.Weather);
-                            // alpha10 desc weather fov effect
-                            int fovPenalty = m_Rules.WeatherFovPenalty(m_Player, m_Session.World.Weather);
-                            if (fovPenalty != 0)
-                                weatherOrLightingString += "  fov -" + fovPenalty;
-                        }
-                        else
-                            weatherOrLightingString = "???";
-                        break;
-                    case Lighting.DARKNESS:
-                        weatherOrLightingColor = Color.Blue;
-                        weatherOrLightingString = "Darkness";
-                        // alpha10 desc darkness fov effect
-                        int darknessFov = m_Rules.DarknessFov(m_Player);
-                        if (darknessFov != m_Player.Sheet.BaseViewRange)
-                            weatherOrLightingString += "  fov " + darknessFov;
-                        break;
-                    case Lighting.LIT:
-                        weatherOrLightingColor = Color.Yellow;
-                        weatherOrLightingString = "Lit";
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException("unhandled lighting");
-                }
-                m_UI.DrawString(weatherOrLightingColor, weatherOrLightingString, X1, Y3);
-                m_UI.DrawString(Color.White, string.Format("Turn {0}", m_Session.WorldTime.TurnCounter), X0, Y4);
-                m_UI.DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", m_Session.Scoring.TotalPoints, (int)(100 * Scoring.ComputeDifficultyRating(s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber)), Session.DescShortGameMode(m_Session.GameMode)), X1, Y4);
-                m_UI.DrawString(Color.White, string.Format("Avatar  {0}/{1}", (1 + m_Session.Scoring.ReincarnationNumber), (1 + s_Options.MaxReincarnations)), X1, Y5);
-                if (m_Player.MurdersCounter > 0)
-                    m_UI.DrawString(Color.White, string.Format("Murders {0}", m_Player.MurdersCounter), X1, Y6);
-
-                // character status.
-                if (m_Player != null)
-                    DrawActorStatus(m_Player, RIGHTPANEL_TEXT_X, RIGHTPANEL_TEXT_Y);
-
-                // inventories.
-                if (m_Player != null)
-                {
-                    if (m_Player.Inventory != null && m_Player.Model.Abilities.HasInventory)
-                        DrawInventory(m_Player.Inventory, "Inventory", true, INVENTORY_SLOTS_PER_LINE, m_Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
-                    DrawInventory(m_Player.Location.Map.GetItemsAt(m_Player.Location.Position), "Items on ground", true, INVENTORY_SLOTS_PER_LINE, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
-                    DrawCorpsesList(m_Player.Location.Map.GetCorpsesAt(m_Player.Location.Position), "Corpses on ground", INVENTORY_SLOTS_PER_LINE, INVENTORYPANEL_X, CORPSESPANEL_Y);
-                }
-
-                // character skills.
-                if (m_Player != null && m_Player.Sheet.SkillTable != null && m_Player.Sheet.SkillTable.CountSkills > 0)
-                    DrawActorSkillTable(m_Player, RIGHTPANEL_TEXT_X, SKILLTABLE_Y);
-
-                // overlays
-                Monitor.Enter(m_Overlays);
-                foreach (Overlay o in m_Overlays)
-                    o.Draw(m_UI);
-                Monitor.Exit(m_Overlays);
-
-                // DEV STATS
-#if DEBUG
-                if (s_Options.DEV_ShowActorsStats)
-                {
-                    int countLiving, countUndead;
-                    countLiving = CountLivings(m_Session.CurrentMap);
-                    countUndead = CountUndeads(m_Session.CurrentMap);
-                    m_UI.DrawString(Color.White, string.Format("Living {0} vs {1} Undead", countLiving, countUndead), RIGHTPANEL_TEXT_X, SKILLTABLE_Y - 32);
-                }
-#endif
-            }
-
-            m_UI.UI_Repaint();
-
-            // release mutex.
-            Monitor.Exit(m_UI);
-        }
-
-        string LocationText(Map map, Actor actor)
-        {
-            if (map == null || actor == null)
-                return "";
-
-            StringBuilder sb = new StringBuilder(string.Format("({0},{1}) ", actor.Location.Position.X, actor.Location.Position.Y));
-
-            List<Zone> zones = map.GetZonesAt(actor.Location.Position.X, actor.Location.Position.Y);
-            if (zones == null || zones.Count == 0)
-                return sb.ToString();
-
-            foreach (Zone z in zones)
-                sb.Append(string.Format("{0} ", z.Name));
-
-            return sb.ToString();
+            // !FIXME
         }
 
         /// <summary>
@@ -16554,7 +16271,7 @@ namespace RogueSurvivor.Engine
             // clear minimap.
             if (s_Options.IsMinimapOn)
             {
-                m_UI.UI_ClearMinimap(Color.Black);
+                m_UI.ClearMinimap(Color.Black);
             }
 
             // set visited tiles color.
@@ -16572,9 +16289,9 @@ namespace RogueSurvivor.Engine
                         {
                             // exits override tile color.
                             if (map.GetExitAt(pt) != null)
-                                m_UI.UI_SetMinimapColor(x, y, Color.HotPink);
+                                m_UI.SetMinimapColor(x, y, Color.HotPink);
                             else
-                                m_UI.UI_SetMinimapColor(x, y, tile.Model.MinimapColor);
+                                m_UI.SetMinimapColor(x, y, tile.Model.MinimapColor);
                         }
                     }
                 }
@@ -16583,7 +16300,7 @@ namespace RogueSurvivor.Engine
             // show minimap.
             if (s_Options.IsMinimapOn)
             {
-                m_UI.UI_DrawMinimap(MINIMAP_X, MINIMAP_Y);
+                m_UI.DrawMinimap(MINIMAP_X, MINIMAP_Y);
             }
 
             // show view rect.
@@ -17272,7 +16989,7 @@ namespace RogueSurvivor.Engine
         }
 
         // alpha10.1
-        void ScheduleNextAutoSave()
+        public void ScheduleNextAutoSave()
         {
             m_Session.NextAutoSaveTime = m_Session.WorldTime.TurnCounter + WorldTime.TURNS_PER_HOUR * s_Options.AutoSavePeriodInHours;
         }
@@ -17293,14 +17010,14 @@ namespace RogueSurvivor.Engine
             ClearMessages();
             AddMessage(new Message(string.Format("{0} GAME, PLEASE WAIT...", savingOrAutosaving), m_Session.WorldTime.TurnCounter, Color.Yellow));
             RedrawPlayScreen();
-            m_UI.UI_Repaint();
+            //m_UI.UI_Repaint();
 
             // save session object.
             Session.Save(m_Session, saveName);
 
             AddMessage(new Message(string.Format("{0} DONE.", savingOrAutosaving), m_Session.WorldTime.TurnCounter, Color.Yellow));
             RedrawPlayScreen();
-            m_UI.UI_Repaint();
+            //m_UI.UI_Repaint();
 
             StartSimThread();  // alpha10.1
         }
@@ -17313,7 +17030,7 @@ namespace RogueSurvivor.Engine
             ClearMessages();
             AddMessage(new Message("LOADING GAME, PLEASE WAIT...", m_Session.WorldTime.TurnCounter, Color.Yellow));
             RedrawPlayScreen();
-            m_UI.UI_Repaint();
+            //m_UI.UI_Repaint();
 
             if (!LoadGame(saveName))
             {
@@ -17347,7 +17064,7 @@ namespace RogueSurvivor.Engine
             AddMessage(new Message("LOADING DONE.", m_Session.WorldTime.TurnCounter, Color.Yellow));
             AddMessage(new Message("Welcome back to Rogue Survivor!", m_Session.WorldTime.TurnCounter, Color.LightGreen));
             RedrawPlayScreen();
-            m_UI.UI_Repaint();
+            //m_UI.UI_Repaint();
 
             // Log ;/
             m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "<Loaded game>");
@@ -17511,11 +17228,11 @@ namespace RogueSurvivor.Engine
         {
             m_UI.DrawString(Color.White, string.Format("{0} : {1}...", description, path), 0, gy);
             gy += Ui.BOLD_LINE_SPACING;
-            m_UI.UI_Repaint();
+            //m_UI.UI_Repaint();
             bool created = CreateDirectory(path);
             m_UI.DrawString(Color.White, "ok.", 0, gy);
             gy += Ui.BOLD_LINE_SPACING;
-            m_UI.UI_Repaint();
+            //m_UI.UI_Repaint();
 
             return created;
         }
@@ -18334,7 +18051,7 @@ namespace RogueSurvivor.Engine
             m_UI.Clear(Color.Black);
             m_UI.DrawStringBold(Color.Yellow, "Reincarnation - Purgatory", 0, 0);
             m_UI.DrawStringBold(Color.White, "(preparing reincarnations, please wait...)", 0, 2 * Ui.BOLD_LINE_SPACING);
-            m_UI.UI_Repaint();
+            //m_UI.UI_Repaint();
 
             // Decide available reincarnation targets.
             int countDummy;
@@ -18398,7 +18115,7 @@ namespace RogueSurvivor.Engine
 
                 m_UI.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel and end game");
 
-                m_UI.UI_Repaint();
+                //m_UI.UI_Repaint();
 
                 // get menu action.
                 Key key = m_UI.ReadKey();
@@ -18534,7 +18251,7 @@ namespace RogueSurvivor.Engine
                 gy += 2 * Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.Yellow, "No more reincarnations left.", gx, gy);
                 m_UI.DrawFootnote(Color.White, "press ENTER");
-                m_UI.UI_Repaint();
+                //m_UI.UI_Repaint();
                 WaitEnter();
                 return false;
             }
@@ -18547,7 +18264,7 @@ namespace RogueSurvivor.Engine
 
                 gy += 2 * Ui.BOLD_LINE_SPACING;
                 m_UI.DrawStringBold(Color.Yellow, "Reincarnate? Y to confirm, N to cancel.", gx, gy);
-                m_UI.UI_Repaint();
+                //m_UI.UI_Repaint();
 
                 // ask question.
                 return WaitYesOrNo();
