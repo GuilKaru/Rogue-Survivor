@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using RogueSurvivor.Engine;
+using RogueSurvivor.Engine.Interfaces;
 using RogueSurvivor.Extensions;
 using RogueSurvivor.Gameplay;
 using RogueSurvivor.UI;
@@ -50,7 +51,6 @@ namespace RogueSurvivor
         private List<KeyState> keyStates = new List<KeyState>();
         private Stopwatch stopwatch;
         private State state;
-        GameLoader loader = new GameLoader();
 
         RogueGame m_Game;
         SpriteFont m_NormalFont;
@@ -115,11 +115,8 @@ namespace RogueSurvivor
                 switch (state)
                 {
                     case State.None:
-                        // do nothing on first frame
                         state = State.Init;
-                        Logger.WriteLine(Logger.Stage.INIT, "Preparing items to load...");
-                        GameImages.LoadResources(loader, GraphicsDevice);
-                        m_Game.Init(loader);
+                        
                         break;
                     case State.Init:
                         if (loader.Process())
@@ -129,8 +126,8 @@ namespace RogueSurvivor
                         }
                         break;
                     default:
-                        //if (!m_Game.Update())
-                        //    Exit();
+                        if (!m_Game.Update())
+                            Exit();
                         break;
                 }
             }
@@ -167,7 +164,7 @@ namespace RogueSurvivor
                     loader.Draw(this);
                     break;
                 case State.Running:
-                    UI_Clear(Color.Red);
+                    m_Game.Draw();
                     break;
             }
 
@@ -481,7 +478,7 @@ namespace RogueSurvivor
             }
         }
 
-        public void UI_Clear(Color clearColor)
+        public void Clear(Color clearColor)
         {
             //clearCalled = true;
             //lastClearColor = clearColor;
@@ -559,7 +556,7 @@ namespace RogueSurvivor
             spriteBatch.DrawString(m_NormalFont, text, new Xna.Vector2(gx, gy), color.ToXna());
         }
 
-        public void UI_DrawStringBold(Color color, string text, int gx, int gy, Color? shadowColor)
+        public void DrawStringBold(Color color, string text, int gx, int gy, Color? shadowColor)
         {
             if (shadowColor.HasValue)
                 spriteBatch.DrawString(m_BoldFont, text, new Xna.Vector2(gx + 1, gy + 1), shadowColor.Value.ToXna());

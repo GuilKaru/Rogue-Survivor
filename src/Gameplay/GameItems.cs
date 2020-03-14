@@ -2,7 +2,6 @@
 using RogueSurvivor.Engine;
 using RogueSurvivor.Engine.Items;
 using System;
-using System.Drawing;
 
 namespace RogueSurvivor.Gameplay
 {
@@ -1337,13 +1336,6 @@ namespace RogueSurvivor.Gameplay
                 // IsStackable
                 model.IsStackable = model.StackingLimit > 1;
             }
-        }
-
-        void Notify(IRogueUI ui, string what, string stage)
-        {
-            ui.UI_Clear(Color.Black);
-            ui.UI_DrawStringBold(Color.White, "Loading " + what + " data : " + stage, 0, 0);
-            ui.UI_Repaint();
         }
 
         CSVLine FindLineForModel(CSVTable table, IDs modelID)

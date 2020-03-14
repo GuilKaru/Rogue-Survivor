@@ -1,4 +1,4 @@
-﻿namespace RogueSurvivor.Engine
+﻿namespace RogueSurvivor.Engine.Interfaces
 {
     // alpha10 Added concept of music priority, can play only one music at a time, renamed to MusicManager and
     // some cleanup. Concrete classes updated.

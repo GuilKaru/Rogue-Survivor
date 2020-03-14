@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
+using RogueSurvivor.Engine.Interfaces;
 using RogueSurvivor.Extensions;
 using RogueSurvivor.UI;
 using System;
@@ -467,7 +468,7 @@ namespace RogueSurvivor.Gameplay
         static readonly Dictionary<string, Texture2D> s_Images = new Dictionary<string, Texture2D>();
         static readonly Dictionary<string, Texture2D> s_GrayLevelImages = new Dictionary<string, Texture2D>();
 
-        public static void LoadResources(GameLoader loader, GraphicsDevice _graphicsDevice)
+        public static void LoadResources(IGameLoader loader, GraphicsDevice _graphicsDevice)
         {
             graphicsDevice = _graphicsDevice;
             textureLoader = new TextureLoader(graphicsDevice);

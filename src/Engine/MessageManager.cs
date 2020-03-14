@@ -1,4 +1,5 @@
 ﻿using RogueSurvivor.Data;
+using RogueSurvivor.Engine.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -74,7 +75,7 @@ namespace RogueSurvivor.Engine
                 Color dimmedColor = Color.FromArgb(alpha, msg.Color);
 
                 if (isLatest)
-                    ui.UI_DrawStringBold(dimmedColor, msg.Text, gx, gy);
+                    ui.DrawStringBold(dimmedColor, msg.Text, gx, gy);
                 else
                     ui.UI_DrawString(dimmedColor, msg.Text, gx, gy);
 

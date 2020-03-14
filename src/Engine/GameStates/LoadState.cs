@@ -1,13 +1,16 @@
-﻿using RogueSurvivor.Engine;
+﻿using RogueSurvivor.Engine.Interfaces;
+using RogueSurvivor.Gameplay;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Threading;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace RogueSurvivor.Gameplay
+namespace RogueSurvivor.Engine.GameStates
 {
-    class GameLoader
+    class LoadState : GameState, IGameLoader
     {
         private enum TaskType
         {
@@ -24,13 +27,36 @@ namespace RogueSurvivor.Gameplay
             public Action action;
         }
 
-        const int BOLD_LINE_SPACING = 14;
-
         private List<Task> tasks = new List<Task>();
         private List<string> texts = new List<string>();
         private int offset = 0;
         private Stopwatch stopwatch = new Stopwatch();
         private bool categoryOpen;
+
+        public override void Enter()
+        {
+            Logger.WriteLine(Logger.Stage.INIT, "Preparing items to load...");
+            GameImages.LoadResources(this, ui.GraphicsDevice);
+            game.Init(this);
+        }
+
+        public override void Draw()
+        {
+            ui.Clear(Color.Black);
+            ui.DrawStringBold(Color.Yellow, "Loading Rogue Survivor, please wait...", 0, 0);
+            int y = Ui.BOLD_LINE_SPACING;
+            foreach (string text in texts)
+            {
+                ui.DrawStringBold(Color.White, text, 0, y);
+                y += Ui.BOLD_LINE_SPACING;
+            }
+        }
+
+        public override void Update()
+        {
+            if (Process())
+                game.SetState<MainMenuState>(dispose: true);
+        }
 
         public void CategoryStart(string text)
         {
@@ -68,7 +94,7 @@ namespace RogueSurvivor.Gameplay
             });
         }
 
-        public bool Process()
+        private bool Process()
         {
             stopwatch.Restart();
             double dt = 0;
@@ -115,18 +141,6 @@ namespace RogueSurvivor.Gameplay
             }
 
             return true;
-        }
-
-        public void Draw(IRogueUI ui)
-        {
-            ui.UI_Clear(Color.Black);
-            ui.UI_DrawStringBold(Color.Yellow, "Loading Rogue Survivor, please wait...", 0, 0);
-            int y = BOLD_LINE_SPACING;
-            foreach (string text in texts)
-            {
-                ui.UI_DrawStringBold(Color.White, text, 0, y);
-                y += BOLD_LINE_SPACING;
-            }
         }
     }
 }

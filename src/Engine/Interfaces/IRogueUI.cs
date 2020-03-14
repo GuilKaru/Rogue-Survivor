@@ -1,8 +1,13 @@
 ﻿using RogueSurvivor.UI;
 using System.Drawing;
 
-namespace RogueSurvivor.Engine
+namespace RogueSurvivor.Engine.Interfaces
 {
+    class Ui
+    {
+        public const int BOLD_LINE_SPACING = 14;
+    }
+
     /// <summary>
     /// Provides UI functionalities to a Rogue game.
     /// </summary>
@@ -16,7 +21,7 @@ namespace RogueSurvivor.Engine
         MouseButton UI_PeekMouseButtons();
         void UI_Wait(int msecs);
         void UI_Repaint();
-        void UI_Clear(Color clearColor);
+        void Clear(Color clearColor);
         void UI_DrawImage(string imageID, int gx, int gy);
         void UI_DrawImage(string imageID, int gx, int gy, Color tint);
         void UI_DrawImageTransform(string imageID, int gx, int gy, float rotation, float scale);
@@ -26,7 +31,7 @@ namespace RogueSurvivor.Engine
         void UI_DrawRect(Color color, Rectangle rect);
         void UI_FillRect(Color color, Rectangle rect);
         void UI_DrawString(Color color, string text, int gx, int gy, Color? shadowColor = null);
-        void UI_DrawStringBold(Color color, string text, int gx, int gy, Color? shadowColor = null);
+        void DrawStringBold(Color color, string text, int gx, int gy, Color? shadowColor = null);
         void UI_DrawPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy);
         void UI_DrawPopupTitle(string title, Color titleColor, string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy);
         void UI_DrawPopupTitleColors(string title, Color titleColor, string[] lines, Color[] colors, Color boxBorderColor, Color boxFillColor, int gx, int gy);

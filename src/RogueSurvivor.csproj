@@ -181,6 +181,9 @@
     <Compile Include="Engine\Actions\ActionEatFoodOnGround.cs" />
     <Compile Include="Engine\Actions\ActionTrade.cs" />
     <Compile Include="Engine\Actions\ActionReviveCorpse.cs" />
+    <Compile Include="Engine\Interfaces\IGame.cs" />
+    <Compile Include="Engine\Interfaces\IGameLoader.cs" />
+    <Compile Include="Engine\RogueGame.cs" />
     <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\RectangleExtensions.cs" />
     <Compile Include="Extensions\SpriteBatchExtensions.cs" />
@@ -188,7 +191,7 @@
     <Compile Include="Engine\CSVParser.cs" />
     <Compile Include="Engine\GameHints.cs" />
     <Compile Include="Engine\HiScoreTable.cs" />
-    <Compile Include="Engine\IMusicManager.cs" />
+    <Compile Include="Engine\Interfaces\IMusicManager.cs" />
     <Compile Include="Engine\Items\ItemEntertainment.cs" />
     <Compile Include="Engine\Items\ItemEntertainmentModel.cs" />
     <Compile Include="Engine\Items\ItemAmmo.cs" />
@@ -244,7 +247,7 @@
     <Compile Include="Engine\AI\Percept.cs" />
     <Compile Include="Engine\AI\Sensor.cs" />
     <Compile Include="Engine\DiceRoller.cs" />
-    <Compile Include="Engine\IRogueUI.cs" />
+    <Compile Include="Engine\Interfaces\IRogueUI.cs" />
     <Compile Include="Engine\Items\ItemBarricadeMaterialModel.cs" />
     <Compile Include="Engine\Items\ItemBodyArmorModel.cs" />
     <Compile Include="Engine\Items\ItemFoodModel.cs" />
@@ -263,7 +266,6 @@
     <Compile Include="Engine\LOS.cs" />
     <Compile Include="Engine\MapGenerator.cs" />
     <Compile Include="Engine\MessageManager.cs" />
-    <Compile Include="Engine\RogueGame.cs" />
     <Compile Include="Engine\Rules.cs" />
     <Compile Include="Engine\PlayerCommand.cs" />
     <Compile Include="Engine\MusicManager.cs" />
@@ -278,7 +280,9 @@
     <Compile Include="Gameplay\AI\SewersThingAI.cs" />
     <Compile Include="Gameplay\AI\SoldierAI.cs" />
     <Compile Include="Gameplay\GameGangs.cs" />
-    <Compile Include="Gameplay\GameLoader.cs" />
+    <Compile Include="Engine\GameStates\GameState.cs" />
+    <Compile Include="Engine\GameStates\LoadState.cs" />
+    <Compile Include="Engine\GameStates\MainMenuState.cs" />
     <Compile Include="Gameplay\GameTips.cs" />
     <Compile Include="Gameplay\GameSounds.cs" />
     <Compile Include="Gameplay\GameActors.cs" />
