@@ -7,6 +7,7 @@ namespace RogueSurvivor.Engine.Interfaces
         HiScoreTable HiScoreTable { get; }
         GameHintsStatus Hints { get; }
         TextFile Manual { get; }
+        Session Session { get; }
 
         string SaveFilePath { get; }
         string HiScoreTextFilePath { get; }
@@ -19,6 +20,8 @@ namespace RogueSurvivor.Engine.Interfaces
         void PopState();
         void Exit();
 
+        void ApplyOptions();
+        void SetMode(GameMode mode);
         void GetAdvisorHintText(AdvisorHint hint, out string title, out string[] body);
     }
 }

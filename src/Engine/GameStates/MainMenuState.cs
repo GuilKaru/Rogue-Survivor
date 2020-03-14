@@ -72,23 +72,25 @@ namespace RogueSurvivor.Engine.GameStates
 
         public override void Update(double dt)
         {
-            // get menu action.
             Key key = ui.ReadKey();
             switch (key)
             {
-                case Key.Up:       // move up
-                    if (selected > 0) --selected;
-                    else selected = menuEntries.Length - 1;
+                case Key.Up:
+                    if (selected > 0)
+                        --selected;
+                    else
+                        selected = menuEntries.Length - 1;
                     break;
 
-                case Key.Down:     // move down
+                case Key.Down:
                     selected = (selected + 1) % menuEntries.Length;
                     break;
 
-                case Key.Enter:    // validate
+                case Key.Enter:
                     switch (selected)
                     {
                         case 0:
+                            game.PushState<SelectGameModeState>();
                             /*if (HandleNewCharacter())
                             {
                                 StartNewGame();
@@ -137,10 +139,7 @@ namespace RogueSurvivor.Engine.GameStates
                         case 8:
                             game.Exit();
                             break;
-
-                        default:
-                            break;
-                    } // switch selected
+                    }
                     break;
             }
         }

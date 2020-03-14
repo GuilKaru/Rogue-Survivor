@@ -1,4 +1,5 @@
 ﻿using RogueSurvivor.Data;
+using RogueSurvivor.Gameplay;
 using System;
 using System.IO;
 using System.Runtime.Serialization;
@@ -49,6 +50,14 @@ namespace RogueSurvivor.Engine
         ARMY_SUPLLIES,
 
         _COUNT
+    }
+
+    class CharGen
+    {
+        public bool IsUndead { get; set; }
+        public GameActors.IDs UndeadModel { get; set; }
+        public bool IsMale { get; set; }
+        public Skills.IDs StartingSkill { get; set; }
     }
 
     [Serializable]
@@ -134,6 +143,10 @@ namespace RogueSurvivor.Engine
         Map m_CurrentMap;
 
         Scoring m_Scoring;
+        [NonSerialized]
+        public CharGen charGen = new CharGen();
+        [NonSerialized]
+        public DiceRoller charGenRoller = new DiceRoller();
 
         /// <summary>
         /// [RaidType, District.WorldPosition.X, District.WorldPosition.Y] -> turnCounter
