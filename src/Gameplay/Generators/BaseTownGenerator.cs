@@ -231,7 +231,6 @@ namespace RogueSurvivor.Gameplay.Generators
             OFFICE
         }
 
-        // alpha10
         protected enum HouseOutsideRoomType : byte
         {
             _FIRST,
@@ -260,9 +259,9 @@ namespace RogueSurvivor.Gameplay.Generators
         const int PARK_TREE_CHANCE = 25;
         const int PARK_BENCH_CHANCE = 5;
         const int PARK_ITEM_CHANCE = 5;
-        const int PARK_SHED_CHANCE = 75;  // alpha10.1
-        const int PARK_SHED_WIDTH = 5;  // alpha10
-        const int PARK_SHED_HEIGHT = 5;  // alpha10
+        const int PARK_SHED_CHANCE = 75;
+        const int PARK_SHED_WIDTH = 5;
+        const int PARK_SHED_HEIGHT = 5;
 
         const int MAX_CHAR_GUARDS_PER_OFFICE = 3;
 
@@ -282,12 +281,10 @@ namespace RogueSurvivor.Gameplay.Generators
         const int HOUSE_BASEMENT_PILAR_CHANCE = 20;
         const int HOUSE_BASEMENT_WEAPONS_CACHE_CHANCE = 20;
         const int HOUSE_BASEMENT_ZOMBIE_RAT_CHANCE = 5; // per tile.
-        // alpha10 new house stuff
         const int HOUSE_OUTSIDE_ROOM_NEED_MIN_ROOMS = 4;
         const int HOUSE_OUTSIDE_ROOM_CHANCE = 75;
         const int HOUSE_GARDEN_TREE_CHANCE = 10;  // per tile
         const int HOUSE_PARKING_LOT_CAR_CHANCE = 10;  // per tile
-        // alpha10.1 new house floorplan: apartements
         const int HOUSE_IS_APARTMENTS_CHANCE = 50;
 
         const int SHOP_BASEMENT_CHANCE = 30;

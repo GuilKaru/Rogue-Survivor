@@ -157,7 +157,7 @@ namespace RogueSurvivor.Engine.GameStates
             else if (type == GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED)
                 game.Session.charGen.IsMale = false;
             game.PopState();
-            // !FIXME
+            game.PushState<GenerateWorldState>();
         }
     }
 }

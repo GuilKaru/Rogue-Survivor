@@ -71,7 +71,7 @@ namespace RogueSurvivor.Engine.GameStates
                 {
                     game.Session.charGen.StartingSkill = confirmSkill;
                     game.PopState();
-                    // !FIXME
+                    game.PushState<GenerateWorldState>();
                 }
                 else if (key == Key.N || key == Key.Escape)
                     confirmChoice = false;

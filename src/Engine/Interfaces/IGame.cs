@@ -1,4 +1,5 @@
-﻿using RogueSurvivor.Engine.GameStates;
+﻿using RogueSurvivor.Data;
+using RogueSurvivor.Engine.GameStates;
 using RogueSurvivor.Gameplay;
 
 namespace RogueSurvivor.Engine.Interfaces
@@ -11,7 +12,9 @@ namespace RogueSurvivor.Engine.Interfaces
         Keybindings KeyBindings { get; }
         TextFile Manual { get; }
         ref GameOptions Options { get; }
+        Rules Rules { get; }
         Session Session { get; }
+        World World { get; }
 
         string SaveFilePath { get; }
         string HiScoreTextFilePath { get; }
