@@ -4,9 +4,8 @@ namespace RogueSurvivor.Engine.GameStates
 {
     abstract class GameState
     {
-        public IGame game;
+        public RogueGame game;
         public IRogueUI ui;
-        public IMusicManager musicManager;
 
         public virtual void Init() { }
         public virtual void Enter() { }

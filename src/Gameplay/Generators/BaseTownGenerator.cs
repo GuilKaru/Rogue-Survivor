@@ -322,7 +322,7 @@ namespace RogueSurvivor.Gameplay.Generators
             ///////////////////
             // Init with grass
             ///////////////////
-            base.TileFill(map, m_Game.GameTiles.FLOOR_GRASS);
+            base.TileFill(map, m_Game.Tiles.FLOOR_GRASS);
 
             ///////////////
             // Cut blocks
@@ -438,7 +438,7 @@ namespace RogueSurvivor.Gameplay.Generators
                 Lighting = Lighting.DARKNESS
             };
             sewers.AddZone(MakeUniqueZone("sewers", sewers.Rect));
-            TileFill(sewers, m_Game.GameTiles.WALL_SEWER);
+            TileFill(sewers, m_Game.Tiles.WALL_SEWER);
 
             ///////////////////////////////////////////////////
             // 1. Make blocks.
@@ -463,7 +463,7 @@ namespace RogueSurvivor.Gameplay.Generators
             // Carve tunnels.
             foreach (Block b in blocks)
             {
-                TileRectangle(sewers, m_Game.GameTiles.FLOOR_SEWER_WATER, b.Rectangle);
+                TileRectangle(sewers, m_Game.Tiles.FLOOR_SEWER_WATER, b.Rectangle);
             }
             // Iron Fences blocking some tunnels.
             foreach (Block b in blocks)
@@ -550,7 +550,7 @@ namespace RogueSurvivor.Gameplay.Generators
                         if (tileSurface.IsInside)
                             continue;
                         // surface tile must be walkway or grass.
-                        if (tileSurface.Model != m_Game.GameTiles.FLOOR_WALKWAY && tileSurface.Model != m_Game.GameTiles.FLOOR_GRASS)
+                        if (tileSurface.Model != m_Game.Tiles.FLOOR_WALKWAY && tileSurface.Model != m_Game.Tiles.FLOOR_GRASS)
                             continue;
                         // surface tile must not be obstructed by an object.
                         if (surface.GetMapObjectAt(x, y) != null)
@@ -618,7 +618,7 @@ namespace RogueSurvivor.Gameplay.Generators
 
                 // clear surface building.
                 ClearRectangle(surface, surfaceBlock.BuildingRect);
-                TileFill(surface, m_Game.GameTiles.FLOOR_CONCRETE, surfaceBlock.BuildingRect);
+                TileFill(surface, m_Game.Tiles.FLOOR_CONCRETE, surfaceBlock.BuildingRect);
                 m_SurfaceBlocks.Remove(surfaceBlock);
 
                 // make maintenance building on the surface & room in the sewers.
@@ -641,13 +641,13 @@ namespace RogueSurvivor.Gameplay.Generators
                     continue;
 
                 // carve a room.
-                TileFill(sewers, m_Game.GameTiles.FLOOR_CONCRETE, b.InsideRect);
+                TileFill(sewers, m_Game.Tiles.FLOOR_CONCRETE, b.InsideRect);
 
                 // 4 entries.
-                sewers.SetTileModelAt(b.BuildingRect.Left + b.BuildingRect.Width / 2, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_CONCRETE);
-                sewers.SetTileModelAt(b.BuildingRect.Left + b.BuildingRect.Width / 2, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_CONCRETE);
-                sewers.SetTileModelAt(b.BuildingRect.Left, b.BuildingRect.Top + b.BuildingRect.Height / 2, m_Game.GameTiles.FLOOR_CONCRETE);
-                sewers.SetTileModelAt(b.BuildingRect.Right - 1, b.BuildingRect.Top + b.BuildingRect.Height / 2, m_Game.GameTiles.FLOOR_CONCRETE);
+                sewers.SetTileModelAt(b.BuildingRect.Left + b.BuildingRect.Width / 2, b.BuildingRect.Top, m_Game.Tiles.FLOOR_CONCRETE);
+                sewers.SetTileModelAt(b.BuildingRect.Left + b.BuildingRect.Width / 2, b.BuildingRect.Bottom - 1, m_Game.Tiles.FLOOR_CONCRETE);
+                sewers.SetTileModelAt(b.BuildingRect.Left, b.BuildingRect.Top + b.BuildingRect.Height / 2, m_Game.Tiles.FLOOR_CONCRETE);
+                sewers.SetTileModelAt(b.BuildingRect.Right - 1, b.BuildingRect.Top + b.BuildingRect.Height / 2, m_Game.Tiles.FLOOR_CONCRETE);
 
                 // zone.
                 sewers.AddZone(MakeUniqueZone("room", b.InsideRect));
@@ -723,7 +723,7 @@ namespace RogueSurvivor.Gameplay.Generators
             {
                 Lighting = Lighting.DARKNESS
             };
-            TileFill(subway, m_Game.GameTiles.WALL_BRICK);
+            TileFill(subway, m_Game.Tiles.WALL_BRICK);
 
             /////////////////////////////////////
             // 1. Trace rail line.
@@ -745,7 +745,7 @@ namespace RogueSurvivor.Gameplay.Generators
             for (int x = railStartX; x <= railEndX; x++)
             {
                 for (int y = railY; y < railY + railSize; y++)
-                    subway.SetTileModelAt(x, y, m_Game.GameTiles.RAIL_EW);
+                    subway.SetTileModelAt(x, y, m_Game.Tiles.RAIL_EW);
             }
             subway.AddZone(MakeUniqueZone(RogueGame.NAME_SUBWAY_RAILS, new Rectangle(railStartX, railY, railEndX - railStartX + 1, railSize)));
 
@@ -791,7 +791,7 @@ namespace RogueSurvivor.Gameplay.Generators
 
                 // clear surface building.
                 ClearRectangle(surface, surfaceBlock.BuildingRect);
-                TileFill(surface, m_Game.GameTiles.FLOOR_CONCRETE, surfaceBlock.BuildingRect);
+                TileFill(surface, m_Game.Tiles.FLOOR_CONCRETE, surfaceBlock.BuildingRect);
                 m_SurfaceBlocks.Remove(surfaceBlock);
 
                 // make station building on the surface & room in the subway.
@@ -831,9 +831,9 @@ namespace RogueSurvivor.Gameplay.Generators
             if (foundToolsRoom)
             {
                 // room.
-                TileFill(subway, m_Game.GameTiles.FLOOR_CONCRETE, toolsRoom);
-                TileRectangle(subway, m_Game.GameTiles.WALL_BRICK, toolsRoom);
-                PlaceDoor(subway, toolsRoom.Left + toolsRoomWidth / 2, (toolsRoomDir == Direction.N ? toolsRoom.Bottom - 1 : toolsRoom.Top), m_Game.GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
+                TileFill(subway, m_Game.Tiles.FLOOR_CONCRETE, toolsRoom);
+                TileRectangle(subway, m_Game.Tiles.WALL_BRICK, toolsRoom);
+                PlaceDoor(subway, toolsRoom.Left + toolsRoomWidth / 2, (toolsRoomDir == Direction.N ? toolsRoom.Bottom - 1 : toolsRoom.Top), m_Game.Tiles.FLOOR_CONCRETE, MakeObjIronDoor());
                 subway.AddZone(MakeUniqueZone("tools room", toolsRoom));
 
                 // shelves on walls with construction items.
@@ -961,10 +961,10 @@ namespace RogueSurvivor.Gameplay.Generators
                 // Make road ring?
                 if (makeRoads)
                 {
-                    MakeRoad(map, m_Game.GameTiles[GameTiles.IDs.ROAD_ASPHALT_EW], new Rectangle(rect.Left, rect.Top, rect.Width, ring));        // north side
-                    MakeRoad(map, m_Game.GameTiles[GameTiles.IDs.ROAD_ASPHALT_EW], new Rectangle(rect.Left, rect.Bottom - 1, rect.Width, ring)); // south side
-                    MakeRoad(map, m_Game.GameTiles[GameTiles.IDs.ROAD_ASPHALT_NS], new Rectangle(rect.Left, rect.Top, ring, rect.Height));       // west side
-                    MakeRoad(map, m_Game.GameTiles[GameTiles.IDs.ROAD_ASPHALT_NS], new Rectangle(rect.Right - 1, rect.Top, ring, rect.Height));       // east side
+                    MakeRoad(map, m_Game.Tiles[GameTiles.IDs.ROAD_ASPHALT_EW], new Rectangle(rect.Left, rect.Top, rect.Width, ring));        // north side
+                    MakeRoad(map, m_Game.Tiles[GameTiles.IDs.ROAD_ASPHALT_EW], new Rectangle(rect.Left, rect.Bottom - 1, rect.Width, ring)); // south side
+                    MakeRoad(map, m_Game.Tiles[GameTiles.IDs.ROAD_ASPHALT_NS], new Rectangle(rect.Left, rect.Top, ring, rect.Height));       // west side
+                    MakeRoad(map, m_Game.Tiles[GameTiles.IDs.ROAD_ASPHALT_NS], new Rectangle(rect.Right - 1, rect.Top, ring, rect.Height));       // east side
 
                     // Adjust rect.
                     topLeft.Width -= 2 * ring;
@@ -1003,7 +1003,7 @@ namespace RogueSurvivor.Gameplay.Generators
                 (tile, prevmodel, x, y) =>
                 {
                     // don't overwrite roads!
-                    if (m_Game.GameTiles.IsRoadModel(prevmodel))
+                    if (m_Game.Tiles.IsRoadModel(prevmodel))
                         map.SetTileModelAt(x, y, prevmodel);
                 });
             map.AddZone(base.MakeUniqueZone("road", rect));
@@ -1077,7 +1077,7 @@ namespace RogueSurvivor.Gameplay.Generators
                     if (m_DiceRoller.RollChance(m_Params.WreckedCarChance))
                     {
                         Tile tile = map.GetTileAt(pt.X, pt.Y);
-                        if (!tile.IsInside && tile.Model.IsWalkable && tile.Model != m_Game.GameTiles.FLOOR_GRASS)
+                        if (!tile.IsInside && tile.Model.IsWalkable && tile.Model != m_Game.Tiles.FLOOR_GRASS)
                         {
                             MapObject car = base.MakeObjWreckedCar(m_DiceRoller);
                             if (m_DiceRoller.RollChance(50))
@@ -1128,9 +1128,9 @@ namespace RogueSurvivor.Gameplay.Generators
             /////////////////////////////
             // 1. Walkway, floor & walls
             /////////////////////////////
-            base.TileRectangle(map, m_Game.GameTiles.FLOOR_WALKWAY, b.Rectangle);
-            base.TileRectangle(map, m_Game.GameTiles.WALL_STONE, b.BuildingRect);
-            base.TileFill(map, m_Game.GameTiles.FLOOR_TILES, b.InsideRect, (tile, prevmodel, x, y) => tile.IsInside = true);
+            base.TileRectangle(map, m_Game.Tiles.FLOOR_WALKWAY, b.Rectangle);
+            base.TileRectangle(map, m_Game.Tiles.WALL_STONE, b.BuildingRect);
+            base.TileFill(map, m_Game.Tiles.FLOOR_TILES, b.InsideRect, (tile, prevmodel, x, y) => tile.IsInside = true);
 
             ///////////////////////
             // 2. Decide shop type
@@ -1193,23 +1193,23 @@ namespace RogueSurvivor.Gameplay.Generators
                 {
 
                     // west
-                    PlaceDoor(map, b.BuildingRect.Left, midY, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                    PlaceDoor(map, b.BuildingRect.Left, midY, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     if (b.InsideRect.Height >= 8)
                     {
-                        PlaceDoor(map, b.BuildingRect.Left, midY - 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                        PlaceDoor(map, b.BuildingRect.Left, midY - 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                         if (b.InsideRect.Height >= 12)
-                            PlaceDoor(map, b.BuildingRect.Left, midY + 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                            PlaceDoor(map, b.BuildingRect.Left, midY + 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     }
                 }
                 else
                 {
                     // east
-                    PlaceDoor(map, b.BuildingRect.Right - 1, midY, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                    PlaceDoor(map, b.BuildingRect.Right - 1, midY, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     if (b.InsideRect.Height >= 8)
                     {
-                        PlaceDoor(map, b.BuildingRect.Right - 1, midY - 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                        PlaceDoor(map, b.BuildingRect.Right - 1, midY - 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                         if (b.InsideRect.Height >= 12)
-                            PlaceDoor(map, b.BuildingRect.Right - 1, midY + 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                            PlaceDoor(map, b.BuildingRect.Right - 1, midY + 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     }
                 }
             }
@@ -1220,23 +1220,23 @@ namespace RogueSurvivor.Gameplay.Generators
                 if (north)
                 {
                     // north
-                    PlaceDoor(map, midX, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                    PlaceDoor(map, midX, b.BuildingRect.Top, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     if (b.InsideRect.Width >= 8)
                     {
-                        PlaceDoor(map, midX - 1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                        PlaceDoor(map, midX - 1, b.BuildingRect.Top, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                         if (b.InsideRect.Width >= 12)
-                            PlaceDoor(map, midX + 1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                            PlaceDoor(map, midX + 1, b.BuildingRect.Top, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     }
                 }
                 else
                 {
                     // south
-                    PlaceDoor(map, midX, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                    PlaceDoor(map, midX, b.BuildingRect.Bottom - 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     if (b.InsideRect.Width >= 8)
                     {
-                        PlaceDoor(map, midX - 1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                        PlaceDoor(map, midX - 1, b.BuildingRect.Bottom - 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                         if (b.InsideRect.Width >= 12)
-                            PlaceDoor(map, midX + 1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                            PlaceDoor(map, midX + 1, b.BuildingRect.Bottom - 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     }
                 }
             }
@@ -1299,7 +1299,7 @@ namespace RogueSurvivor.Gameplay.Generators
                 // do it?
                 if (isGoodWindowPos)
                 {
-                    PlaceDoor(map, wx, wy, m_Game.GameTiles.FLOOR_TILES, base.MakeObjWindow());
+                    PlaceDoor(map, wx, wy, m_Game.Tiles.FLOOR_TILES, base.MakeObjWindow());
                 }
             }
 
@@ -1346,8 +1346,8 @@ namespace RogueSurvivor.Gameplay.Generators
                     Lighting = Lighting.DARKNESS
                 };
                 DoForEachTile(shopBasement, shopBasement.Rect, (pt) => shopBasement.GetTileAt(pt).IsInside = true);
-                TileFill(shopBasement, m_Game.GameTiles.FLOOR_CONCRETE);
-                TileRectangle(shopBasement, m_Game.GameTiles.WALL_BRICK, shopBasement.Rect);
+                TileFill(shopBasement, m_Game.Tiles.FLOOR_CONCRETE);
+                TileRectangle(shopBasement, m_Game.Tiles.WALL_BRICK, shopBasement.Rect);
                 shopBasement.AddZone(MakeUniqueZone("basement", shopBasement.Rect));
 
                 // - some shelves with shop items.
@@ -1438,9 +1438,9 @@ namespace RogueSurvivor.Gameplay.Generators
             /////////////////////////////
             // 1. Walkway, floor & walls
             /////////////////////////////
-            base.TileRectangle(map, m_Game.GameTiles.FLOOR_WALKWAY, b.Rectangle);
-            base.TileRectangle(map, m_Game.GameTiles.WALL_CHAR_OFFICE, b.BuildingRect);
-            base.TileFill(map, m_Game.GameTiles.FLOOR_OFFICE, b.InsideRect,
+            base.TileRectangle(map, m_Game.Tiles.FLOOR_WALKWAY, b.Rectangle);
+            base.TileRectangle(map, m_Game.Tiles.WALL_CHAR_OFFICE, b.BuildingRect);
+            base.TileFill(map, m_Game.Tiles.FLOOR_OFFICE, b.InsideRect,
                 (tile, prevmodel, x, y) =>
                 {
                     tile.IsInside = true;
@@ -1466,23 +1466,23 @@ namespace RogueSurvivor.Gameplay.Generators
                 if (west)
                 {
                     // west
-                    PlaceDoor(map, b.BuildingRect.Left, midY, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                    PlaceDoor(map, b.BuildingRect.Left, midY, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     if (b.InsideRect.Height >= 8)
                     {
-                        PlaceDoor(map, b.BuildingRect.Left, midY - 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                        PlaceDoor(map, b.BuildingRect.Left, midY - 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                         if (b.InsideRect.Height >= 12)
-                            PlaceDoor(map, b.BuildingRect.Left, midY + 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                            PlaceDoor(map, b.BuildingRect.Left, midY + 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     }
                 }
                 else
                 {
                     // east
-                    PlaceDoor(map, b.BuildingRect.Right - 1, midY, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                    PlaceDoor(map, b.BuildingRect.Right - 1, midY, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     if (b.InsideRect.Height >= 8)
                     {
-                        PlaceDoor(map, b.BuildingRect.Right - 1, midY - 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                        PlaceDoor(map, b.BuildingRect.Right - 1, midY - 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                         if (b.InsideRect.Height >= 12)
-                            PlaceDoor(map, b.BuildingRect.Right - 1, midY + 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                            PlaceDoor(map, b.BuildingRect.Right - 1, midY + 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     }
                 }
             }
@@ -1493,23 +1493,23 @@ namespace RogueSurvivor.Gameplay.Generators
                 if (north)
                 {
                     // north
-                    PlaceDoor(map, midX, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                    PlaceDoor(map, midX, b.BuildingRect.Top, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     if (b.InsideRect.Width >= 8)
                     {
-                        PlaceDoor(map, midX - 1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                        PlaceDoor(map, midX - 1, b.BuildingRect.Top, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                         if (b.InsideRect.Width >= 12)
-                            PlaceDoor(map, midX + 1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                            PlaceDoor(map, midX + 1, b.BuildingRect.Top, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     }
                 }
                 else
                 {
                     // south
-                    PlaceDoor(map, midX, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                    PlaceDoor(map, midX, b.BuildingRect.Bottom - 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     if (b.InsideRect.Width >= 8)
                     {
-                        PlaceDoor(map, midX - 1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                        PlaceDoor(map, midX - 1, b.BuildingRect.Bottom - 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                         if (b.InsideRect.Width >= 12)
-                            PlaceDoor(map, midX + 1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                            PlaceDoor(map, midX + 1, b.BuildingRect.Bottom - 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     }
                 }
             }
@@ -1536,7 +1536,7 @@ namespace RogueSurvivor.Gameplay.Generators
                     return MakeObjChair(GameImages.OBJ_CHAR_CHAIR);
                 });
             // walls/pilars in the middle.
-            TileFill(map, m_Game.GameTiles.WALL_CHAR_OFFICE, new Rectangle(b.InsideRect.Left + b.InsideRect.Width / 2 - 1, b.InsideRect.Top + b.InsideRect.Height / 2 - 1, 3, 2),
+            TileFill(map, m_Game.Tiles.WALL_CHAR_OFFICE, new Rectangle(b.InsideRect.Left + b.InsideRect.Width / 2 - 1, b.InsideRect.Top + b.InsideRect.Height / 2 - 1, 3, 2),
                 (tile, model, x, y) =>
                 {
                     tile.AddDecoration(CHAR_POSTERS[m_DiceRoller.Roll(0, CHAR_POSTERS.Length)]);
@@ -1576,9 +1576,9 @@ namespace RogueSurvivor.Gameplay.Generators
             /////////////////////////////
             // 1. Walkway, floor & walls
             /////////////////////////////
-            base.TileRectangle(map, m_Game.GameTiles.FLOOR_WALKWAY, b.Rectangle);
-            base.TileRectangle(map, m_Game.GameTiles.WALL_CHAR_OFFICE, b.BuildingRect);
-            base.TileFill(map, m_Game.GameTiles.FLOOR_OFFICE, b.InsideRect, (tile, prevmodel, x, y) => tile.IsInside = true);
+            base.TileRectangle(map, m_Game.Tiles.FLOOR_WALKWAY, b.Rectangle);
+            base.TileRectangle(map, m_Game.Tiles.WALL_CHAR_OFFICE, b.BuildingRect);
+            base.TileFill(map, m_Game.Tiles.FLOOR_OFFICE, b.InsideRect, (tile, prevmodel, x, y) => tile.IsInside = true);
 
             //////////////////////////
             // 2. Decide orientation.
@@ -1601,24 +1601,24 @@ namespace RogueSurvivor.Gameplay.Generators
                 {
                     doorSide = Direction.W;
                     // west
-                    PlaceDoor(map, b.BuildingRect.Left, midY, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                    PlaceDoor(map, b.BuildingRect.Left, midY, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     if (b.InsideRect.Height >= 8)
                     {
-                        PlaceDoor(map, b.BuildingRect.Left, midY - 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                        PlaceDoor(map, b.BuildingRect.Left, midY - 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                         if (b.InsideRect.Height >= 12)
-                            PlaceDoor(map, b.BuildingRect.Left, midY + 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                            PlaceDoor(map, b.BuildingRect.Left, midY + 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     }
                 }
                 else
                 {
                     doorSide = Direction.E;
                     // east
-                    PlaceDoor(map, b.BuildingRect.Right - 1, midY, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                    PlaceDoor(map, b.BuildingRect.Right - 1, midY, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     if (b.InsideRect.Height >= 8)
                     {
-                        PlaceDoor(map, b.BuildingRect.Right - 1, midY - 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                        PlaceDoor(map, b.BuildingRect.Right - 1, midY - 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                         if (b.InsideRect.Height >= 12)
-                            PlaceDoor(map, b.BuildingRect.Right - 1, midY + 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                            PlaceDoor(map, b.BuildingRect.Right - 1, midY + 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     }
                 }
             }
@@ -1630,24 +1630,24 @@ namespace RogueSurvivor.Gameplay.Generators
                 {
                     doorSide = Direction.N;
                     // north
-                    PlaceDoor(map, midX, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                    PlaceDoor(map, midX, b.BuildingRect.Top, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     if (b.InsideRect.Width >= 8)
                     {
-                        PlaceDoor(map, midX - 1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                        PlaceDoor(map, midX - 1, b.BuildingRect.Top, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                         if (b.InsideRect.Width >= 12)
-                            PlaceDoor(map, midX + 1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                            PlaceDoor(map, midX + 1, b.BuildingRect.Top, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     }
                 }
                 else
                 {
                     doorSide = Direction.S;
                     // south
-                    PlaceDoor(map, midX, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                    PlaceDoor(map, midX, b.BuildingRect.Bottom - 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     if (b.InsideRect.Width >= 8)
                     {
-                        PlaceDoor(map, midX - 1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                        PlaceDoor(map, midX - 1, b.BuildingRect.Bottom - 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                         if (b.InsideRect.Width >= 12)
-                            PlaceDoor(map, midX + 1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
+                            PlaceDoor(map, midX + 1, b.BuildingRect.Bottom - 1, m_Game.Tiles.FLOOR_WALKWAY, base.MakeObjGlassDoor());
                     }
                 }
             }
@@ -1665,19 +1665,19 @@ namespace RogueSurvivor.Gameplay.Generators
             const int hallDepth = 3;
             if (doorSide == Direction.N)
             {
-                base.TileHLine(map, m_Game.GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Left, b.InsideRect.Top + hallDepth, b.InsideRect.Width);
+                base.TileHLine(map, m_Game.Tiles.WALL_CHAR_OFFICE, b.InsideRect.Left, b.InsideRect.Top + hallDepth, b.InsideRect.Width);
             }
             else if (doorSide == Direction.S)
             {
-                base.TileHLine(map, m_Game.GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Left, b.InsideRect.Bottom - 1 - hallDepth, b.InsideRect.Width);
+                base.TileHLine(map, m_Game.Tiles.WALL_CHAR_OFFICE, b.InsideRect.Left, b.InsideRect.Bottom - 1 - hallDepth, b.InsideRect.Width);
             }
             else if (doorSide == Direction.E)
             {
-                base.TileVLine(map, m_Game.GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Right - 1 - hallDepth, b.InsideRect.Top, b.InsideRect.Height);
+                base.TileVLine(map, m_Game.Tiles.WALL_CHAR_OFFICE, b.InsideRect.Right - 1 - hallDepth, b.InsideRect.Top, b.InsideRect.Height);
             }
             else if (doorSide == Direction.W)
             {
-                base.TileVLine(map, m_Game.GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Left + hallDepth, b.InsideRect.Top, b.InsideRect.Height);
+                base.TileVLine(map, m_Game.Tiles.WALL_CHAR_OFFICE, b.InsideRect.Left + hallDepth, b.InsideRect.Top, b.InsideRect.Height);
             }
             else
                 throw new InvalidOperationException("unhandled door side");
@@ -1710,8 +1710,8 @@ namespace RogueSurvivor.Gameplay.Generators
             else
                 throw new InvalidOperationException("unhandled door side");
 
-            base.TileRectangle(map, m_Game.GameTiles.WALL_CHAR_OFFICE, corridorRect);
-            PlaceDoor(map, corridorDoor.X, corridorDoor.Y, m_Game.GameTiles.FLOOR_OFFICE, base.MakeObjCharDoor());
+            base.TileRectangle(map, m_Game.Tiles.WALL_CHAR_OFFICE, corridorRect);
+            PlaceDoor(map, corridorDoor.X, corridorDoor.Y, m_Game.Tiles.FLOOR_OFFICE, base.MakeObjCharDoor());
 
             /////////////////////////
             // 6. Make office rooms.
@@ -1749,12 +1749,12 @@ namespace RogueSurvivor.Gameplay.Generators
 
             foreach (Rectangle roomRect in officesOne)
             {
-                base.TileRectangle(map, m_Game.GameTiles.WALL_CHAR_OFFICE, roomRect);
+                base.TileRectangle(map, m_Game.Tiles.WALL_CHAR_OFFICE, roomRect);
                 map.AddZone(MakeUniqueZone("Office room", roomRect));
             }
             foreach (Rectangle roomRect in officesTwo)
             {
-                base.TileRectangle(map, m_Game.GameTiles.WALL_CHAR_OFFICE, roomRect);
+                base.TileRectangle(map, m_Game.Tiles.WALL_CHAR_OFFICE, roomRect);
                 map.AddZone(MakeUniqueZone("Office room", roomRect));
             }
 
@@ -1762,22 +1762,22 @@ namespace RogueSurvivor.Gameplay.Generators
             {
                 if (horizontalCorridor)
                 {
-                    PlaceDoor(map, roomRect.Left + roomRect.Width / 2, roomRect.Bottom - 1, m_Game.GameTiles.FLOOR_OFFICE, base.MakeObjCharDoor());
+                    PlaceDoor(map, roomRect.Left + roomRect.Width / 2, roomRect.Bottom - 1, m_Game.Tiles.FLOOR_OFFICE, base.MakeObjCharDoor());
                 }
                 else
                 {
-                    PlaceDoor(map, roomRect.Right - 1, roomRect.Top + roomRect.Height / 2, m_Game.GameTiles.FLOOR_OFFICE, base.MakeObjCharDoor());
+                    PlaceDoor(map, roomRect.Right - 1, roomRect.Top + roomRect.Height / 2, m_Game.Tiles.FLOOR_OFFICE, base.MakeObjCharDoor());
                 }
             }
             foreach (Rectangle roomRect in officesTwo)
             {
                 if (horizontalCorridor)
                 {
-                    PlaceDoor(map, roomRect.Left + roomRect.Width / 2, roomRect.Top, m_Game.GameTiles.FLOOR_OFFICE, base.MakeObjCharDoor());
+                    PlaceDoor(map, roomRect.Left + roomRect.Width / 2, roomRect.Top, m_Game.Tiles.FLOOR_OFFICE, base.MakeObjCharDoor());
                 }
                 else
                 {
-                    PlaceDoor(map, roomRect.Left, roomRect.Top + roomRect.Height / 2, m_Game.GameTiles.FLOOR_OFFICE, base.MakeObjCharDoor());
+                    PlaceDoor(map, roomRect.Left, roomRect.Top + roomRect.Height / 2, m_Game.Tiles.FLOOR_OFFICE, base.MakeObjCharDoor());
                 }
             }
 
@@ -1815,7 +1815,7 @@ namespace RogueSurvivor.Gameplay.Generators
                     (pt) =>
                     {
                         Tile tile = map.GetTileAt(pt.X, pt.Y);
-                        if (tile.Model != m_Game.GameTiles.FLOOR_OFFICE)
+                        if (tile.Model != m_Game.Tiles.FLOOR_OFFICE)
                             return false;
                         MapObject mapObj = map.GetMapObjectAt(pt);
                         if (mapObj != null)
@@ -1848,8 +1848,8 @@ namespace RogueSurvivor.Gameplay.Generators
             /////////////////////////////
             // 1. Grass, walkway & fence
             /////////////////////////////
-            base.TileRectangle(map, m_Game.GameTiles.FLOOR_WALKWAY, b.Rectangle);
-            base.TileFill(map, m_Game.GameTiles.FLOOR_GRASS, b.InsideRect);
+            base.TileRectangle(map, m_Game.Tiles.FLOOR_WALKWAY, b.Rectangle);
+            base.TileFill(map, m_Game.Tiles.FLOOR_GRASS, b.InsideRect);
             base.MapObjectFill(map, b.BuildingRect,
                 (pt) =>
                 {
@@ -1908,7 +1908,7 @@ namespace RogueSurvivor.Gameplay.Generators
                     break;
             }
             map.RemoveMapObjectAt(ex, ey);
-            map.SetTileModelAt(ex, ey, m_Game.GameTiles.FLOOR_WALKWAY);
+            map.SetTileModelAt(ex, ey, m_Game.Tiles.FLOOR_WALKWAY);
 
             ////////////
             // 4. Items
@@ -1955,8 +1955,8 @@ namespace RogueSurvivor.Gameplay.Generators
             Rectangle shedInsideRect = new Rectangle(shedBuildingRect.X + 1, shedBuildingRect.Y + 1, shedBuildingRect.Width - 2, shedBuildingRect.Height - 2);
 
             // build building & zone
-            TileRectangle(map, m_Game.GameTiles.WALL_BRICK, shedBuildingRect);
-            TileFill(map, m_Game.GameTiles.FLOOR_PLANKS, shedInsideRect, (tile, prevTileModel, x, y) => tile.IsInside = true);
+            TileRectangle(map, m_Game.Tiles.WALL_BRICK, shedBuildingRect);
+            TileFill(map, m_Game.Tiles.FLOOR_PLANKS, shedInsideRect, (tile, prevTileModel, x, y) => tile.IsInside = true);
             map.AddZone(MakeUniqueZone(baseZoneName, shedBuildingRect));
 
             // place shed door and make sure door front is cleared of objects (trees).
@@ -1990,7 +1990,7 @@ namespace RogueSurvivor.Gameplay.Generators
                     doorFrontY = doorY + 1;
                     break;
             }
-            PlaceDoor(map, doorX, doorY, m_Game.GameTiles.FLOOR_TILES, MakeObjWoodenDoor());
+            PlaceDoor(map, doorX, doorY, m_Game.Tiles.FLOOR_TILES, MakeObjWoodenDoor());
             map.RemoveMapObjectAt(doorFrontX, doorFrontY);
 
             // mark as inside and add shelves with tools
@@ -2045,9 +2045,9 @@ namespace RogueSurvivor.Gameplay.Generators
             /////////////////////////////
             // 1. Walkway, floor & walls
             /////////////////////////////
-            base.TileRectangle(map, m_Game.GameTiles.FLOOR_WALKWAY, b.Rectangle);
-            base.TileRectangle(map, m_Game.GameTiles.WALL_BRICK, b.BuildingRect);
-            base.TileFill(map, m_Game.GameTiles.FLOOR_PLANKS, b.InsideRect, (tile, prevmodel, x, y) => tile.IsInside = true);
+            base.TileRectangle(map, m_Game.Tiles.FLOOR_WALKWAY, b.Rectangle);
+            base.TileRectangle(map, m_Game.Tiles.WALL_BRICK, b.BuildingRect);
+            base.TileFill(map, m_Game.Tiles.FLOOR_PLANKS, b.InsideRect, (tile, prevmodel, x, y) => tile.IsInside = true);
 
             //////////////////////////
             // 2. Decide orientation.
@@ -2069,15 +2069,15 @@ namespace RogueSurvivor.Gameplay.Generators
                 {
                     doorSide = Direction.W;
                     // west
-                    PlaceDoor(map, b.BuildingRect.Left, midY, m_Game.GameTiles.FLOOR_PLANKS, base.MakeObjWoodenDoor());
-                    PlaceDoor(map, b.BuildingRect.Right - 1, midY, m_Game.GameTiles.FLOOR_PLANKS, base.MakeObjWindow());
+                    PlaceDoor(map, b.BuildingRect.Left, midY, m_Game.Tiles.FLOOR_PLANKS, base.MakeObjWoodenDoor());
+                    PlaceDoor(map, b.BuildingRect.Right - 1, midY, m_Game.Tiles.FLOOR_PLANKS, base.MakeObjWindow());
                 }
                 else
                 {
                     doorSide = Direction.E;
                     // east
-                    PlaceDoor(map, b.BuildingRect.Right - 1, midY, m_Game.GameTiles.FLOOR_PLANKS, base.MakeObjWoodenDoor());
-                    PlaceDoor(map, b.BuildingRect.Left, midY, m_Game.GameTiles.FLOOR_PLANKS, base.MakeObjWindow());
+                    PlaceDoor(map, b.BuildingRect.Right - 1, midY, m_Game.Tiles.FLOOR_PLANKS, base.MakeObjWoodenDoor());
+                    PlaceDoor(map, b.BuildingRect.Left, midY, m_Game.Tiles.FLOOR_PLANKS, base.MakeObjWindow());
                 }
             }
             else
@@ -2088,15 +2088,15 @@ namespace RogueSurvivor.Gameplay.Generators
                 {
                     doorSide = Direction.N;
                     // north
-                    PlaceDoor(map, midX, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_PLANKS, base.MakeObjWoodenDoor());
-                    PlaceDoor(map, midX, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_PLANKS, base.MakeObjWindow());
+                    PlaceDoor(map, midX, b.BuildingRect.Top, m_Game.Tiles.FLOOR_PLANKS, base.MakeObjWoodenDoor());
+                    PlaceDoor(map, midX, b.BuildingRect.Bottom - 1, m_Game.Tiles.FLOOR_PLANKS, base.MakeObjWindow());
                 }
                 else
                 {
                     doorSide = Direction.S;
                     // south
-                    PlaceDoor(map, midX, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_PLANKS, base.MakeObjWoodenDoor());
-                    PlaceDoor(map, midX, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_PLANKS, base.MakeObjWindow());
+                    PlaceDoor(map, midX, b.BuildingRect.Bottom - 1, m_Game.Tiles.FLOOR_PLANKS, base.MakeObjWoodenDoor());
+                    PlaceDoor(map, midX, b.BuildingRect.Top, m_Game.Tiles.FLOOR_PLANKS, base.MakeObjWindow());
                 }
             }
 
@@ -2160,35 +2160,35 @@ namespace RogueSurvivor.Gameplay.Generators
             allApartments.AddRange(apartementsWingTwo);
 
             foreach (Rectangle apartRect in apartementsWingOne)
-                base.TileRectangle(map, m_Game.GameTiles.WALL_BRICK, apartRect);
+                base.TileRectangle(map, m_Game.Tiles.WALL_BRICK, apartRect);
             foreach (Rectangle roomRect in apartementsWingTwo)
-                base.TileRectangle(map, m_Game.GameTiles.WALL_BRICK, roomRect);
+                base.TileRectangle(map, m_Game.Tiles.WALL_BRICK, roomRect);
 
             // put door leading to corridor; and an opposite window if outer wall / a door if inside
             foreach (Rectangle apartRect in apartementsWingOne)
             {
                 if (horizontalCorridor)
                 {
-                    PlaceDoor(map, apartRect.Left + apartRect.Width / 2, apartRect.Bottom - 1, m_Game.GameTiles.FLOOR_PLANKS, base.MakeObjWoodenDoor());
-                    PlaceDoor(map, apartRect.Left + apartRect.Width / 2, apartRect.Top, m_Game.GameTiles.FLOOR_PLANKS, base.MakeObjWindow());
+                    PlaceDoor(map, apartRect.Left + apartRect.Width / 2, apartRect.Bottom - 1, m_Game.Tiles.FLOOR_PLANKS, base.MakeObjWoodenDoor());
+                    PlaceDoor(map, apartRect.Left + apartRect.Width / 2, apartRect.Top, m_Game.Tiles.FLOOR_PLANKS, base.MakeObjWindow());
                 }
                 else
                 {
-                    PlaceDoor(map, apartRect.Right - 1, apartRect.Top + apartRect.Height / 2, m_Game.GameTiles.FLOOR_PLANKS, base.MakeObjWoodenDoor());
-                    PlaceDoor(map, apartRect.Left, apartRect.Top + apartRect.Height / 2, m_Game.GameTiles.FLOOR_PLANKS, base.MakeObjWindow());
+                    PlaceDoor(map, apartRect.Right - 1, apartRect.Top + apartRect.Height / 2, m_Game.Tiles.FLOOR_PLANKS, base.MakeObjWoodenDoor());
+                    PlaceDoor(map, apartRect.Left, apartRect.Top + apartRect.Height / 2, m_Game.Tiles.FLOOR_PLANKS, base.MakeObjWindow());
                 }
             }
             foreach (Rectangle apartRect in apartementsWingTwo)
             {
                 if (horizontalCorridor)
                 {
-                    PlaceDoor(map, apartRect.Left + apartRect.Width / 2, apartRect.Top, m_Game.GameTiles.FLOOR_PLANKS, base.MakeObjWoodenDoor());
-                    PlaceDoor(map, apartRect.Left + apartRect.Width / 2, apartRect.Bottom - 1, m_Game.GameTiles.FLOOR_PLANKS, base.MakeObjWindow());
+                    PlaceDoor(map, apartRect.Left + apartRect.Width / 2, apartRect.Top, m_Game.Tiles.FLOOR_PLANKS, base.MakeObjWoodenDoor());
+                    PlaceDoor(map, apartRect.Left + apartRect.Width / 2, apartRect.Bottom - 1, m_Game.Tiles.FLOOR_PLANKS, base.MakeObjWindow());
                 }
                 else
                 {
-                    PlaceDoor(map, apartRect.Left, apartRect.Top + apartRect.Height / 2, m_Game.GameTiles.FLOOR_PLANKS, base.MakeObjWoodenDoor());
-                    PlaceDoor(map, apartRect.Right - 1, apartRect.Top + apartRect.Height / 2, m_Game.GameTiles.FLOOR_PLANKS, base.MakeObjWindow());
+                    PlaceDoor(map, apartRect.Left, apartRect.Top + apartRect.Height / 2, m_Game.Tiles.FLOOR_PLANKS, base.MakeObjWoodenDoor());
+                    PlaceDoor(map, apartRect.Right - 1, apartRect.Top + apartRect.Height / 2, m_Game.Tiles.FLOOR_PLANKS, base.MakeObjWindow());
                 }
             }
 
@@ -2227,9 +2227,9 @@ namespace RogueSurvivor.Gameplay.Generators
             /////////////////////////////
             // 1. Walkway, floor & walls
             /////////////////////////////
-            base.TileRectangle(map, m_Game.GameTiles.FLOOR_WALKWAY, b.Rectangle);
-            base.TileRectangle(map, m_Game.GameTiles.WALL_BRICK, b.BuildingRect);
-            base.TileFill(map, m_Game.GameTiles.FLOOR_PLANKS, b.InsideRect, (tile, prevmodel, x, y) => tile.IsInside = true);
+            base.TileRectangle(map, m_Game.Tiles.FLOOR_WALKWAY, b.Rectangle);
+            base.TileRectangle(map, m_Game.Tiles.WALL_BRICK, b.BuildingRect);
+            base.TileFill(map, m_Game.Tiles.FLOOR_PLANKS, b.InsideRect, (tile, prevmodel, x, y) => tile.IsInside = true);
 
             ///////////////////////
             // 2. Rooms floor plan
@@ -2289,21 +2289,21 @@ namespace RogueSurvivor.Gameplay.Generators
                     switch (outsideRoom)
                     {
                         case HouseOutsideRoomType.GARDEN:
-                            base.TileFill(map, m_Game.GameTiles.FLOOR_GRASS, roomRect);
+                            base.TileFill(map, m_Game.Tiles.FLOOR_GRASS, roomRect);
                             base.DoForEachTile(map, roomRect,
                                 (pos) =>
                                 {
-                                    if (map.GetTileAt(pos).Model == m_Game.GameTiles.FLOOR_GRASS && m_DiceRoller.RollChance(HOUSE_GARDEN_TREE_CHANCE))
+                                    if (map.GetTileAt(pos).Model == m_Game.Tiles.FLOOR_GRASS && m_DiceRoller.RollChance(HOUSE_GARDEN_TREE_CHANCE))
                                         map.PlaceMapObjectAt(MakeObjTree(GameImages.OBJ_TREE), pos);
                                 });
                             break;
 
                         case HouseOutsideRoomType.PARKING_LOT:
-                            base.TileFill(map, m_Game.GameTiles.FLOOR_ASPHALT, roomRect);
+                            base.TileFill(map, m_Game.Tiles.FLOOR_ASPHALT, roomRect);
                             base.DoForEachTile(map, roomRect,
                                 (pos) =>
                                 {
-                                    if (map.GetTileAt(pos).Model == m_Game.GameTiles.FLOOR_ASPHALT && m_DiceRoller.RollChance(HOUSE_PARKING_LOT_CAR_CHANCE))
+                                    if (map.GetTileAt(pos).Model == m_Game.Tiles.FLOOR_ASPHALT && m_DiceRoller.RollChance(HOUSE_PARKING_LOT_CAR_CHANCE))
                                         map.PlaceMapObjectAt(MakeObjWreckedCar(m_DiceRoller), pos);
                                 });
                             break;
@@ -2311,7 +2311,7 @@ namespace RogueSurvivor.Gameplay.Generators
                 }
                 else
                 {
-                    MakeHousingRoom(map, roomRect, m_Game.GameTiles.FLOOR_PLANKS, m_Game.GameTiles.WALL_BRICK);
+                    MakeHousingRoom(map, roomRect, m_Game.Tiles.FLOOR_PLANKS, m_Game.Tiles.WALL_BRICK);
                     FillHousingRoomContents(map, roomRect);
                 }
             }
@@ -2326,7 +2326,7 @@ namespace RogueSurvivor.Gameplay.Generators
                         base.DoForEachTile(map, roomRect,
                             (pos) =>
                             {
-                                if ((pos.X == roomRect.Left || pos.X == roomRect.Right - 1 || pos.Y == roomRect.Top || pos.Y == roomRect.Bottom - 1) && map.GetTileAt(pos).Model == m_Game.GameTiles.FLOOR_GRASS)
+                                if ((pos.X == roomRect.Left || pos.X == roomRect.Right - 1 || pos.Y == roomRect.Top || pos.Y == roomRect.Bottom - 1) && map.GetTileAt(pos).Model == m_Game.Tiles.FLOOR_GRASS)
                                 {
                                     map.RemoveMapObjectAt(pos.X, pos.Y); // make sure trees are removed
                                     map.PlaceMapObjectAt(MakeObjFence(GameImages.OBJ_GARDEN_FENCE, MapObject.Fire.BURNABLE, DoorWindow.BASE_HITPOINTS / 2), pos);
@@ -2339,7 +2339,7 @@ namespace RogueSurvivor.Gameplay.Generators
                             (pos) =>
                             {
                                 bool isLotEntry = (pos.X == roomRect.Left + roomRect.Width / 2) || (pos.Y == roomRect.Top + roomRect.Height / 2);
-                                if (!isLotEntry && ((pos.X == roomRect.Left || pos.X == roomRect.Right - 1 || pos.Y == roomRect.Top || pos.Y == roomRect.Bottom - 1) && map.GetTileAt(pos).Model == m_Game.GameTiles.FLOOR_ASPHALT))
+                                if (!isLotEntry && ((pos.X == roomRect.Left || pos.X == roomRect.Right - 1 || pos.Y == roomRect.Top || pos.Y == roomRect.Bottom - 1) && map.GetTileAt(pos).Model == m_Game.Tiles.FLOOR_ASPHALT))
                                 {
                                     map.RemoveMapObjectAt(pos.X, pos.Y); // make sure cars are removed
                                     map.PlaceMapObjectAt(MakeObjWireFence(GameImages.OBJ_WIRE_FENCE), pos);
@@ -2427,9 +2427,9 @@ namespace RogueSurvivor.Gameplay.Generators
             ///////////////
             // if sewers dig room.
             if (!isSurface)
-                TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, b.InsideRect);
+                TileFill(map, m_Game.Tiles.FLOOR_CONCRETE, b.InsideRect);
             // outer walls.
-            TileRectangle(map, m_Game.GameTiles.WALL_SEWER, b.BuildingRect);
+            TileRectangle(map, m_Game.Tiles.WALL_SEWER, b.BuildingRect);
             // make sure its marked as inside (in case we replace a park for instance)
             for (int x = b.InsideRect.Left; x < b.InsideRect.Right; x++)
                 for (int y = b.InsideRect.Top; y < b.InsideRect.Bottom; y++)
@@ -2485,7 +2485,7 @@ namespace RogueSurvivor.Gameplay.Generators
                     throw new ArgumentOutOfRangeException("unhandled roll");
             }
             // add the door.
-            PlaceDoor(map, doorX, doorY, m_Game.GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
+            PlaceDoor(map, doorX, doorY, m_Game.Tiles.FLOOR_CONCRETE, MakeObjIronDoor());
             BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
 
             /////////////////////////////////
@@ -2504,7 +2504,7 @@ namespace RogueSurvivor.Gameplay.Generators
                 while (map.IsInBounds(digPos) && !map.GetTileAt(digPos.X, digPos.Y).Model.IsWalkable)
                 {
                     // corridor.
-                    map.SetTileModelAt(digPos.X, digPos.Y, m_Game.GameTiles.FLOOR_CONCRETE);
+                    map.SetTileModelAt(digPos.X, digPos.Y, m_Game.Tiles.FLOOR_CONCRETE);
                     // continue digging.
                     digPos += digDirection;
                 }
@@ -2573,9 +2573,9 @@ namespace RogueSurvivor.Gameplay.Generators
             ///////////////
             // if sewers dig room.
             if (!isSurface)
-                TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, b.InsideRect);
+                TileFill(map, m_Game.Tiles.FLOOR_CONCRETE, b.InsideRect);
             // outer walls.
-            TileRectangle(map, m_Game.GameTiles.WALL_SUBWAY, b.BuildingRect);
+            TileRectangle(map, m_Game.Tiles.WALL_SUBWAY, b.BuildingRect);
             // make sure its marked as inside (in case we replace a park for instance)
             for (int x = b.InsideRect.Left; x < b.InsideRect.Right; x++)
                 for (int y = b.InsideRect.Top; y < b.InsideRect.Bottom; y++)
@@ -2648,7 +2648,7 @@ namespace RogueSurvivor.Gameplay.Generators
             // add door if surface.
             if (isSurface)
             {
-                map.SetTileModelAt(entryFenceX, entryFenceY, m_Game.GameTiles.FLOOR_CONCRETE);
+                map.SetTileModelAt(entryFenceX, entryFenceY, m_Game.Tiles.FLOOR_CONCRETE);
                 map.PlaceMapObjectAt(MakeObjGlassDoor(), new Point(entryFenceX, entryFenceY));
             }
 
@@ -2673,21 +2673,21 @@ namespace RogueSurvivor.Gameplay.Generators
             if (!isSurface)
             {
                 // - dig corridor until we reach the rails.
-                map.SetTileModelAt(entryFenceX, entryFenceY, m_Game.GameTiles.FLOOR_CONCRETE);
-                map.SetTileModelAt(entryFenceX + 1, entryFenceY, m_Game.GameTiles.FLOOR_CONCRETE);
-                map.SetTileModelAt(entryFenceX - 1, entryFenceY, m_Game.GameTiles.FLOOR_CONCRETE);
-                map.SetTileModelAt(entryFenceX - 2, entryFenceY, m_Game.GameTiles.WALL_STONE);
-                map.SetTileModelAt(entryFenceX + 2, entryFenceY, m_Game.GameTiles.WALL_STONE);
+                map.SetTileModelAt(entryFenceX, entryFenceY, m_Game.Tiles.FLOOR_CONCRETE);
+                map.SetTileModelAt(entryFenceX + 1, entryFenceY, m_Game.Tiles.FLOOR_CONCRETE);
+                map.SetTileModelAt(entryFenceX - 1, entryFenceY, m_Game.Tiles.FLOOR_CONCRETE);
+                map.SetTileModelAt(entryFenceX - 2, entryFenceY, m_Game.Tiles.WALL_STONE);
+                map.SetTileModelAt(entryFenceX + 2, entryFenceY, m_Game.Tiles.WALL_STONE);
 
                 Point digPos = new Point(entryFenceX, entryFenceY) + digDirection;
                 while (map.IsInBounds(digPos) && !map.GetTileAt(digPos.X, digPos.Y).Model.IsWalkable)
                 {
                     // corridor.
-                    map.SetTileModelAt(digPos.X, digPos.Y, m_Game.GameTiles.FLOOR_CONCRETE);
-                    map.SetTileModelAt(digPos.X - 1, digPos.Y, m_Game.GameTiles.FLOOR_CONCRETE);
-                    map.SetTileModelAt(digPos.X + 1, digPos.Y, m_Game.GameTiles.FLOOR_CONCRETE);
-                    map.SetTileModelAt(digPos.X - 2, digPos.Y, m_Game.GameTiles.WALL_STONE);
-                    map.SetTileModelAt(digPos.X + 2, digPos.Y, m_Game.GameTiles.WALL_STONE);
+                    map.SetTileModelAt(digPos.X, digPos.Y, m_Game.Tiles.FLOOR_CONCRETE);
+                    map.SetTileModelAt(digPos.X - 1, digPos.Y, m_Game.Tiles.FLOOR_CONCRETE);
+                    map.SetTileModelAt(digPos.X + 1, digPos.Y, m_Game.Tiles.FLOOR_CONCRETE);
+                    map.SetTileModelAt(digPos.X - 2, digPos.Y, m_Game.Tiles.WALL_STONE);
+                    map.SetTileModelAt(digPos.X + 2, digPos.Y, m_Game.Tiles.WALL_STONE);
 
                     // continue digging.
                     digPos += digDirection;
@@ -2712,7 +2712,7 @@ namespace RogueSurvivor.Gameplay.Generators
                     benchesLine = platformRect.Bottom - 1;
                     map.AddZone(MakeUniqueZone("corridor", RectangleExtensions.Create(entryFenceX - 1, platformRect.Bottom, entryFenceX + 1 + 1, entryFenceY + 1)));
                 }
-                TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, platformRect);
+                TileFill(map, m_Game.Tiles.FLOOR_CONCRETE, platformRect);
 
                 // - iron benches in platform.
                 for (int bx = platformRect.Left; bx < platformRect.Right; bx++)
@@ -2755,11 +2755,11 @@ namespace RogueSurvivor.Gameplay.Generators
                 }
 
                 // carve power room.
-                TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, powerRoomRect);
-                TileRectangle(map, m_Game.GameTiles.WALL_STONE, powerRoomRect);
+                TileFill(map, m_Game.Tiles.FLOOR_CONCRETE, powerRoomRect);
+                TileRectangle(map, m_Game.Tiles.WALL_STONE, powerRoomRect);
 
                 // add door with signs.
-                PlaceDoor(map, powerRoomEntry.X, powerRoomEntry.Y, m_Game.GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
+                PlaceDoor(map, powerRoomEntry.X, powerRoomEntry.Y, m_Game.Tiles.FLOOR_CONCRETE, MakeObjIronDoor());
                 map.GetTileAt(powerRoomEntry.X, powerRoomEntry.Y - 1).AddDecoration(GameImages.DECO_POWER_SIGN_BIG);
                 map.GetTileAt(powerRoomEntry.X, powerRoomEntry.Y + 1).AddDecoration(GameImages.DECO_POWER_SIGN_BIG);
 
@@ -3502,8 +3502,8 @@ namespace RogueSurvivor.Gameplay.Generators
             basement.AddZone(MakeUniqueZone("basement", basement.Rect));
 
             // enclose.
-            TileFill(basement, m_Game.GameTiles.FLOOR_CONCRETE, (tile, model, x, y) => tile.IsInside = true);
-            TileRectangle(basement, m_Game.GameTiles.WALL_BRICK, new Rectangle(0, 0, basement.Width, basement.Height));
+            TileFill(basement, m_Game.Tiles.FLOOR_CONCRETE, (tile, model, x, y) => tile.IsInside = true);
+            TileRectangle(basement, m_Game.Tiles.WALL_BRICK, new Rectangle(0, 0, basement.Width, basement.Height));
 
             // link to house with stairs.
             Point surfaceStairs = new Point();
@@ -3537,7 +3537,7 @@ namespace RogueSurvivor.Gameplay.Generators
                         return;
                     if (pt == basementStairs)
                         return;
-                    basement.SetTileModelAt(pt.X, pt.Y, m_Game.GameTiles.WALL_BRICK);
+                    basement.SetTileModelAt(pt.X, pt.Y, m_Game.Tiles.WALL_BRICK);
                 });
 
             // fill with ome furniture/crap and items.
@@ -3662,8 +3662,8 @@ namespace RogueSurvivor.Gameplay.Generators
                 IsSecret = true
             };
             // fill & enclose.
-            TileFill(underground, m_Game.GameTiles.FLOOR_OFFICE, (tile, model, x, y) => tile.IsInside = true);
-            TileRectangle(underground, m_Game.GameTiles.WALL_CHAR_OFFICE, new Rectangle(0, 0, underground.Width, underground.Height));
+            TileFill(underground, m_Game.Tiles.FLOOR_OFFICE, (tile, model, x, y) => tile.IsInside = true);
+            TileRectangle(underground, m_Game.Tiles.WALL_CHAR_OFFICE, new Rectangle(0, 0, underground.Width, underground.Height));
 
             // 2. Link to office.
             // find surface point in office:
@@ -3757,7 +3757,7 @@ namespace RogueSurvivor.Gameplay.Generators
             // make the rooms walls.
             foreach (Rectangle roomRect in roomsList)
             {
-                TileRectangle(underground, m_Game.GameTiles.WALL_CHAR_OFFICE, roomRect);
+                TileRectangle(underground, m_Game.Tiles.WALL_CHAR_OFFICE, roomRect);
             }
 
             // add room doors.
@@ -3770,7 +3770,7 @@ namespace RogueSurvivor.Gameplay.Generators
                 if (underground.GetMapObjectAt(westEastDoorPos) == null)
                 {
                     DoorWindow door = MakeObjCharDoor();
-                    PlaceDoorIfAccessibleAndNotAdjacent(underground, westEastDoorPos.X, westEastDoorPos.Y, m_Game.GameTiles.FLOOR_OFFICE, 6, door);
+                    PlaceDoorIfAccessibleAndNotAdjacent(underground, westEastDoorPos.X, westEastDoorPos.Y, m_Game.Tiles.FLOOR_OFFICE, 6, door);
                 }
 
                 Point northSouthDoorPos = roomRect.Top < underground.Height / 2 ?
@@ -3779,20 +3779,20 @@ namespace RogueSurvivor.Gameplay.Generators
                 if (underground.GetMapObjectAt(northSouthDoorPos) == null)
                 {
                     DoorWindow door = MakeObjCharDoor();
-                    PlaceDoorIfAccessibleAndNotAdjacent(underground, northSouthDoorPos.X, northSouthDoorPos.Y, m_Game.GameTiles.FLOOR_OFFICE, 6, door);
+                    PlaceDoorIfAccessibleAndNotAdjacent(underground, northSouthDoorPos.X, northSouthDoorPos.Y, m_Game.Tiles.FLOOR_OFFICE, 6, door);
                 }
             }
 
             // add iron doors closing each corridor.
             for (int x = qTopLeft.Right; x < qBotRight.Left; x++)
             {
-                PlaceDoor(underground, x, qTopLeft.Bottom - 1, m_Game.GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
-                PlaceDoor(underground, x, qBotLeft.Top, m_Game.GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
+                PlaceDoor(underground, x, qTopLeft.Bottom - 1, m_Game.Tiles.FLOOR_OFFICE, MakeObjIronDoor());
+                PlaceDoor(underground, x, qBotLeft.Top, m_Game.Tiles.FLOOR_OFFICE, MakeObjIronDoor());
             }
             for (int y = qTopLeft.Bottom; y < qBotLeft.Top; y++)
             {
-                PlaceDoor(underground, qTopLeft.Right - 1, y, m_Game.GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
-                PlaceDoor(underground, qTopRight.Left, y, m_Game.GameTiles.FLOOR_OFFICE, MakeObjIronDoor());
+                PlaceDoor(underground, qTopLeft.Right - 1, y, m_Game.Tiles.FLOOR_OFFICE, MakeObjIronDoor());
+                PlaceDoor(underground, qTopRight.Left, y, m_Game.Tiles.FLOOR_OFFICE, MakeObjIronDoor());
             }
 
             // 4. Rooms, furniture & items.
@@ -3897,7 +3897,7 @@ namespace RogueSurvivor.Gameplay.Generators
                     GameActors.IDs upID = m_Game.NextUndeadEvolution((GameActors.IDs)undead.Model.ID);
                     if (upID == (GameActors.IDs)undead.Model.ID)
                         break;
-                    undead.Model = m_Game.GameActors[upID];
+                    undead.Model = m_Game.Actors[upID];
                 }
                 ActorPlace(m_DiceRoller, underground.Width * underground.Height, underground, undead, (pt) => underground.GetExitAt(pt) == null);
             }
@@ -3976,7 +3976,7 @@ namespace RogueSurvivor.Gameplay.Generators
         void MakeCHARStorageRoom(Map map, Rectangle roomRect)
         {
             // Replace floor with concrete.
-            TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, roomRect);
+            TileFill(map, m_Game.Tiles.FLOOR_CONCRETE, roomRect);
 
             // Objects.
             // Barrels & Junk in the middle of the room.
@@ -4013,7 +4013,7 @@ namespace RogueSurvivor.Gameplay.Generators
         void MakeCHARLivingRoom(Map map, Rectangle roomRect)
         {
             // Replace floor with wood with painted logo.
-            TileFill(map, m_Game.GameTiles.FLOOR_PLANKS, roomRect, (tile, model, x, y) => tile.AddDecoration(GameImages.DECO_CHAR_FLOOR_LOGO));
+            TileFill(map, m_Game.Tiles.FLOOR_PLANKS, roomRect, (tile, model, x, y) => tile.AddDecoration(GameImages.DECO_CHAR_FLOOR_LOGO));
 
             // Objects.
             // Beds/Fridges along walls.
@@ -4093,7 +4093,7 @@ namespace RogueSurvivor.Gameplay.Generators
         void MakeCHARPowerRoom(Map map, Rectangle wallsRect, Rectangle roomRect)
         {
             // Replace floor with concrete.
-            TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, roomRect);
+            TileFill(map, m_Game.Tiles.FLOOR_CONCRETE, roomRect);
 
             // add deco power sign next to doors.
             DoForEachTile(map, wallsRect,
@@ -4181,9 +4181,9 @@ namespace RogueSurvivor.Gameplay.Generators
         void GeneratePoliceStation(Map surfaceMap, Block policeBlock, out Point stairsToLevel1)
         {
             // Fill & Enclose Building.
-            TileFill(surfaceMap, m_Game.GameTiles.FLOOR_TILES, policeBlock.InsideRect);
-            TileRectangle(surfaceMap, m_Game.GameTiles.WALL_POLICE_STATION, policeBlock.BuildingRect);
-            TileRectangle(surfaceMap, m_Game.GameTiles.FLOOR_WALKWAY, policeBlock.Rectangle);
+            TileFill(surfaceMap, m_Game.Tiles.FLOOR_TILES, policeBlock.InsideRect);
+            TileRectangle(surfaceMap, m_Game.Tiles.WALL_POLICE_STATION, policeBlock.BuildingRect);
+            TileRectangle(surfaceMap, m_Game.Tiles.FLOOR_WALKWAY, policeBlock.Rectangle);
             DoForEachTile(surfaceMap, policeBlock.InsideRect, (pt) => surfaceMap.GetTileAt(pt).IsInside = true);
 
             // Entrance to the south with police signs.
@@ -4193,9 +4193,9 @@ namespace RogueSurvivor.Gameplay.Generators
 
             // Entry hall.
             Rectangle entryHall = RectangleExtensions.Create(policeBlock.BuildingRect.Left, policeBlock.BuildingRect.Top + 2, policeBlock.BuildingRect.Right, policeBlock.BuildingRect.Bottom);
-            TileRectangle(surfaceMap, m_Game.GameTiles.WALL_POLICE_STATION, entryHall);
-            PlaceDoor(surfaceMap, entryHall.Left + entryHall.Width / 2, entryHall.Top, m_Game.GameTiles.FLOOR_TILES, MakeObjIronDoor());
-            PlaceDoor(surfaceMap, entryDoorPos.X, entryDoorPos.Y, m_Game.GameTiles.FLOOR_TILES, MakeObjGlassDoor());
+            TileRectangle(surfaceMap, m_Game.Tiles.WALL_POLICE_STATION, entryHall);
+            PlaceDoor(surfaceMap, entryHall.Left + entryHall.Width / 2, entryHall.Top, m_Game.Tiles.FLOOR_TILES, MakeObjIronDoor());
+            PlaceDoor(surfaceMap, entryDoorPos.X, entryDoorPos.Y, m_Game.Tiles.FLOOR_TILES, MakeObjGlassDoor());
             DoForEachTile(surfaceMap, entryHall,
                 (pt) =>
                 {
@@ -4231,8 +4231,8 @@ namespace RogueSurvivor.Gameplay.Generators
             DoForEachTile(map, map.Rect, (pt) => map.GetTileAt(pt).IsInside = true);
 
             // 2. Floor plan.
-            TileFill(map, m_Game.GameTiles.FLOOR_TILES);
-            TileRectangle(map, m_Game.GameTiles.WALL_POLICE_STATION, map.Rect);
+            TileFill(map, m_Game.Tiles.FLOOR_TILES);
+            TileRectangle(map, m_Game.Tiles.WALL_POLICE_STATION, map.Rect);
             // - offices rooms on the east side, doors leading west.
             Rectangle officesRect = RectangleExtensions.Create(3, 0, map.Width, map.Height);
             List<Rectangle> roomsList = new List<Rectangle>();
@@ -4247,8 +4247,8 @@ namespace RogueSurvivor.Gameplay.Generators
                 {
                     // Police Security Room.
                     // make room with door.
-                    TileRectangle(map, m_Game.GameTiles.WALL_POLICE_STATION, roomRect);
-                    PlaceDoor(map, roomRect.Left, roomRect.Top + roomRect.Height / 2, m_Game.GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
+                    TileRectangle(map, m_Game.Tiles.WALL_POLICE_STATION, roomRect);
+                    PlaceDoor(map, roomRect.Left, roomRect.Top + roomRect.Height / 2, m_Game.Tiles.FLOOR_CONCRETE, MakeObjIronDoor());
 
                     // shelves with weaponry & armor next to the walls.
                     DoForEachTile(map, inRoomRect,
@@ -4311,9 +4311,9 @@ namespace RogueSurvivor.Gameplay.Generators
                 {
                     // Police Office Room.
                     // make room with door.
-                    TileFill(map, m_Game.GameTiles.FLOOR_PLANKS, roomRect);
-                    TileRectangle(map, m_Game.GameTiles.WALL_POLICE_STATION, roomRect);
-                    PlaceDoor(map, roomRect.Left, roomRect.Top + roomRect.Height / 2, m_Game.GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+                    TileFill(map, m_Game.Tiles.FLOOR_PLANKS, roomRect);
+                    TileRectangle(map, m_Game.Tiles.WALL_POLICE_STATION, roomRect);
+                    PlaceDoor(map, roomRect.Left, roomRect.Top + roomRect.Height / 2, m_Game.Tiles.FLOOR_PLANKS, MakeObjWoodenDoor());
 
                     // add furniture : 1 table, 2 chairs.
                     MapObjectPlaceInGoodPosition(map, inRoomRect,
@@ -4377,8 +4377,8 @@ namespace RogueSurvivor.Gameplay.Generators
             DoForEachTile(map, map.Rect, (pt) => map.GetTileAt(pt).IsInside = true);
 
             // 2. Floor plan.
-            TileFill(map, m_Game.GameTiles.FLOOR_TILES);
-            TileRectangle(map, m_Game.GameTiles.WALL_POLICE_STATION, map.Rect);
+            TileFill(map, m_Game.Tiles.FLOOR_TILES);
+            TileRectangle(map, m_Game.Tiles.WALL_POLICE_STATION, map.Rect);
             // - small cells.
             const int cellWidth = 3;
             const int cellHeight = 3;
@@ -4389,8 +4389,8 @@ namespace RogueSurvivor.Gameplay.Generators
                 // room.
                 Rectangle cellRoom = new Rectangle(x, yCells, cellWidth, cellHeight);
                 cells.Add(cellRoom);
-                TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, cellRoom);
-                TileRectangle(map, m_Game.GameTiles.WALL_POLICE_STATION, cellRoom);
+                TileFill(map, m_Game.Tiles.FLOOR_CONCRETE, cellRoom);
+                TileRectangle(map, m_Game.Tiles.WALL_POLICE_STATION, cellRoom);
 
                 // couch.
                 Point couchPos = new Point(x + 1, yCells + 1);
@@ -4398,7 +4398,7 @@ namespace RogueSurvivor.Gameplay.Generators
 
                 // gate.
                 Point gatePos = new Point(x + 1, yCells);
-                map.SetTileModelAt(gatePos.X, gatePos.Y, m_Game.GameTiles.FLOOR_CONCRETE);
+                map.SetTileModelAt(gatePos.X, gatePos.Y, m_Game.Tiles.FLOOR_CONCRETE);
                 map.PlaceMapObjectAt(MakeObjIronGate(GameImages.OBJ_GATE_CLOSED, false), gatePos);  // alpha10.1 made unbreakable because civ ai can now bash their way out when trapped :p
                 // zone.
                 map.AddZone(MakeUniqueZone(RogueGame.NAME_POLICE_STATION_JAILS_CELL, cellRoom));
@@ -4548,9 +4548,9 @@ namespace RogueSurvivor.Gameplay.Generators
         void GenerateHospitalEntryHall(Map surfaceMap, Block block)
         {
             // Fill & Enclose Building.
-            TileFill(surfaceMap, m_Game.GameTiles.FLOOR_TILES, block.InsideRect);
-            TileRectangle(surfaceMap, m_Game.GameTiles.WALL_HOSPITAL, block.BuildingRect);
-            TileRectangle(surfaceMap, m_Game.GameTiles.FLOOR_WALKWAY, block.Rectangle);
+            TileFill(surfaceMap, m_Game.Tiles.FLOOR_TILES, block.InsideRect);
+            TileRectangle(surfaceMap, m_Game.Tiles.WALL_HOSPITAL, block.BuildingRect);
+            TileRectangle(surfaceMap, m_Game.Tiles.FLOOR_WALKWAY, block.Rectangle);
             DoForEachTile(surfaceMap, block.InsideRect, (pt) => surfaceMap.GetTileAt(pt).IsInside = true);
 
             // 2 entrances to the south with signs.
@@ -4561,8 +4561,8 @@ namespace RogueSurvivor.Gameplay.Generators
 
             // Entry hall = whole building.
             Rectangle entryHall = RectangleExtensions.Create(block.BuildingRect.Left, block.BuildingRect.Top, block.BuildingRect.Right, block.BuildingRect.Bottom);
-            PlaceDoor(surfaceMap, entryRightDoorPos.X, entryRightDoorPos.Y, m_Game.GameTiles.FLOOR_TILES, MakeObjGlassDoor());
-            PlaceDoor(surfaceMap, entryLeftDoorPos.X, entryLeftDoorPos.Y, m_Game.GameTiles.FLOOR_TILES, MakeObjGlassDoor());
+            PlaceDoor(surfaceMap, entryRightDoorPos.X, entryRightDoorPos.Y, m_Game.Tiles.FLOOR_TILES, MakeObjGlassDoor());
+            PlaceDoor(surfaceMap, entryLeftDoorPos.X, entryLeftDoorPos.Y, m_Game.Tiles.FLOOR_TILES, MakeObjGlassDoor());
             DoForEachTile(surfaceMap, entryHall,
                 (pt) =>
                 {
@@ -4595,8 +4595,8 @@ namespace RogueSurvivor.Gameplay.Generators
                 Lighting = Lighting.DARKNESS
             };
             DoForEachTile(map, map.Rect, (pt) => map.GetTileAt(pt).IsInside = true);
-            TileFill(map, m_Game.GameTiles.FLOOR_TILES);
-            TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, map.Rect);
+            TileFill(map, m_Game.Tiles.FLOOR_TILES);
+            TileRectangle(map, m_Game.Tiles.WALL_HOSPITAL, map.Rect);
 
             // 2. Floor plan.
             // One central south->north corridor with admission rooms on each sides.
@@ -4604,7 +4604,7 @@ namespace RogueSurvivor.Gameplay.Generators
 
             // 1. Central corridor.
             Rectangle corridor = new Rectangle(roomSize - 1, 0, 5, map.Height);
-            TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, corridor);
+            TileRectangle(map, m_Game.Tiles.WALL_HOSPITAL, corridor);
             map.AddZone(MakeUniqueZone("corridor", corridor));
 
             // 2. Admission rooms, all similar 5x5 rooms (3x3 inside)            
@@ -4669,8 +4669,8 @@ namespace RogueSurvivor.Gameplay.Generators
                 Lighting = Lighting.DARKNESS
             };
             DoForEachTile(map, map.Rect, (pt) => map.GetTileAt(pt).IsInside = true);
-            TileFill(map, m_Game.GameTiles.FLOOR_TILES);
-            TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, map.Rect);
+            TileFill(map, m_Game.Tiles.FLOOR_TILES);
+            TileRectangle(map, m_Game.Tiles.WALL_HOSPITAL, map.Rect);
 
             // 2. Floor plan.
             // One central south->north corridor with offices rooms on each sides.
@@ -4678,7 +4678,7 @@ namespace RogueSurvivor.Gameplay.Generators
 
             // 1. Central corridor.
             Rectangle corridor = new Rectangle(roomSize - 1, 0, 5, map.Height);
-            TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, corridor);
+            TileRectangle(map, m_Game.Tiles.WALL_HOSPITAL, corridor);
             map.AddZone(MakeUniqueZone("corridor", corridor));
 
             // 2. Offices rooms, all similar 5x5 rooms (3x3 inside)
@@ -4733,8 +4733,8 @@ namespace RogueSurvivor.Gameplay.Generators
                 Lighting = Lighting.DARKNESS
             };
             DoForEachTile(map, map.Rect, (pt) => map.GetTileAt(pt).IsInside = true);
-            TileFill(map, m_Game.GameTiles.FLOOR_TILES);
-            TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, map.Rect);
+            TileFill(map, m_Game.Tiles.FLOOR_TILES);
+            TileRectangle(map, m_Game.Tiles.WALL_HOSPITAL, map.Rect);
 
             // 2. Floor plan.
             // One central south->north corridor with admission rooms on each sides.
@@ -4742,7 +4742,7 @@ namespace RogueSurvivor.Gameplay.Generators
 
             // 1. Central corridor.
             Rectangle corridor = new Rectangle(roomSize - 1, 0, 5, map.Height);
-            TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, corridor);
+            TileRectangle(map, m_Game.Tiles.WALL_HOSPITAL, corridor);
             map.AddZone(MakeUniqueZone("corridor", corridor));
 
             // 2. Patients rooms, all similar 5x5 rooms (3x3 inside)            
@@ -4806,8 +4806,8 @@ namespace RogueSurvivor.Gameplay.Generators
                 Lighting = Lighting.DARKNESS
             };
             DoForEachTile(map, map.Rect, (pt) => map.GetTileAt(pt).IsInside = true);
-            TileFill(map, m_Game.GameTiles.FLOOR_TILES);
-            TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, map.Rect);
+            TileFill(map, m_Game.Tiles.FLOOR_TILES);
+            TileRectangle(map, m_Game.Tiles.WALL_HOSPITAL, map.Rect);
 
             // 2. Floor plan.
             // 1 north corridor linking stairs.
@@ -4817,14 +4817,14 @@ namespace RogueSurvivor.Gameplay.Generators
             // 1 north corridor linking stairs.
             const int northCorridorHeight = 4;
             Rectangle northCorridorRect = RectangleExtensions.Create(0, 0, map.Width, northCorridorHeight);
-            TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, northCorridorRect);
+            TileRectangle(map, m_Game.Tiles.WALL_HOSPITAL, northCorridorRect);
             map.AddZone(MakeUniqueZone("north corridor", northCorridorRect));
 
             // 1 corridor to storage rooms, locked by an iron gate.
             const int corridorHeight = 4;
             Rectangle centralCorridorRect = RectangleExtensions.Create(0, northCorridorRect.Bottom - 1, map.Width, northCorridorRect.Bottom - 1 + corridorHeight);
-            TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, centralCorridorRect);
-            map.SetTileModelAt(1, centralCorridorRect.Top, m_Game.GameTiles.FLOOR_TILES);
+            TileRectangle(map, m_Game.Tiles.WALL_HOSPITAL, centralCorridorRect);
+            map.SetTileModelAt(1, centralCorridorRect.Top, m_Game.Tiles.FLOOR_TILES);
             map.PlaceMapObjectAt(MakeObjIronGate(GameImages.OBJ_GATE_CLOSED), new Point(1, centralCorridorRect.Top));
             map.AddZone(MakeUniqueZone("central corridor", centralCorridorRect));
             // storage rooms.
@@ -4836,12 +4836,12 @@ namespace RogueSurvivor.Gameplay.Generators
                 Rectangle room = new Rectangle(roomX, storageCentral.Top, storageWidth, storageHeight);
                 MakeHospitalStorageRoom(map, "storage", room);
             }
-            map.SetTileModelAt(1, storageCentral.Top, m_Game.GameTiles.FLOOR_TILES);
+            map.SetTileModelAt(1, storageCentral.Top, m_Game.Tiles.FLOOR_TILES);
 
             // 1 south corridor to other storage rooms.
             Rectangle southCorridorRect = RectangleExtensions.Create(0, storageCentral.Bottom - 1, map.Width, storageCentral.Bottom - 1 + corridorHeight);
-            TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, southCorridorRect);
-            map.SetTileModelAt(1, southCorridorRect.Top, m_Game.GameTiles.FLOOR_TILES);
+            TileRectangle(map, m_Game.Tiles.WALL_HOSPITAL, southCorridorRect);
+            map.SetTileModelAt(1, southCorridorRect.Top, m_Game.Tiles.FLOOR_TILES);
             map.AddZone(MakeUniqueZone("south corridor", southCorridorRect));
             // storage rooms.
             Rectangle storageSouth = new Rectangle(2, southCorridorRect.Bottom - 1, map.Width - 2, storageHeight);
@@ -4850,13 +4850,13 @@ namespace RogueSurvivor.Gameplay.Generators
                 Rectangle room = new Rectangle(roomX, storageSouth.Top, storageWidth, storageHeight);
                 MakeHospitalStorageRoom(map, "storage", room);
             }
-            map.SetTileModelAt(1, storageSouth.Top, m_Game.GameTiles.FLOOR_TILES);
+            map.SetTileModelAt(1, storageSouth.Top, m_Game.Tiles.FLOOR_TILES);
 
             // alpha10.1 moved Jason Myers out of power room to storage north corridor
             // also upped high stamina to 5 (was 3).
             // Jason Myers
-            ActorModel model = m_Game.GameActors.JasonMyers;
-            Actor jason = model.CreateNamed(m_Game.GameFactions.ThePsychopaths, "Jason Myers", false, 0);
+            ActorModel model = m_Game.Actors.JasonMyers;
+            Actor jason = model.CreateNamed(m_Game.Factions.ThePsychopaths, "Jason Myers", false, 0);
             jason.IsUnique = true;
             jason.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_JASON_MYERS);
             GiveStartingSkillToActor(jason, Skills.IDs.TOUGH);
@@ -4899,8 +4899,8 @@ namespace RogueSurvivor.Gameplay.Generators
                 Lighting = Lighting.DARKNESS
             };
             DoForEachTile(map, map.Rect, (pt) => map.GetTileAt(pt).IsInside = true);
-            TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE);
-            TileRectangle(map, m_Game.GameTiles.WALL_BRICK, map.Rect);
+            TileFill(map, m_Game.Tiles.FLOOR_CONCRETE);
+            TileRectangle(map, m_Game.Tiles.WALL_BRICK, map.Rect);
 
             // 2. Floor plan.
             // one narrow corridor separated from the power gen room by iron fences.
@@ -4966,10 +4966,10 @@ namespace RogueSurvivor.Gameplay.Generators
         Actor CreateNewHospitalPatient(int spawnTime)
         {
             // decide model.
-            ActorModel model = m_Rules.Roll(0, 2) == 0 ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian;
+            ActorModel model = m_Rules.Roll(0, 2) == 0 ? m_Game.Actors.MaleCivilian : m_Game.Actors.FemaleCivilian;
 
             // create.
-            Actor patient = model.CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
+            Actor patient = model.CreateNumberedName(m_Game.Factions.TheCivilians, 0);
             SkinNakedHuman(m_DiceRoller, patient);
             GiveNameToActor(m_DiceRoller, patient);
             patient.Name = "Patient " + patient.Name;
@@ -4988,7 +4988,7 @@ namespace RogueSurvivor.Gameplay.Generators
         Actor CreateNewHospitalNurse(int spawnTime)
         {
             // create.
-            Actor nurse = m_Game.GameActors.FemaleCivilian.CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
+            Actor nurse = m_Game.Actors.FemaleCivilian.CreateNumberedName(m_Game.Factions.TheCivilians, 0);
             SkinNakedHuman(m_DiceRoller, nurse);
             GiveNameToActor(m_DiceRoller, nurse);
             nurse.Name = "Nurse " + nurse.Name;
@@ -5011,7 +5011,7 @@ namespace RogueSurvivor.Gameplay.Generators
         Actor CreateNewHospitalDoctor(int spawnTime)
         {
             // create.
-            Actor doctor = m_Game.GameActors.MaleCivilian.CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
+            Actor doctor = m_Game.Actors.MaleCivilian.CreateNumberedName(m_Game.Factions.TheCivilians, 0);
             SkinNakedHuman(m_DiceRoller, doctor);
             GiveNameToActor(m_DiceRoller, doctor);
             doctor.Name = "Doctor " + doctor.Name;
@@ -5037,13 +5037,13 @@ namespace RogueSurvivor.Gameplay.Generators
 
         void MakeHospitalPatientRoom(Map map, string baseZoneName, Rectangle room, bool isFacingEast)
         {
-            TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, room);
+            TileRectangle(map, m_Game.Tiles.WALL_HOSPITAL, room);
             map.AddZone(MakeUniqueZone(baseZoneName, room));
 
             int xDoor = (isFacingEast ? room.Right - 1 : room.Left);
 
             // door in the corner.
-            PlaceDoor(map, xDoor, room.Top + 1, m_Game.GameTiles.FLOOR_TILES, MakeObjHospitalDoor());
+            PlaceDoor(map, xDoor, room.Top + 1, m_Game.Tiles.FLOOR_TILES, MakeObjHospitalDoor());
 
             // bed in the middle in the south.
             Point bedPos = new Point(room.Left + room.Width / 2, room.Bottom - 2);
@@ -5075,15 +5075,15 @@ namespace RogueSurvivor.Gameplay.Generators
 
         void MakeHospitalOfficeRoom(Map map, string baseZoneName, Rectangle room, bool isFacingEast)
         {
-            TileFill(map, m_Game.GameTiles.FLOOR_PLANKS, room);
-            TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, room);
+            TileFill(map, m_Game.Tiles.FLOOR_PLANKS, room);
+            TileRectangle(map, m_Game.Tiles.WALL_HOSPITAL, room);
             map.AddZone(MakeUniqueZone(baseZoneName, room));
 
             int xDoor = (isFacingEast ? room.Right - 1 : room.Left);
             int yDoor = room.Top + 2;
 
             // door in the middle.
-            PlaceDoor(map, xDoor, yDoor, m_Game.GameTiles.FLOOR_TILES, MakeObjWoodenDoor());
+            PlaceDoor(map, xDoor, yDoor, m_Game.Tiles.FLOOR_TILES, MakeObjWoodenDoor());
 
             // chairs and table facing the door.
             int xTable = (isFacingEast ? room.Left + 2 : room.Right - 3);
@@ -5094,11 +5094,11 @@ namespace RogueSurvivor.Gameplay.Generators
 
         void MakeHospitalStorageRoom(Map map, string baseZoneName, Rectangle room)
         {
-            TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, room);
+            TileRectangle(map, m_Game.Tiles.WALL_HOSPITAL, room);
             map.AddZone(MakeUniqueZone(baseZoneName, room));
 
             // door.
-            PlaceDoor(map, room.Left + 2, room.Top, m_Game.GameTiles.FLOOR_TILES, MakeObjHospitalDoor());
+            PlaceDoor(map, room.Left + 2, room.Top, m_Game.Tiles.FLOOR_TILES, MakeObjHospitalDoor());
 
             // shelves with meds or food.
             DoForEachTile(map, room,
@@ -5214,10 +5214,10 @@ namespace RogueSurvivor.Gameplay.Generators
         {
             // decide model.
             bool isMale = m_Rules.Roll(0, 2) == 0;
-            ActorModel model = isMale ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian;
+            ActorModel model = isMale ? m_Game.Actors.MaleCivilian : m_Game.Actors.FemaleCivilian;
 
             // create.
-            Actor survivor = model.CreateNumberedName(m_Game.GameFactions.TheSurvivors, spawnTime);
+            Actor survivor = model.CreateNumberedName(m_Game.Factions.TheSurvivors, spawnTime);
 
             // setup.
             base.GiveNameToActor(m_DiceRoller, survivor);
@@ -5278,10 +5278,10 @@ namespace RogueSurvivor.Gameplay.Generators
         public Actor CreateNewNakedHuman(int spawnTime, int itemsToCarry, int skills)
         {
             // decide model.
-            ActorModel model = m_Rules.Roll(0, 2) == 0 ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian;
+            ActorModel model = m_Rules.Roll(0, 2) == 0 ? m_Game.Actors.MaleCivilian : m_Game.Actors.FemaleCivilian;
 
             // create.
-            Actor civilian = model.CreateNumberedName(m_Game.GameFactions.TheCivilians, spawnTime);
+            Actor civilian = model.CreateNumberedName(m_Game.Factions.TheCivilians, spawnTime);
 
             // done.
             return civilian;
@@ -5290,10 +5290,10 @@ namespace RogueSurvivor.Gameplay.Generators
         public Actor CreateNewCivilian(int spawnTime, int itemsToCarry, int skills)
         {
             // decide model.
-            ActorModel model = m_Rules.Roll(0, 2) == 0 ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian;
+            ActorModel model = m_Rules.Roll(0, 2) == 0 ? m_Game.Actors.MaleCivilian : m_Game.Actors.FemaleCivilian;
 
             // create.
-            Actor civilian = model.CreateNumberedName(m_Game.GameFactions.TheCivilians, spawnTime);
+            Actor civilian = model.CreateNumberedName(m_Game.Factions.TheCivilians, spawnTime);
 
             // setup.
             base.DressCivilian(m_DiceRoller, civilian);
@@ -5316,10 +5316,10 @@ namespace RogueSurvivor.Gameplay.Generators
         public Actor CreateNewPoliceman(int spawnTime)
         {
             // model.
-            ActorModel model = m_Game.GameActors.Policeman;
+            ActorModel model = m_Game.Actors.Policeman;
 
             // create.
-            Actor newCop = model.CreateNumberedName(m_Game.GameFactions.ThePolice, spawnTime);
+            Actor newCop = model.CreateNumberedName(m_Game.Factions.ThePolice, spawnTime);
 
             // setup.
             base.DressPolice(m_DiceRoller, newCop);
@@ -5367,13 +5367,13 @@ namespace RogueSurvivor.Gameplay.Generators
                 // decide model.
                 ActorModel undeadModel;
                 int chance = m_Rules.Roll(0, 100);
-                undeadModel = (chance < RogueGame.Options.SpawnSkeletonChance ? m_Game.GameActors.Skeleton :
-                    chance < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance ? m_Game.GameActors.Zombie :
-                    chance < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance + RogueGame.Options.SpawnZombieMasterChance ? m_Game.GameActors.ZombieMaster :
-                     m_Game.GameActors.Skeleton);
+                undeadModel = (chance < RogueGame.Options.SpawnSkeletonChance ? m_Game.Actors.Skeleton :
+                    chance < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance ? m_Game.Actors.Zombie :
+                    chance < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance + RogueGame.Options.SpawnZombieMasterChance ? m_Game.Actors.ZombieMaster :
+                     m_Game.Actors.Skeleton);
 
                 // create.
-                newUndead = undeadModel.CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
+                newUndead = undeadModel.CreateNumberedName(m_Game.Factions.TheUndeads, spawnTime);
             }
             else
             {
@@ -5402,8 +5402,8 @@ namespace RogueSurvivor.Gameplay.Generators
         {
             // create actor.
             string zombiefiedName = string.Format("{0}'s zombie", deadVictim.UnmodifiedName);
-            ActorModel zombiefiedModel = deadVictim.Doll.Body.IsMale ? m_Game.GameActors.MaleZombified : m_Game.GameActors.FemaleZombified;
-            Faction zombieFaction = (zombifier == null ? m_Game.GameFactions.TheUndeads : zombifier.Faction);
+            ActorModel zombiefiedModel = deadVictim.Doll.Body.IsMale ? m_Game.Actors.MaleZombified : m_Game.Actors.FemaleZombified;
+            Faction zombieFaction = (zombifier == null ? m_Game.Factions.TheUndeads : zombifier.Faction);
             Actor newZombie = zombiefiedModel.CreateNamed(zombieFaction, zombiefiedName, deadVictim.IsPluralName, turn);
 
             // dress as victim.
@@ -5429,10 +5429,10 @@ namespace RogueSurvivor.Gameplay.Generators
                 return CreateNewUndead(spawnTime);
 
             // decide model. 
-            ActorModel undeadModel = m_DiceRoller.RollChance(80) ? m_Game.GameActors.RatZombie : m_Game.GameActors.Zombie;
+            ActorModel undeadModel = m_DiceRoller.RollChance(80) ? m_Game.Actors.RatZombie : m_Game.Actors.Zombie;
 
             // create.
-            Actor newUndead = undeadModel.CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
+            Actor newUndead = undeadModel.CreateNumberedName(m_Game.Factions.TheUndeads, spawnTime);
 
             // done.
             return newUndead;
@@ -5443,7 +5443,7 @@ namespace RogueSurvivor.Gameplay.Generators
             if (!Rules.HasAllZombies(m_Game.Session.GameMode))
                 return CreateNewUndead(spawnTime);
 
-            return m_Game.GameActors.RatZombie.CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
+            return m_Game.Actors.RatZombie.CreateNumberedName(m_Game.Factions.TheUndeads, spawnTime);
         }
 
         public Actor CreateNewSubwayUndead(int spawnTime)
@@ -5452,10 +5452,10 @@ namespace RogueSurvivor.Gameplay.Generators
                 return CreateNewUndead(spawnTime);
 
             // standard zombies.
-            ActorModel undeadModel = m_Game.GameActors.Zombie;
+            ActorModel undeadModel = m_Game.Actors.Zombie;
 
             // create.
-            Actor newUndead = undeadModel.CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
+            Actor newUndead = undeadModel.CreateNumberedName(m_Game.Factions.TheUndeads, spawnTime);
 
             // done.
             return newUndead;
@@ -5464,10 +5464,10 @@ namespace RogueSurvivor.Gameplay.Generators
         public Actor CreateNewCHARGuard(int spawnTime)
         {
             // model.
-            ActorModel model = m_Game.GameActors.CHARGuard;
+            ActorModel model = m_Game.Actors.CHARGuard;
 
             // create.
-            Actor newGuard = model.CreateNumberedName(m_Game.GameFactions.TheCHARCorporation, spawnTime);
+            Actor newGuard = model.CreateNumberedName(m_Game.Factions.TheCHARCorporation, spawnTime);
 
             // setup.
             base.DressCHARGuard(m_DiceRoller, newGuard);
@@ -5486,10 +5486,10 @@ namespace RogueSurvivor.Gameplay.Generators
         public Actor CreateNewArmyNationalGuard(int spawnTime, string rankName)
         {
             // model.
-            ActorModel model = m_Game.GameActors.NationalGuard;
+            ActorModel model = m_Game.Actors.NationalGuard;
 
             // create.
-            Actor newNat = model.CreateNumberedName(m_Game.GameFactions.TheArmy, spawnTime);
+            Actor newNat = model.CreateNumberedName(m_Game.Factions.TheArmy, spawnTime);
 
             // setup.
             base.DressArmy(m_DiceRoller, newNat);
@@ -5503,7 +5503,7 @@ namespace RogueSurvivor.Gameplay.Generators
             newNat.Inventory.AddAll(MakeItemHeavyPistolAmmo());
             newNat.Inventory.AddAll(MakeItemArmyBodyArmor());
             ItemBarricadeMaterial planks = MakeItemWoodenPlank();
-            planks.Quantity = m_Game.GameItems.WOODENPLANK.StackingLimit;
+            planks.Quantity = m_Game.Items.WOODENPLANK.StackingLimit;
             newNat.Inventory.AddAll(planks);
 
             // skills : carpentry for building small barricades.
@@ -5523,10 +5523,10 @@ namespace RogueSurvivor.Gameplay.Generators
         public Actor CreateNewBikerMan(int spawnTime, GameGangs.IDs gangId)
         {
             // decide model.
-            ActorModel model = m_Game.GameActors.BikerMan;
+            ActorModel model = m_Game.Actors.BikerMan;
 
             // create.
-            Actor newBiker = model.CreateNumberedName(m_Game.GameFactions.TheBikers, spawnTime);
+            Actor newBiker = model.CreateNumberedName(m_Game.Factions.TheBikers, spawnTime);
 
             // setup.
             newBiker.GangID = (int)gangId;
@@ -5550,10 +5550,10 @@ namespace RogueSurvivor.Gameplay.Generators
         public Actor CreateNewGangstaMan(int spawnTime, GameGangs.IDs gangId)
         {
             // decide model.
-            ActorModel model = m_Game.GameActors.GangstaMan;
+            ActorModel model = m_Game.Actors.GangstaMan;
 
             // create.
-            Actor newGangsta = model.CreateNumberedName(m_Game.GameFactions.TheGangstas, spawnTime);
+            Actor newGangsta = model.CreateNumberedName(m_Game.Factions.TheGangstas, spawnTime);
 
             // setup.
             newGangsta.GangID = (int)gangId;
@@ -5577,10 +5577,10 @@ namespace RogueSurvivor.Gameplay.Generators
         public Actor CreateNewBlackOps(int spawnTime, string rankName)
         {
             // model.
-            ActorModel model = m_Game.GameActors.BlackOps;
+            ActorModel model = m_Game.Actors.BlackOps;
 
             // create.
-            Actor newBO = model.CreateNumberedName(m_Game.GameFactions.TheBlackOps, spawnTime);
+            Actor newBO = model.CreateNumberedName(m_Game.Factions.TheBlackOps, spawnTime);
 
             // setup.
             base.DressBlackOps(m_DiceRoller, newBO);
@@ -5603,7 +5603,7 @@ namespace RogueSurvivor.Gameplay.Generators
             Actor newDog;
 
             // model
-            newDog = m_Game.GameActors.FeralDog.CreateNumberedName(m_Game.GameFactions.TheFerals, spawnTime);
+            newDog = m_Game.Actors.FeralDog.CreateNumberedName(m_Game.Factions.TheFerals, spawnTime);
 
             // skin
             SkinDog(m_DiceRoller, newDog);

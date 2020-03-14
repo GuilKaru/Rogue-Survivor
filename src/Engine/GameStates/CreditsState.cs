@@ -9,7 +9,7 @@ namespace RogueSurvivor.Engine.GameStates
     {
         public override void Enter()
         {
-            musicManager.Play(GameMusics.SLEEP, MusicPriority.PRIORITY_BGM);
+            game.MusicManager.Play(GameMusics.SLEEP, MusicPriority.PRIORITY_BGM);
         }
 
         public override void Draw()

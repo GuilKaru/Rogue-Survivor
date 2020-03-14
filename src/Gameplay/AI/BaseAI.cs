@@ -1460,7 +1460,7 @@ namespace RogueSurvivor.Gameplay.AI
                     }
                 }
                 // alpha10 empty cans!
-                else if (it.Model == game.GameItems.EMPTY_CAN) // comparing model instead of attributes is bad but makes sense in this case
+                else if (it.Model == game.Items.EMPTY_CAN) // comparing model instead of attributes is bad but makes sense in this case
                 {
                     dropIt = true;
                 }
@@ -3333,7 +3333,7 @@ namespace RogueSurvivor.Gameplay.AI
             // make sure we have the basics : medic skill & medikit item.
             if (m_Actor.Sheet.SkillTable.GetSkillLevel((int)Skills.IDs.MEDIC) == 0)
                 return null;
-            if (!HasItemOfModel(game.GameItems.MEDIKIT))
+            if (!HasItemOfModel(game.Items.MEDIKIT))
                 return null;
 
             // keep only corpses stacks where we can revive at least one corpse.
@@ -4101,7 +4101,7 @@ namespace RogueSurvivor.Gameplay.AI
             if (it is ItemTrap)
             {
                 ItemTrap tr = it as ItemTrap;
-                if (tr.Model == game.GameItems.EMPTY_CAN)
+                if (tr.Model == game.Items.EMPTY_CAN)
                     return ItemRating.JUNK;
                 if (tr.IsActivated && !game.Rules.IsSafeFromTrap(tr, m_Actor))
                     return ItemRating.JUNK;

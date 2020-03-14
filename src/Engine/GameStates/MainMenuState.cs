@@ -34,7 +34,7 @@ namespace RogueSurvivor.Engine.GameStates
             selected = 0;
             isLoadEnabled = File.Exists(game.SaveFilePath);
 
-            musicManager.Play(GameMusics.INTRO, MusicPriority.PRIORITY_EVENT);
+            game.MusicManager.Play(GameMusics.INTRO, MusicPriority.PRIORITY_EVENT);
 
             // christmas special.
             DateTime dateNow = DateTime.Now;
@@ -91,11 +91,6 @@ namespace RogueSurvivor.Engine.GameStates
                     {
                         case 0:
                             game.PushState<SelectGameModeState>();
-                            /*if (HandleNewCharacter())
-                            {
-                                StartNewGame();
-                                loop = false;
-                            }*/
                             break;
 
                         case 1:

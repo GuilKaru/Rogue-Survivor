@@ -86,12 +86,12 @@ namespace RogueSurvivor.Engine.GameStates
         void RefreshValues()
         {
             for (int i = 0; i < list.Length; i++)
-                values[i] = game.Options.DescribeValue(game.Session.GameMode, list[i]);
+                values[i] = RogueGame.Options.DescribeValue(game.Session.GameMode, list[i]);
         }
 
         public override void Enter()
         {
-            prevOptions = game.Options;
+            prevOptions = RogueGame.Options;
             RefreshValues();
             selected = 0;
         }
@@ -130,8 +130,8 @@ namespace RogueSurvivor.Engine.GameStates
 
             // difficulty rating.               
             gy += Ui.BOLD_LINE_SPACING;
-            int diffForSurvivor = (int)(100 * Scoring.ComputeDifficultyRating(game.Options, DifficultySide.FOR_SURVIVOR, 0));
-            int diffforUndead = (int)(100 * Scoring.ComputeDifficultyRating(game.Options, DifficultySide.FOR_UNDEAD, 0));
+            int diffForSurvivor = (int)(100 * Scoring.ComputeDifficultyRating(RogueGame.Options, DifficultySide.FOR_SURVIVOR, 0));
+            int diffforUndead = (int)(100 * Scoring.ComputeDifficultyRating(RogueGame.Options, DifficultySide.FOR_UNDEAD, 0));
             ui.DrawStringBold(Color.Yellow, string.Format("Difficulty Rating : {0}% as survivor / {1}% as undead.", diffForSurvivor, diffforUndead), gx, gy);
             gy += Ui.BOLD_LINE_SPACING;
             ui.DrawStringBold(Color.White, "Difficulty used for scoring automatically decrease with each reincarnation.", gx, gy);
@@ -143,7 +143,7 @@ namespace RogueSurvivor.Engine.GameStates
 
         public override void Update(double dt)
         {
-            ref GameOptions options = ref game.Options;
+            ref GameOptions options = ref RogueGame.Options;
             Key key = ui.ReadKey();
             switch (key)
             {

@@ -1,39 +1,45 @@
 ﻿using RogueSurvivor.Data;
+using RogueSurvivor.Engine.Items;
 using RogueSurvivor.Gameplay;
 using RogueSurvivor.Gameplay.Generators;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RogueSurvivor.Engine.GameStates
 {
     class GenerateWorldState : LoadScreenState
     {
+        const int DISTRICT_EXIT_CHANCE_PER_TILE = 15;
+
         BaseTownGenerator townGenerator;
         World world;
+        Map startMap;
+        Point policeStationDistrictPos;
+        Point hospitalDistrictPos;
 
         public override void Init()
         {
             BaseTownGenerator.Parameters genParams = BaseTownGenerator.DEFAULT_PARAMS;
             genParams.MapWidth = genParams.MapHeight = 100;
             Logger.WriteLine(Logger.Stage.INIT, "creating Generator");
-            townGenerator = new StdTownGenerator(this, genParams);
+            townGenerator = new StdTownGenerator((RogueGame)game, genParams);
+            game.townGenerator = townGenerator;
         }
 
         public override void Enter()
         {
-            // Create blank world
-            Category("Creating empty world...", CreateEmptyWorld);
+            CreateEmptyWorld();
 
             // Create districts maps
             CategoryStart("Creating districts...");
             for (int x = 0; x < world.Size; x++)
             {
                 for (int y = 0; y < world.Size; y++)
-                    Action(() => CreateDistrict(x, y));
+                {
+                    int _x = x, _y = y;
+                    Action(() => CreateDistrict(_x, _y));
+                }
             }
             CategoryEnd();
 
@@ -49,7 +55,10 @@ namespace RogueSurvivor.Engine.GameStates
             for (int x = 0; x < world.Size; x++)
             {
                 for (int y = 0; y < world.Size; y++)
-                    Action(() => LinkDistrict(x, y));
+                {
+                    int _x = x, _y = y;
+                    Action(() => LinkDistrict(_x, _y));
+                }
             }
             CategoryEnd();
 
@@ -67,14 +76,14 @@ namespace RogueSurvivor.Engine.GameStates
             //////////////////////
             // Create blank world
             //////////////////////
-            world = new World(game.Options.CitySize);
+            world = new World(RogueGame.Options.CitySize);
             game.Session.World = world;
 
             ////////////////////////
             // Roll initial weather
             ////////////////////////
             world.Weather = (Weather)game.Rules.Roll((int)Weather._FIRST, (int)Weather._COUNT);
-            world.NextWeatherCheckTurn = game.Rules.Roll(WEATHER_MIN_DURATION, WEATHER_MAX_DURATION);  // alpha10
+            world.NextWeatherCheckTurn = game.Rules.Roll(RogueGame.WEATHER_MIN_DURATION, RogueGame.WEATHER_MAX_DURATION);
 
             //////////////////////////////////////////////
             // Roll locations of special buildings.
@@ -85,10 +94,10 @@ namespace RogueSurvivor.Engine.GameStates
                 for (int y = 0; y < world.Size; y++)
                     noSpecialDistricts.Add(new Point(x, y));
 
-            Point policeStationDistrictPos = noSpecialDistricts[game.Rules.Roll(0, noSpecialDistricts.Count)];
+            policeStationDistrictPos = noSpecialDistricts[game.Rules.Roll(0, noSpecialDistricts.Count)];
             noSpecialDistricts.Remove(policeStationDistrictPos);
 
-            Point hospitalDistrictPos = noSpecialDistricts[game.Rules.Roll(0, noSpecialDistricts.Count)];
+            hospitalDistrictPos = noSpecialDistricts[game.Rules.Roll(0, noSpecialDistricts.Count)];
             noSpecialDistricts.Remove(hospitalDistrictPos);
         }
 
@@ -140,7 +149,7 @@ namespace RogueSurvivor.Engine.GameStates
 
             // 3. Set gen params.
             BaseTownGenerator.Parameters genParams = BaseTownGenerator.DEFAULT_PARAMS;
-            genParams.MapWidth = genParams.MapHeight = game.Options.DistrictSize;
+            genParams.MapWidth = genParams.MapHeight = RogueGame.Options.DistrictSize;
             genParams.District = district;
             int factor = 8;
             string kindName = "District";
@@ -428,25 +437,380 @@ namespace RogueSurvivor.Engine.GameStates
         void GenerateUniqueActors()
         {
             // "Sewers Thing" - in one of the sewers
-            m_Session.UniqueActors.TheSewersThing = SpawnUniqueSewersThing(world);
+            game.Session.UniqueActors.TheSewersThing = SpawnUniqueSewersThing(world);
 
             // Unique survivors NPCs.
-            m_Session.UniqueActors.BigBear = CreateUniqueBigBear(world);
-            m_Session.UniqueActors.FamuFataru = CreateUniqueFamuFataru(world);
-            m_Session.UniqueActors.Santaman = CreateUniqueSantaman(world);
-            m_Session.UniqueActors.Roguedjack = CreateUniqueRoguedjack(world);
-            m_Session.UniqueActors.Duckman = CreateUniqueDuckman(world);
-            m_Session.UniqueActors.HansVonHanz = CreateUniqueHansVonHanz(world);
+            game.Session.UniqueActors.BigBear = CreateUniqueBigBear(world);
+            game.Session.UniqueActors.FamuFataru = CreateUniqueFamuFataru(world);
+            game.Session.UniqueActors.Santaman = CreateUniqueSantaman(world);
+            game.Session.UniqueActors.Roguedjack = CreateUniqueRoguedjack(world);
+            game.Session.UniqueActors.Duckman = CreateUniqueDuckman(world);
+            game.Session.UniqueActors.HansVonHanz = CreateUniqueHansVonHanz(world);
 
             // Make all uniques npcs invincible until spotted
-            foreach (UniqueActor uniqueActor in m_Session.UniqueActors.ToArray())
+            foreach (UniqueActor uniqueActor in game.Session.UniqueActors.ToArray())
                 uniqueActor.TheActor.IsInvincible = true;
+        }
+
+        UniqueActor SpawnUniqueSewersThing(World world)
+        {
+            ///////////////////////////////////////////////////////
+            // 1. Pick a random sewers map.
+            // 2. Create Sewers Thing.
+            // 3. Spawn in sewers map.
+            // 4. Add warning board in maintenance rooms (if any).
+            ///////////////////////////////////////////////////////
+
+            // 1. Pick a random sewers map.
+            Map map = world[game.Rules.Roll(0, world.Size), game.Rules.Roll(0, world.Size)].SewersMap;
+
+            // 2. Create Sewers Thing.
+            ActorModel model = game.Actors.SewersThing;
+            Actor actor = model.CreateNamed(game.Factions.TheUndeads, "The Sewers Thing", false, 0);
+
+            // 3. Spawn in sewers map.
+            DiceRoller roller = new DiceRoller(map.Seed);
+            bool spawned = townGenerator.ActorPlace(roller, 10000, map, actor);
+            if (!spawned)
+                throw new InvalidOperationException("could not spawn unique The Sewers Thing");
+
+            // 4. Add warning board in maintenance rooms (if any).
+            Zone maintenanceZone = map.GetZoneByPartialName(RogueGame.NAME_SEWERS_MAINTENANCE);
+            if (maintenanceZone != null)
+            {
+                townGenerator.MapObjectPlaceInGoodPosition(map, maintenanceZone.Bounds,
+                    (pt) => map.IsWalkable(pt.X, pt.Y) && map.GetActorAt(pt) == null && map.GetItemsAt(pt) == null,
+                    roller,
+                    (pt) => townGenerator.MakeObjBoard(GameImages.OBJ_BOARD,
+                        new string[] { "TO SEWER WORKERS :",
+                                       "- It lives here.",
+                                       "- Do not disturb.",
+                                       "- Approach with caution.",
+                                       "- Watch your back.",
+                                       "- In case of emergency, take refuge here.",
+                                       "- Do not let other people interact with it!"}));
+            }
+
+            // done.
+            return new UniqueActor() { TheActor = actor, IsSpawned = true };
+        }
+
+        UniqueActor CreateUniqueBigBear(World world)
+        {
+            ActorModel model = game.Actors.MaleCivilian;
+            Actor actor = model.CreateNamed(game.Factions.TheCivilians, "Big Bear", false, 0);
+            actor.IsUnique = true;
+
+            actor.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_BIG_BEAR);
+
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HAULER);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HAULER);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HAULER);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.STRONG);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.STRONG);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.STRONG);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.STRONG);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.STRONG);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.TOUGH);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.TOUGH);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.TOUGH);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.TOUGH);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.TOUGH);
+
+            Item bat = new ItemMeleeWeapon(game.Items.UNIQUE_BIGBEAR_BAT) { IsUnique = true };
+            actor.Inventory.AddAll(bat);
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+
+            // done.
+            return new UniqueActor()
+            {
+                TheActor = actor,
+                IsSpawned = false,
+                IsWithRefugees = true,
+                EventMessage = "You hear an angry man shouting 'FOOLS!'",
+                EventThemeMusic = GameMusics.BIGBEAR_THEME_SONG
+            };
+        }
+
+        UniqueActor CreateUniqueFamuFataru(World world)
+        {
+            ActorModel model = game.Actors.FemaleCivilian;
+            Actor actor = model.CreateNamed(game.Factions.TheCivilians, "Famu Fataru", false, 0);
+            actor.IsUnique = true;
+
+            actor.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_FAMU_FATARU);
+
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HAULER);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HAULER);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HAULER);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.AGILE);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.AGILE);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.AGILE);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.AGILE);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.AGILE);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HIGH_STAMINA);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HIGH_STAMINA);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HIGH_STAMINA);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HIGH_STAMINA);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HIGH_STAMINA);
+
+            Item katana = new ItemMeleeWeapon(game.Items.UNIQUE_FAMU_FATARU_KATANA) { IsUnique = true };
+            actor.Inventory.AddAll(katana);
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+
+            // done.
+            return new UniqueActor()
+            {
+                TheActor = actor,
+                IsSpawned = false,
+                IsWithRefugees = true,
+                EventMessage = "You hear a woman laughing.",
+                EventThemeMusic = GameMusics.FAMU_FATARU_THEME_SONG
+            };
+        }
+
+        UniqueActor CreateUniqueSantaman(World world)
+        {
+            ActorModel model = game.Actors.MaleCivilian;
+            Actor actor = model.CreateNamed(game.Factions.TheCivilians, "Santaman", false, 0);
+            actor.IsUnique = true;
+
+            actor.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_SANTAMAN);
+
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HAULER);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HAULER);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HAULER);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.AWAKE);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.AWAKE);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.AWAKE);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.AWAKE);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.AWAKE);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.FIREARMS);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.FIREARMS);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.FIREARMS);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.FIREARMS);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.FIREARMS);
+
+            Item shotty = new ItemRangedWeapon(game.Items.UNIQUE_SANTAMAN_SHOTGUN) { IsUnique = true };
+            actor.Inventory.AddAll(shotty);
+            actor.Inventory.AddAll(townGenerator.MakeItemShotgunAmmo());
+            actor.Inventory.AddAll(townGenerator.MakeItemShotgunAmmo());
+            actor.Inventory.AddAll(townGenerator.MakeItemShotgunAmmo());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+
+            // done.
+            return new UniqueActor()
+            {
+                TheActor = actor,
+                IsSpawned = false,
+                IsWithRefugees = true,
+                EventMessage = "You hear christmas music and drunken vomitting.",
+                EventThemeMusic = GameMusics.SANTAMAN_THEME_SONG
+            };
+        }
+
+        UniqueActor CreateUniqueRoguedjack(World world)
+        {
+            ActorModel model = game.Actors.MaleCivilian;
+            Actor actor = model.CreateNamed(game.Factions.TheCivilians, "Roguedjack", false, 0);
+            actor.IsUnique = true;
+
+            actor.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_ROGUEDJACK);
+
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HAULER);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HAULER);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HAULER);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HARDY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.LEADERSHIP);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.LEADERSHIP);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.LEADERSHIP);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.LEADERSHIP);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.LEADERSHIP);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.CHARISMATIC);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.CHARISMATIC);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.CHARISMATIC);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.CHARISMATIC);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.CHARISMATIC);
+
+            Item basher = new ItemMeleeWeapon(game.Items.UNIQUE_ROGUEDJACK_KEYBOARD) { IsUnique = true };
+            actor.Inventory.AddAll(basher);
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+
+            // done.
+            return new UniqueActor()
+            {
+                TheActor = actor,
+                IsSpawned = false,
+                IsWithRefugees = true,
+                EventMessage = "You hear a man shouting in French.",
+                EventThemeMusic = GameMusics.ROGUEDJACK_THEME_SONG
+            };
+        }
+
+        UniqueActor CreateUniqueDuckman(World world)
+        {
+            ActorModel model = game.Actors.MaleCivilian;
+            Actor actor = model.CreateNamed(game.Factions.TheCivilians, "Duckman", false, 0);
+            actor.IsUnique = true;
+
+            actor.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_DUCKMAN);
+
+            // awesome superhero!
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.CHARISMATIC);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.CHARISMATIC);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.CHARISMATIC);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.CHARISMATIC);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.CHARISMATIC);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.LEADERSHIP);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.STRONG);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.STRONG);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.STRONG);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.STRONG);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.STRONG);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HIGH_STAMINA);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HIGH_STAMINA);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HIGH_STAMINA);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HIGH_STAMINA);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HIGH_STAMINA);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.MARTIAL_ARTS);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.MARTIAL_ARTS);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.MARTIAL_ARTS);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.MARTIAL_ARTS);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.MARTIAL_ARTS);
+
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+
+            return new UniqueActor()
+            {
+                TheActor = actor,
+                IsSpawned = false,
+                IsWithRefugees = true,
+                EventMessage = "You hear loud demented QUACKS.",
+                EventThemeMusic = GameMusics.DUCKMAN_THEME_SONG
+            };
+        }
+
+        UniqueActor CreateUniqueHansVonHanz(World world)
+        {
+            ActorModel model = game.Actors.MaleCivilian;
+            Actor actor = model.CreateNamed(game.Factions.TheCivilians, "Hans von Hanz", false, 0);
+            actor.IsUnique = true;
+
+            actor.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_HANS_VON_HANZ);
+
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HAULER);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HAULER);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.HAULER);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.FIREARMS);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.FIREARMS);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.FIREARMS);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.FIREARMS);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.FIREARMS);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.LEADERSHIP);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.LEADERSHIP);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.LEADERSHIP);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.LEADERSHIP);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.LEADERSHIP);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.NECROLOGY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.NECROLOGY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.NECROLOGY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.NECROLOGY);
+            townGenerator.GiveStartingSkillToActor(actor, Skills.IDs.NECROLOGY);
+
+            Item pistol = new ItemRangedWeapon(game.Items.UNIQUE_HANS_VON_HANZ_PISTOL) { IsUnique = true };
+            actor.Inventory.AddAll(pistol);
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+            actor.Inventory.AddAll(townGenerator.MakeItemCannedFood());
+
+            // done.
+            return new UniqueActor()
+            {
+                TheActor = actor,
+                IsSpawned = false,
+                IsWithRefugees = true,
+                EventMessage = "You hear a man barking orders in German.",
+                EventThemeMusic = GameMusics.HANS_VON_HANZ_THEME_SONG
+            };
         }
 
         void SpawnUniqueItems()
         {
             // "Subway Worker Badge" - somewhere on the subway tracks...
-            Action(() => m_Session.UniqueItems.TheSubwayWorkerBadge = SpawnUniqueSubwayWorkerBadge(world));
+            game.Session.UniqueItems.TheSubwayWorkerBadge = SpawnUniqueSubwayWorkerBadge(world);
+        }
+
+        UniqueItem SpawnUniqueSubwayWorkerBadge(World world)
+        {
+            ///////////////////////////////////
+            // 1. Pick a random Subway map.
+            //    Fails if not found.
+            // 2. Pick a position in the rails.
+            // 3. Drop it.
+            ///////////////////////////////////
+
+            Item it = new Item(game.Items.UNIQUE_SUBWAY_BADGE) { IsUnique = true, IsForbiddenToAI = true };
+
+            // 1. Pick a random Subway map.
+            List<Map> allSubways = new List<Map>();
+            for (int x = 0; x < world.Size; x++)
+                for (int y = 0; y < world.Size; y++)
+                    if (world[x, y].HasSubway)
+                        allSubways.Add(world[x, y].SubwayMap);
+            if (allSubways.Count == 0)
+                return new UniqueItem() { TheItem = it, IsSpawned = false };
+            Map subway = allSubways[game.Rules.Roll(0, allSubways.Count)];
+
+            // 2. Pick a position in the rails.
+            Rectangle railsRect = subway.GetZoneByPartialName(RogueGame.NAME_SUBWAY_RAILS).Bounds;
+            Point dropPt = new Point(game.Rules.Roll(railsRect.Left, railsRect.Right), game.Rules.Roll(railsRect.Top, railsRect.Bottom));
+
+            // 3. Drop it.
+            subway.DropItemAt(it, dropPt);
+            // blood! deceased worker.
+            subway.GetTileAt(dropPt).AddDecoration(GameImages.DECO_BLOODIED_FLOOR);
+
+            // done.
+            return new UniqueItem() { TheItem = it, IsSpawned = true };
         }
 
         void SpawnSpecialDecorations()
@@ -462,19 +826,133 @@ namespace RogueSurvivor.Engine.GameStates
         {
             int gridCenter = world.Size / 2;
 
-            Map startMap = world[gridCenter, gridCenter].EntryMap;
-            GeneratePlayerOnMap(startMap, townGenerator);
-            SetCurrentMap(startMap);
-            RefreshPlayer();
-            UpdatePlayerFOV(m_Player);  // to make sure we get notified of actors acting before us in turn 0.
+            startMap = world[gridCenter, gridCenter].EntryMap;
+            GeneratePlayerOnMap(startMap);
+            game.SetCurrentMap(startMap);
+            game.RefreshPlayer();
+            game.UpdatePlayerFOV(game.Player);  // to make sure we get notified of actors acting before us in turn 0.
+        }
+
+        void GeneratePlayerOnMap(Map map)
+        {
+            DiceRoller roller = new DiceRoller(map.Seed);
+
+            /////////////////////////////////////////////////////
+            // Create player actor : living/undead x male/female
+            /////////////////////////////////////////////////////
+            ActorModel playerModel;
+            Actor player;
+            CharGen charGen = game.Session.charGen;
+            if (charGen.IsUndead)
+            {
+                // Handle specific undead type.
+                // Zombified : need living, then zombify.
+                switch (charGen.UndeadModel)
+                {
+                    case GameActors.IDs.UNDEAD_SKELETON:
+                        {
+                            // Create the Skeleton.
+                            player = game.Actors.Skeleton.CreateNumberedName(game.Factions.TheUndeads, 0);
+                            break;
+                        }
+
+                    case GameActors.IDs.UNDEAD_ZOMBIE:
+                        {
+                            // Create the Zombie.
+                            player = game.Actors.Zombie.CreateNumberedName(game.Factions.TheUndeads, 0);
+                            break;
+                        }
+
+                    case GameActors.IDs.UNDEAD_MALE_ZOMBIFIED:
+                    case GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED:
+                        {
+                            // First create as living.
+                            playerModel = charGen.IsMale ? game.Actors.MaleCivilian : game.Actors.FemaleCivilian;
+                            player = playerModel.CreateAnonymous(game.Factions.TheCivilians, 0);
+                            townGenerator.DressCivilian(roller, player);
+                            townGenerator.GiveNameToActor(roller, player);
+                            // Then zombify.
+                            player = game.Zombify(null, player, true);
+                            break;
+                        }
+
+                    case GameActors.IDs.UNDEAD_ZOMBIE_MASTER:
+                        {
+                            // Create the ZM.
+                            player = game.Actors.ZombieMaster.CreateNumberedName(game.Factions.TheUndeads, 0);
+                            break;
+                        }
+                    default:
+                        throw new ArgumentOutOfRangeException("unhandled undeadModel");
+                }
+
+                // Then make sure player related stuff are setup properly.
+                game.PrepareActorForPlayerControl(player);
+            }
+            else
+            {
+                // Create living.
+                playerModel = charGen.IsMale ? game.Actors.MaleCivilian : game.Actors.FemaleCivilian;
+                player = playerModel.CreateAnonymous(game.Factions.TheCivilians, 0);
+                townGenerator.DressCivilian(roller, player);
+                townGenerator.GiveNameToActor(roller, player);
+                player.Sheet.SkillTable.AddOrIncreaseSkill((int)charGen.StartingSkill);
+
+                townGenerator.RecomputeActorStartingStats(player);
+                game.OnSkillUpgrade(player, charGen.StartingSkill);
+                // slightly randomize Food and Sleep - 0..25%.
+                int foodDeviation = (int)(0.25f * player.FoodPoints);
+                player.FoodPoints = player.FoodPoints - game.Rules.Roll(0, foodDeviation);
+                int sleepDeviation = (int)(0.25f * player.SleepPoints);
+                player.SleepPoints = player.SleepPoints - game.Rules.Roll(0, sleepDeviation);
+            }
+
+            player.Controller = new PlayerController();
+
+            /////////////
+            // Spawn him.
+            /////////////
+            // living: try to spawn inside on a couch, then if failed spawn anywhere inside.
+            // undead: spawn outside.
+            // NEVER spawn in CHAR Office!!
+            bool preferedSpawnOk = townGenerator.ActorPlace(roller, 10 * map.Width * map.Height, map, player,
+                (pt) =>
+                {
+                    bool isInside = map.GetTileAt(pt.X, pt.Y).IsInside;
+                    if ((charGen.IsUndead && isInside) || (!charGen.IsUndead && !isInside))
+                        return false;
+
+                    if (RogueGame.IsInCHAROffice(new Location(map, pt)))
+                        return false;
+
+                    MapObject mapObj = map.GetMapObjectAt(pt);
+                    if (charGen.IsUndead)
+                        return mapObj == null;
+                    else
+                        return mapObj != null && mapObj.IsCouch;
+                });
+
+            if (!preferedSpawnOk)
+            {
+                // no couch, try inside but never in char office.
+                bool spawnedInside = townGenerator.ActorPlace(roller, map.Width * map.Height, map, player,
+                    (pt) => map.GetTileAt(pt.X, pt.Y).IsInside && !RogueGame.IsInCHAROffice(new Location(map, pt)));
+
+                if (!spawnedInside)
+                {
+                    // could not spawn inside, do it outside...
+                    while (!townGenerator.ActorPlace(roller, int.MaxValue, map, player, (pt) => !RogueGame.IsInCHAROffice(new Location(map, pt))))
+                        ;
+                }
+            }
         }
 
         void RevealStartingMap()
         {
-            if (!s_Options.RevealStartingDistrict)
+            if (!RogueGame.Options.RevealStartingDistrict)
                 return;
 
-            List<Zone> startZones = startMap.GetZonesAt(m_Player.Location.Position.X, m_Player.Location.Position.Y);
+            List<Zone> startZones = startMap.GetZonesAt(game.Player.Location.Position.X, game.Player.Location.Position.Y);
             if (startZones != null)
             {
                 Zone startZone = startZones[0];

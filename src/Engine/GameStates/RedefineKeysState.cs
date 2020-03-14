@@ -127,7 +127,7 @@ namespace RogueSurvivor.Engine.GameStates
 
         void RefreshValues()
         {
-            Keybindings keybindings = game.KeyBindings;
+            Keybindings keybindings = RogueGame.KeyBindings;
 
             values = new string[]
             {
@@ -281,7 +281,7 @@ namespace RogueSurvivor.Engine.GameStates
                 }
 
                 // bind it.                      
-                game.KeyBindings.Set(command, key);
+                RogueGame.KeyBindings.Set(command, key);
                 RefreshValues();
                 rebind = false;
             }
@@ -302,7 +302,7 @@ namespace RogueSurvivor.Engine.GameStates
                 case Key.Escape:
                     if (!conflict)
                     {
-                        game.KeyBindings.Save(game.KeyBindingsPath);
+                        RogueGame.KeyBindings.Save(game.KeyBindingsPath);
                         game.PopState();
                     }
                     break;

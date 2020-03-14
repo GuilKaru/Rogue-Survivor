@@ -155,7 +155,7 @@ namespace RogueSurvivor.Gameplay.AI
                 List<Percept> trespassers = Filter(game, nonEnemies, (p) =>
                 {
                     Actor other = (p.Percepted as Actor);
-                    if (other.Faction == game.GameFactions.TheCHARCorporation)
+                    if (other.Faction == game.Factions.TheCHARCorporation)
                         return false;
 
                     // alpha10 bug fix only if visible right now!

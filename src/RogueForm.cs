@@ -51,7 +51,7 @@ namespace RogueSurvivor
         SpriteFont m_NormalFont;
         SpriteFont m_BoldFont;
 
-        IGame game;
+        RogueGame game;
 
         public GraphicsDevice Graphics => graphics.GraphicsDevice;
 
