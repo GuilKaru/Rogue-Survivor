@@ -131,7 +131,7 @@ namespace RogueSurvivor.Engine.GameStates
                             break;
 
                         case 7:
-                            //HandleCredits();
+                            game.PushState<CreditsState>();
                             break;
 
                         case 8:

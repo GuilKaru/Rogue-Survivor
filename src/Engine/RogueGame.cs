@@ -710,21 +710,14 @@ namespace RogueSurvivor.Engine
             Key key = m_UI.ReadKey();
             if (key == (Key.Enter | Key.Alt))
                 m_UI.ToggleFullscreen();
-            
+
             CurrentState.Update();
 
             return m_IsGameRunning;
         }
 
-        public void SetState<State>(bool dispose) where State : GameState
+        GameState GetState<State>()
         {
-            if(dispose)
-            {
-                foreach(GameState s in states)
-                    allStates.Remove(s.GetType());
-            }
-            states.Clear();
-
             Type type = typeof(State);
             GameState state;
             if (!allStates.TryGetValue(type, out state))
@@ -735,21 +728,35 @@ namespace RogueSurvivor.Engine
                 state.ui = m_UI;
                 state.musicManager = m_MusicManager;
             }
+            return state;
+        }
 
+        public void SetState<State>(bool dispose) where State : GameState
+        {
+            if (dispose)
+            {
+                foreach (GameState s in states)
+                    allStates.Remove(s.GetType());
+            }
+            states.Clear();
+
+            GameState state = GetState<State>();
             states.Add(state);
             state.Enter();
         }
 
         public void PushState<State>() where State : GameState
         {
-            throw new NotImplementedException();
+            GameState state = GetState<State>();
+            states.Add(state);
+            state.Enter();
         }
 
         public void PopState()
         {
-            throw new NotImplementedException();
+            states.RemoveAt(states.Count - 1);
         }
-        
+
         //111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
 
         public RogueGame(IRogueUI UI)
@@ -1198,15 +1205,15 @@ namespace RogueSurvivor.Engine
             do
             {
                 // music.
-                
 
 
-                
+
+
 
                 // repaint.
                 m_UI.UI_Repaint();
 
-                
+
             }
             while (loop);
         }
@@ -2003,50 +2010,6 @@ namespace RogueSurvivor.Engine
             // start simulation thread.
             StopSimThread(false);  // alpha10 stop-start
             StartSimThread();
-        }
-
-        void HandleCredits()
-        {
-            const int left = 0;
-            const int right = 256;
-            int gy = 0;
-
-            // music.
-            m_MusicManager.Stop();
-            m_MusicManager.Play(GameMusics.SLEEP, MusicPriority.PRIORITY_BGM);
-
-            // draw.
-            m_UI.Clear(Color.Black);
-            m_UI.DrawHeader();
-            gy += Ui.BOLD_LINE_SPACING;
-            m_UI.DrawStringBold(Color.Yellow, "Credits", 0, gy);
-            gy += 2 * Ui.BOLD_LINE_SPACING;
-            m_UI.DrawStringBold(Color.White, "Programming, Graphics & Music by Jacques Ruiz (roguedjack) 2018", 0, gy);
-            gy += 2 * Ui.BOLD_LINE_SPACING;
-
-            m_UI.DrawStringBold(Color.White, "Programming", left, gy); m_UI.DrawString(Color.White, "- C# NET 3.5, Microsoft Visual Studio Community 2017", right, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-            m_UI.DrawStringBold(Color.White, "Graphic softwares", left, gy); m_UI.DrawString(Color.White, "- Inkscape, Paint.NET", right, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-            m_UI.DrawStringBold(Color.White, "Sound & Music softwares", left, gy); m_UI.DrawString(Color.White, "- GuitarPro 7, Audacity", right, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-            m_UI.DrawStringBold(Color.White, "Sound samples", left, gy); m_UI.DrawString(Color.White, @"- http://www.sound-fishing.net  http://www.soundsnap.com/", right, gy);
-
-            gy += 2 * Ui.BOLD_LINE_SPACING;
-            m_UI.DrawStringBold(Color.White, "Contact", 0, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-            m_UI.DrawString(Color.White, @"Email      : roguedjack@yahoo.fr", 0, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-            m_UI.DrawString(Color.White, @"Blog       : http://roguesurvivor.blogspot.com/", 0, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-            m_UI.DrawString(Color.White, @"Fans Forum : http://roguesurvivor.proboards.com/", 0, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-            m_UI.DrawStringBold(Color.White, "Thanks to the players for their feedback and eagerness to die!", 0, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-
-            m_UI.DrawFootnote(Color.White, "ESC to leave");
-            m_UI.UI_Repaint();
-            WaitEscape();
         }
 
         // alpha10 removed mention of mode and mentioned which options are always off in certain modes (vintage)
@@ -10770,6 +10733,7 @@ namespace RogueSurvivor.Engine
             }
         }
 
+        // !FIXME delete
         void WaitEscape()
         {
             for (; ; )
