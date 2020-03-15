@@ -1,4 +1,5 @@
 ﻿using RogueSurvivor.Data;
+using RogueSurvivor.Engine.Actions;
 using RogueSurvivor.Engine.Interfaces;
 using RogueSurvivor.Engine.Items;
 using RogueSurvivor.Engine.MapObjects;
@@ -150,9 +151,8 @@ namespace RogueSurvivor.Engine.GameStates
             ui.Clear(Color.Black);
             {
                 // map & minimap
-                Color mapTint = Color.White; // disabled changing brightness bad for the eyes TintForDayPhase(session.WorldTime.Phase);
                 ui.DrawLine(Color.DarkGray, RIGHTPANEL_X, 0, RIGHTPANEL_X, MESSAGES_Y);
-                DrawMap(session.CurrentMap, mapTint);
+                DrawMap(session.CurrentMap, Color.White);
 
                 ui.DrawLine(Color.DarkGray, RIGHTPANEL_X, MINIMAP_Y - 4, Ui.CANVAS_WIDTH, MINIMAP_Y - 4);
                 DrawMiniMap(session.CurrentMap);
@@ -1587,19 +1587,20 @@ namespace RogueSurvivor.Engine.GameStates
 
         public override void Update(double dt)
         {
-            Key key = ui.ReadKey();
-
-            if (wait != WaitFor.None && key == Key.Enter)
+            if (wait != WaitFor.None)
             {
-                if (wait == WaitFor.AdvisorInfo)
-                    ShowWelcomeInfo();
-                else if (wait == WaitFor.WelcomeInfo)
-                    AfterWelcome();
+                Key key = ui.ReadKey();
+                if (key == Key.Enter)
+                {
+                    if (wait == WaitFor.AdvisorInfo)
+                        ShowWelcomeInfo();
+                    else if (wait == WaitFor.WelcomeInfo)
+                        AfterWelcome();
+                }
                 return;
             }
 
-            Point mousePos = ui.GetMousePosition();
-            HandleMouseLook(mousePos);
+            HandlePlayerAction();
         }
 
         void AfterWelcome()
@@ -1618,6 +1619,142 @@ namespace RogueSurvivor.Engine.GameStates
             // start simulation thread.
             game.StopSimThread(false);
             game.StartSimThread();
+        }
+
+        void HandlePlayerAction()
+        {
+            game.UpdatePlayerFOV(player);    // make sure LOS is up to date.
+            game.ComputeViewRect(player.Location.Position);
+
+            Key key = ui.ReadKey();
+            if (key != Key.None)
+            {
+                PlayerCommand command = InputTranslator.KeyToCommand(key);
+                if(command != PlayerCommand.NONE)
+                {
+                    if(CheckInsanity(command))
+                    {
+                        //!FIXME
+                    }
+
+                    switch(command)
+                    {
+                        case PlayerCommand.MOVE_N:
+                            DoPlayerBump(player, Direction.N);
+                            break;
+                        case PlayerCommand.MOVE_NE:
+                            DoPlayerBump(player, Direction.NE);
+                            break;
+                        case PlayerCommand.MOVE_E:
+                            DoPlayerBump(player, Direction.E);
+                            break;
+                        case PlayerCommand.MOVE_SE:
+                            DoPlayerBump(player, Direction.SE);
+                            break;
+                        case PlayerCommand.MOVE_S:
+                            DoPlayerBump(player, Direction.S);
+                            break;
+                        case PlayerCommand.MOVE_SW:
+                            DoPlayerBump(player, Direction.SW);
+                            break;
+                        case PlayerCommand.MOVE_W:
+                            DoPlayerBump(player, Direction.W);
+                            break;
+                        case PlayerCommand.MOVE_NW:
+                            DoPlayerBump(player, Direction.NW);
+                            break;
+                    }
+                }
+            }
+
+            Point mousePos = ui.GetMousePosition();
+            HandleMouseLook(mousePos);
+
+        }
+
+        bool CheckInsanity(PlayerCommand command)
+        {
+            // !FIXME
+            // TryPlayerInsanity()
+            return false;
+        }
+
+        public bool DoPlayerBump(Actor player, Direction direction)
+        {
+            ActionBump bump = new ActionBump(player, this, direction);
+
+            if (bump == null)
+                return false;
+
+            // special case: tearing down barricades as living.
+            // alpha10.1 moved up because civs models can now bash doors as a bump action; added break check and simplified test
+            if ((bump.ConcreteAction is ActionBreak || bump.ConcreteAction is ActionBashDoor) && !player.Model.Abilities.IsUndead)
+            {
+                string doWhat = bump.ConcreteAction is ActionBreak ? ("break " + (bump.ConcreteAction as ActionBreak).MapObject.TheName) : "tear down the barricade";
+
+                if (game.Rules.IsActorTired(player))
+                {
+                    AddMessage(MakeErrorMessage("Too tired to " + doWhat + "."));
+                    RedrawPlayScreen();
+                    return false;
+                }
+                else
+                {
+                    // ask for confirmation.
+                    AddMessage(MakeYesNoMessage("Really " + doWhat));
+                    RedrawPlayScreen();
+                    bool confirm = WaitYesOrNo();
+
+                    if (confirm)
+                    {
+                        //DoBreak(player, door);
+                        bump.ConcreteAction.Perform();
+                        return true;
+                    }
+                    else
+                    {
+                        AddMessage(new Message("Good, keep everything secure.", m_Session.WorldTime.TurnCounter, Color.Yellow));
+                        return false;
+                    }
+                }
+                //DoorWindow door = player.Location.Map.GetMapObjectAt(player.Location.Position + direction) as DoorWindow;
+                //if (door != null && door.IsBarricaded && !player.Model.Abilities.IsUndead)
+                //{
+                //    if (!m_Rules.IsActorTired(player))
+                //    {
+                //        // ask for confirmation.
+                //        AddMessage(MakeYesNoMessage("Really tear down the barricade"));
+                //        RedrawPlayScreen();
+                //        bool confirm = WaitYesOrNo();
+
+                //        if (confirm)
+                //        {
+                //            DoBreak(player, door);
+                //            return true;
+                //        }
+                //        else
+                //        {
+                //            AddMessage(new Message("Good, keep everything secure.", m_Session.WorldTime.TurnCounter, Color.Yellow));
+                //            return false;
+                //        }
+                //    }
+                //    else
+                //    {
+                //        AddMessage(MakeErrorMessage("Too tired to tear down the barricade."));
+                //        RedrawPlayScreen();
+                //        return false;
+                //    }
+                //}
+            }
+
+            if (bump.IsLegal())
+            {
+                bump.Perform();
+                return true;
+            }
+
+            AddMessage(MakeErrorMessage(string.Format("Cannot do that : {0}.", bump.FailReason)));
+            return false;
         }
 
         bool HandleMouseLook(Point mousePos)
@@ -1640,7 +1777,7 @@ namespace RogueSurvivor.Engine.GameStates
                 if (description != null)
                 {
                     Point popupPos = new Point(tileScreenPos.X + TILE_SIZE, tileScreenPos.Y);
-                    AddOverlay(new OverlayPopup(description, Color.White, Color.White, POPUP_FILLCOLOR, popupPos));
+                    AddOverlay(new OverlayPopup(description, Color.White, Color.White, game.POPUP_FILLCOLOR, popupPos));
                     if (RogueGame.Options.ShowTargets)
                     {
                         Actor actorThere = session.CurrentMap.GetActorAt(mouseMap);
@@ -1752,7 +1889,7 @@ namespace RogueSurvivor.Engine.GameStates
                             lines.Add("Ordered to not follow you.");
                     }
                     // gauges.
-                    lines.Add(string.Format("Foo : {0} {1}h", actor.FoodPoints, FoodToHoursUntilHungry(actor.FoodPoints)));
+                    lines.Add(string.Format("Foo : {0} {1}h", actor.FoodPoints, game.FoodToHoursUntilHungry(actor.FoodPoints)));
                     lines.Add(string.Format("Slp : {0} {1}h", actor.SleepPoints, game.Rules.SleepToHoursUntilSleepy(actor.SleepPoints, actor.Location.Map.LocalTime.IsNight)));
                     lines.Add(string.Format("San : {0} {1}h", actor.Sanity, game.Rules.SanityToHoursUntilUnstable(actor)));
                     lines.Add(string.Format("Inf : {0} {1}%", actor.Infection, game.Rules.ActorInfectionPercent(actor)));
@@ -1777,9 +1914,9 @@ namespace RogueSurvivor.Engine.GameStates
             if (actor.IsAggressorOf(player))
                 lines.Add("Aggressed you.");
             if (player.IsSelfDefenceFrom(actor))
-                lines.Add(string.Format("You can kill {0} in self-defence.", HimOrHer(actor)));
+                lines.Add(string.Format("You can kill {0} in self-defence.", actor.HimOrHer));
             if (player.IsAggressorOf(actor))
-                lines.Add(string.Format("You aggressed {0}.", HimOrHer(actor)));
+                lines.Add(string.Format("You aggressed {0}.", actor.HimOrHer));
             if (actor.IsSelfDefenceFrom(player))
                 lines.Add("Killing you would be self-defence.");
             if (!player.Faction.IsEnemyOf(actor.Faction) && game.Rules.AreGroupEnemies(player, actor)) // alpha10
@@ -2019,12 +2156,104 @@ namespace RogueSurvivor.Engine.GameStates
             foreach (Item it in inv.Items)
             {
                 if (it.IsEquipped)
-                    lines.Add(string.Format("- {0} (equipped)", DescribeItemShort(it)));
+                    lines.Add(string.Format("- {0} (equipped)", game.DescribeItemShort(it)));
                 else
-                    lines.Add(string.Format("- {0}", DescribeItemShort(it)));
+                    lines.Add(string.Format("- {0}", game.DescribeItemShort(it)));
             }
 
             return lines.ToArray();
+        }
+
+        string DescribeActorActivity(Actor actor)
+        {
+            if (actor.IsPlayer)
+                return null;
+
+            switch (actor.Activity)
+            {
+                case Activity.IDLE:
+                    return null;
+
+                case Activity.CHASING:
+                    if (actor.TargetActor == null)
+                        return "Chasing!";
+                    else
+                        return string.Format("Chasing {0}!", actor.TargetActor.Name);
+
+                case Activity.FIGHTING:
+                    if (actor.TargetActor == null)
+                        return "Fighting!";
+                    else
+                        return string.Format("Fighting {0}!", actor.TargetActor.Name);
+
+                case Activity.TRACKING:
+                    return "Tracking!";
+
+                case Activity.FLEEING:
+                    return "Fleeing!";
+
+                case Activity.FLEEING_FROM_EXPLOSIVE:
+                    return "Fleeing from explosives!";
+
+                case Activity.FOLLOWING:
+                    if (actor.TargetActor == null)
+                        return "Following.";
+                    else
+                    {
+                        // alpha10
+                        if (actor.Leader == actor.TargetActor)
+                            return string.Format("Following {0} leader.", actor.HisOrHer);
+                        return string.Format("Following {0}.", actor.TargetActor.Name);
+                    }
+
+                case Activity.FOLLOWING_ORDER:
+                    return "Following orders.";
+
+                case Activity.SLEEPING:
+                    return "Sleeping.";
+
+                default:
+                    throw new ArgumentException("unhandled activity " + actor.Activity);
+            }
+        }
+
+        /// <summary>
+        /// Highlight with overlays which visible actors are
+        /// - are the target of this actor 
+        /// - targeting this actor
+        /// - in group with this actor
+        /// </summary>
+        /// <param name="actor"></param>
+        public void DrawActorRelations(Actor actor)
+        {
+            Point offset = new Point(TILE_SIZE / 2, TILE_SIZE / 2);
+
+            // target of this actor
+            if (actor.TargetActor != null && !actor.TargetActor.IsDead && game.IsVisibleToPlayer(actor.TargetActor))
+                AddOverlay(new OverlayImage(game.MapToScreen(actor.TargetActor.Location.Position), GameImages.ICON_IS_TARGET));
+
+            // actors targeting this actor or in same group
+            bool isTargettedHighlighted = false;
+            foreach (Actor other in actor.Location.Map.Actors)
+            {
+                if (other == actor || other.IsDead || !game.IsVisibleToPlayer(other))
+                    continue;
+
+                // targetting this actor
+                if (other.TargetActor == actor && (other.Activity == Activity.CHASING || other.Activity == Activity.FIGHTING))
+                {
+                    if (!isTargettedHighlighted)
+                    {
+                        AddOverlay(new OverlayImage(game.MapToScreen(actor.Location.Position), GameImages.ICON_IS_TARGETTED));
+                        isTargettedHighlighted = true;
+                    }
+                    AddOverlay(new OverlayImage(game.MapToScreen(other.Location.Position), GameImages.ICON_IS_TARGETING));
+                }
+
+                // in group with actor
+                if (other.IsInGroupWith(actor))
+                    AddOverlay(new OverlayImage(game.MapToScreen(other.Location.Position), GameImages.ICON_IS_IN_GROUP));
+            }
         }
     }
 }

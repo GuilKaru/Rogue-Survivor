@@ -67,7 +67,7 @@ namespace RogueSurvivor.Engine
         const int DELAY_NORMAL = 500;
         const int DELAY_LONG = 1000;
 
-        readonly Color POPUP_FILLCOLOR = Color.FromArgb(192, Color.CornflowerBlue);
+        public readonly Color POPUP_FILLCOLOR = Color.FromArgb(192, Color.CornflowerBlue);
 
         readonly string[] CLOSE_DOOR_MODE_TEXT = new string[] { "CLOSE MODE - directions to close, ESC cancels" };
         readonly string[] BARRICADE_MODE_TEXT = new string[] { "BARRICADE/REPAIR MODE - directions to barricade/repair, ESC cancels" };
@@ -273,13 +273,6 @@ namespace RogueSurvivor.Engine
 
         const int ZOMBIE_LORD_EVOLUTION_MIN_DAY = 7;
         const int DISCIPLE_EVOLUTION_MIN_DAY = 7;
-
-        readonly Color TINT_DAY = Color.White;
-        readonly Color TINT_SUNSET = Color.FromArgb(235, 235, 235);
-        readonly Color TINT_EVENING = Color.FromArgb(215, 215, 215);
-        readonly Color TINT_MIDNIGHT = Color.FromArgb(195, 195, 195);
-        readonly Color TINT_NIGHT = Color.FromArgb(205, 205, 205);
-        readonly Color TINT_SUNRISE = Color.FromArgb(225, 225, 225);
 
         const int PLAYER_HEAR_FIGHT_CHANCE = 25;
         const int PLAYER_HEAR_SCREAMS_CHANCE = 10;
@@ -798,27 +791,6 @@ namespace RogueSurvivor.Engine
         string Conjugate(Actor actor, Verb verb)
         {
             return actor.IsProperName && !actor.IsPluralName ? verb.HeForm : verb.YouForm;
-        }
-
-        string HisOrHer(Actor actor)
-        {
-            return actor.Model.DollBody.IsMale ? "his" : "her";
-        }
-
-        string HeOrShe(Actor actor)
-        {
-            return actor.Model.DollBody.IsMale ? "he" : "she";
-        }
-
-        string HimOrHer(Actor actor)
-        {
-            return actor.Model.DollBody.IsMale ? "him" : "her";
-        }
-
-        // alpha10
-        string HimselfOrHerself(Actor actor)
-        {
-            return actor.Model.DollBody.IsMale ? "himself" : "herself";
         }
 
         /// <summary>
@@ -1705,10 +1677,10 @@ namespace RogueSurvivor.Engine
                             RegenActorSanity(actor.Leader, Rules.SANITY_RECOVER_BOND);
                             if (IsVisibleToPlayer(actor))
                                 AddMessage(MakeMessage(actor, string.Format("{0} reassured knowing {1} is with {2}.",
-                                            Conjugate(actor, VERB_FEEL), actor.Leader.Name, HimOrHer(actor))));
+                                            Conjugate(actor, VERB_FEEL), actor.Leader.Name, actor.HimOrHer)));
                             if (IsVisibleToPlayer(actor.Leader))
                                 AddMessage(MakeMessage(actor.Leader, string.Format("{0} reassured knowing {1} is with {2}.",
-                                            Conjugate(actor.Leader, VERB_FEEL), actor.Name, HimOrHer(actor.Leader))));
+                                            Conjugate(actor.Leader, VERB_FEEL), actor.Name, actor.Leader.HimOrHer)));
                         }
                     }
                 }
@@ -3566,70 +3538,6 @@ namespace RogueSurvivor.Engine
                                 StartPlayerWaitLong(player);
                                 break;
 
-                            case PlayerCommand.MOVE_N:
-                                if (TryPlayerInsanity())
-                                {
-                                    loop = false;
-                                    break;
-                                }
-                                loop = !DoPlayerBump(player, Direction.N);
-                                break;
-                            case PlayerCommand.MOVE_NE:
-                                if (TryPlayerInsanity())
-                                {
-                                    loop = false;
-                                    break;
-                                }
-                                loop = !DoPlayerBump(player, Direction.NE);
-                                break;
-                            case PlayerCommand.MOVE_E:
-                                if (TryPlayerInsanity())
-                                {
-                                    loop = false;
-                                    break;
-                                }
-                                loop = !DoPlayerBump(player, Direction.E);
-                                break;
-                            case PlayerCommand.MOVE_SE:
-                                if (TryPlayerInsanity())
-                                {
-                                    loop = false;
-                                    break;
-                                }
-                                loop = !DoPlayerBump(player, Direction.SE);
-                                break;
-                            case PlayerCommand.MOVE_S:
-                                if (TryPlayerInsanity())
-                                {
-                                    loop = false;
-                                    break;
-                                }
-                                loop = !DoPlayerBump(player, Direction.S);
-                                break;
-                            case PlayerCommand.MOVE_SW:
-                                if (TryPlayerInsanity())
-                                {
-                                    loop = false;
-                                    break;
-                                }
-                                loop = !DoPlayerBump(player, Direction.SW);
-                                break;
-                            case PlayerCommand.MOVE_W:
-                                if (TryPlayerInsanity())
-                                {
-                                    loop = false;
-                                    break;
-                                }
-                                loop = !DoPlayerBump(player, Direction.W);
-                                break;
-                            case PlayerCommand.MOVE_NW:
-                                if (TryPlayerInsanity())
-                                {
-                                    loop = false;
-                                    break;
-                                }
-                                loop = !DoPlayerBump(player, Direction.NW);
-                                break;
                             case PlayerCommand.USE_EXIT:
                                 if (TryPlayerInsanity())
                                 {
@@ -3906,9 +3814,9 @@ namespace RogueSurvivor.Engine
                     // Handle mouse
                     ////////////////
                     // Look?
-                    bool isLooking = HandleMouseLook(mousePos);
-                    if (isLooking)
-                        continue;
+                    //bool isLooking = HandleMouseLook(mousePos);
+                    //if (isLooking)
+                    //    continue;
 
                     // Inventory?
                     bool hasDoneInventoryAction;
@@ -5039,7 +4947,7 @@ namespace RogueSurvivor.Engine
                 if (isTrustedLeader)
                 {
                     lines.Add(" "); colors.Add(Color.White);
-                    lines.Add(string.Format("You are {0} trusted leader, will accept all trades.", HisOrHer(npc)));
+                    lines.Add(string.Format("You are {0} trusted leader, will accept all trades.", npc.HisOrHer));
                     colors.Add(Color.LightGreen);
                 }
 
@@ -8882,63 +8790,6 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        
-
-        
-
-        string DescribeActorActivity(Actor actor)
-        {
-            if (actor.IsPlayer)
-                return null;
-
-            switch (actor.Activity)
-            {
-                case Activity.IDLE:
-                    return null;
-
-                case Activity.CHASING:
-                    if (actor.TargetActor == null)
-                        return "Chasing!";
-                    else
-                        return string.Format("Chasing {0}!", actor.TargetActor.Name);
-
-                case Activity.FIGHTING:
-                    if (actor.TargetActor == null)
-                        return "Fighting!";
-                    else
-                        return string.Format("Fighting {0}!", actor.TargetActor.Name);
-
-                case Activity.TRACKING:
-                    return "Tracking!";
-
-                case Activity.FLEEING:
-                    return "Fleeing!";
-
-                case Activity.FLEEING_FROM_EXPLOSIVE:
-                    return "Fleeing from explosives!";
-
-                case Activity.FOLLOWING:
-                    if (actor.TargetActor == null)
-                        return "Following.";
-                    else
-                    {
-                        // alpha10
-                        if (actor.Leader == actor.TargetActor)
-                            return string.Format("Following {0} leader.", HisOrHer(actor));
-                        return string.Format("Following {0}.", actor.TargetActor.Name);
-                    }
-
-                case Activity.FOLLOWING_ORDER:
-                    return "Following orders.";
-
-                case Activity.SLEEPING:
-                    return "Sleeping.";
-
-                default:
-                    throw new ArgumentException("unhandled activity " + actor.Activity);
-            }
-        }
-
         string DescribePlayerFollowerStatus(Actor follower)
         {
             string desc;
@@ -9046,7 +8897,7 @@ namespace RogueSurvivor.Engine
             return lines.ToArray();
         }
 
-        string DescribeItemShort(Item it)
+        public string DescribeItemShort(Item it)
         {
             string name = it.Quantity > 1 ? it.Model.PluralName : it.AName;
 
@@ -10461,91 +10312,13 @@ namespace RogueSurvivor.Engine
             if (IsVisibleToPlayer(actor))
             {
                 if (actor.StaminaPoints < m_Rules.ActorMaxSTA(actor))
-                    AddMessage(MakeMessage(actor, string.Format("{0} {1} breath.", Conjugate(actor, VERB_CATCH), HisOrHer(actor))));
+                    AddMessage(MakeMessage(actor, string.Format("{0} {1} breath.", Conjugate(actor, VERB_CATCH), actor.HisOrHer)));
                 else
                     AddMessage(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_WAIT))));
             }
 
             // regen STA.
             RegenActorStaminaPoints(actor, Rules.STAMINA_REGEN_WAIT);
-        }
-
-        public bool DoPlayerBump(Actor player, Direction direction)
-        {
-            ActionBump bump = new ActionBump(player, this, direction);
-
-            if (bump == null)
-                return false;
-
-            // special case: tearing down barricades as living.
-            // alpha10.1 moved up because civs models can now bash doors as a bump action; added break check and simplified test
-            if ((bump.ConcreteAction is ActionBreak || bump.ConcreteAction is ActionBashDoor) && !player.Model.Abilities.IsUndead)
-            {
-                string doWhat = bump.ConcreteAction is ActionBreak ? ("break " + (bump.ConcreteAction as ActionBreak).MapObject.TheName) : "tear down the barricade";
-
-                if (m_Rules.IsActorTired(player))
-                {
-                    AddMessage(MakeErrorMessage("Too tired to " + doWhat + "."));
-                    RedrawPlayScreen();
-                    return false;
-                }
-                else
-                {
-                    // ask for confirmation.
-                    AddMessage(MakeYesNoMessage("Really " + doWhat));
-                    RedrawPlayScreen();
-                    bool confirm = WaitYesOrNo();
-
-                    if (confirm)
-                    {
-                        //DoBreak(player, door);
-                        bump.ConcreteAction.Perform();
-                        return true;
-                    }
-                    else
-                    {
-                        AddMessage(new Message("Good, keep everything secure.", m_Session.WorldTime.TurnCounter, Color.Yellow));
-                        return false;
-                    }
-                }
-                //DoorWindow door = player.Location.Map.GetMapObjectAt(player.Location.Position + direction) as DoorWindow;
-                //if (door != null && door.IsBarricaded && !player.Model.Abilities.IsUndead)
-                //{
-                //    if (!m_Rules.IsActorTired(player))
-                //    {
-                //        // ask for confirmation.
-                //        AddMessage(MakeYesNoMessage("Really tear down the barricade"));
-                //        RedrawPlayScreen();
-                //        bool confirm = WaitYesOrNo();
-
-                //        if (confirm)
-                //        {
-                //            DoBreak(player, door);
-                //            return true;
-                //        }
-                //        else
-                //        {
-                //            AddMessage(new Message("Good, keep everything secure.", m_Session.WorldTime.TurnCounter, Color.Yellow));
-                //            return false;
-                //        }
-                //    }
-                //    else
-                //    {
-                //        AddMessage(MakeErrorMessage("Too tired to tear down the barricade."));
-                //        RedrawPlayScreen();
-                //        return false;
-                //    }
-                //}
-            }
-
-            if (bump.IsLegal())
-            {
-                bump.Perform();
-                return true;
-            }
-
-            AddMessage(MakeErrorMessage(string.Format("Cannot do that : {0}.", bump.FailReason)));
-            return false;
         }
 
         public void DoMakeAggression(Actor aggressor, Actor target)
@@ -11664,7 +11437,7 @@ namespace RogueSurvivor.Engine
                 {
                     // speaker has no item to give away (should not happen if target is player)
                     if (isVisible)
-                        AddMessage(MakeMessage(speaker, string.Format("would prefer to keep {0} items.", HisOrHer(speaker))));
+                        AddMessage(MakeMessage(speaker, string.Format("would prefer to keep {0} items.", speaker.HisOrHer)));
                 }
                 if (target.IsPlayer)
                     // help confused players...
@@ -13039,7 +12812,7 @@ namespace RogueSurvivor.Engine
             if (IsVisibleToPlayer(actor))
             {
                 AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_SPRAY),
-                    (sprayOn == actor ? HimselfOrHerself(actor) : sprayOn.Name))));
+                    (sprayOn == actor ? actor.HimselfOrHerself : sprayOn.Name))));
             }
         }
 
@@ -13769,7 +13542,7 @@ namespace RogueSurvivor.Engine
             deathTime.TurnCounter = m_Session.Scoring.TurnsSurvived;
             bool isMale = m_Player.Model.DollBody.IsMale;
             string heOrShe = isMale ? "He" : "She";
-            string hisOrHer = HisOrHer(m_Player);
+            string hisOrHer = m_Player.HisOrHer;
             string himOrHer = isMale ? "him" : "her";
             string name = m_Player.TheName.Replace("(YOU) ", "");
             TimeSpan rt = m_Session.Scoring.RealLifePlayingTime;
@@ -13992,8 +13765,8 @@ namespace RogueSurvivor.Engine
             graveyard.Append(" ");
 
             graveyard.Append("> R.I.P");
-            graveyard.Append(string.Format("May {0} soul rest in peace.", HisOrHer(m_Player)));
-            graveyard.Append(string.Format("For {0} body is now a meal for evil.", HisOrHer(m_Player)));
+            graveyard.Append(string.Format("May {0} soul rest in peace.", hisOrHer));
+            graveyard.Append(string.Format("For {0} body is now a meal for evil.", hisOrHer));
             graveyard.Append("The End.");
 
             /////////////////////
@@ -14843,84 +14616,6 @@ namespace RogueSurvivor.Engine
         public void RedrawPlayScreen()
         {
             // !FIXME
-        }
-
-        /// <summary>
-        /// OBSOLETE
-        /// </summary>
-        /// <param name="phase"></param>
-        /// <returns></returns>
-        Color TintForDayPhase(DayPhase phase)
-        {
-            switch (phase)
-            {
-                case DayPhase.MORNING:
-                case DayPhase.MIDDAY:
-                case DayPhase.AFTERNOON:
-                    return TINT_DAY;
-
-                case DayPhase.SUNRISE:
-                    return TINT_SUNRISE;
-
-                case DayPhase.SUNSET:
-                    return TINT_SUNSET;
-
-                case DayPhase.MIDNIGHT:
-                    return TINT_MIDNIGHT;
-
-                case DayPhase.DEEP_NIGHT:
-                    return TINT_NIGHT;
-
-                case DayPhase.EVENING:
-                    return TINT_EVENING;
-                default:
-                    throw new ArgumentOutOfRangeException("unhandled dayphase");
-            }
-        }
-        
-        // alpha10
-        /// <summary>
-        /// Highlight with overlays which visible actors are
-        /// - are the target of this actor 
-        /// - targeting this actor
-        /// - in group with this actor
-        /// </summary>
-        /// <param name="actor"></param>
-        public void DrawActorRelations(Actor actor)
-        {
-            Point offset = new Point(TILE_SIZE / 2, TILE_SIZE / 2);
-
-            // target of this actor
-            if (actor.TargetActor != null && !actor.TargetActor.IsDead && IsVisibleToPlayer(actor.TargetActor))
-                AddOverlay(new OverlayImage(MapToScreen(actor.TargetActor.Location.Position), GameImages.ICON_IS_TARGET));
-
-            // actors targeting this actor or in same group
-            bool isTargettedHighlighted = false;
-            foreach (Actor other in actor.Location.Map.Actors)
-            {
-                if (other == actor || other.IsDead || !IsVisibleToPlayer(other))
-                    continue;
-
-                // targetting this actor
-                if (other.TargetActor == actor && (other.Activity == Activity.CHASING || other.Activity == Activity.FIGHTING))
-                {
-                    if (!isTargettedHighlighted)
-                    {
-                        AddOverlay(new OverlayImage(MapToScreen(actor.Location.Position), GameImages.ICON_IS_TARGETTED));
-                        isTargettedHighlighted = true;
-                    }
-                    AddOverlay(new OverlayImage(MapToScreen(other.Location.Position), GameImages.ICON_IS_TARGETING));
-                }
-
-                // in group with actor
-                if (other.IsInGroupWith(actor))
-                    AddOverlay(new OverlayImage(MapToScreen(other.Location.Position), GameImages.ICON_IS_IN_GROUP));
-            }
-        }
-
-        public void DrawMapIcon(Point position, string imageID)
-        {
-            m_UI.DrawImage(imageID, position.X * TILE_SIZE, position.Y * TILE_SIZE);
         }
 
         void AddOverlay(Overlay o)
@@ -15963,7 +15658,7 @@ namespace RogueSurvivor.Engine
                                 string[] text = new string[]
                                 {
                                     "\" Psssst! Hey! You over there! \"",
-                                    string.Format("{0} is discretly calling you from {1} cell. You listen closely...", prisoner.Name, HisOrHer(prisoner)),
+                                    string.Format("{0} is discretly calling you from {1} cell. You listen closely...", prisoner.Name, prisoner.HisOrHer),
                                     "\" Listen! I shouldn't be here! Just drove a bit too fast!",
                                     "  Look, I know what's happening! I worked down there! At the CHAR facility!",
                                     "  They didn't want me to leave but I did! Like I'm stupid enough to stay down there uh?",
@@ -15975,7 +15670,7 @@ namespace RogueSurvivor.Engine
                                     "  I don't give a fuck about CHAR anymore, you can do what you want with that!",
                                     "  There are plenty of cool stuff to loot down there!",
                                     "  Do it PLEASE! I REALLY shoudn't be there! \"",
-                                    string.Format("Looks like {0} wants you to turn the generator on to open the cells...", HeOrShe(prisoner))
+                                    string.Format("Looks like {0} wants you to turn the generator on to open the cells...", prisoner.HeOrShe)
                                 };
                                 ShowSpecialDialogue(prisoner, text);
 
