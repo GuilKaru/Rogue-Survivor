@@ -24,6 +24,26 @@ namespace RogueSurvivor.Data
         AFTERNOON
     }
 
+    static class DayPhaseMethods
+    {
+        public static string AsString(this DayPhase phase)
+        {
+            switch (phase)
+            {
+                case DayPhase.AFTERNOON: return "Afternoon";
+                case DayPhase.DEEP_NIGHT: return "Deep Night";
+                case DayPhase.EVENING: return "Evening";
+                case DayPhase.MIDDAY: return "Midday";
+                case DayPhase.MIDNIGHT: return "Midnight";
+                case DayPhase.MORNING: return "Morning";
+                case DayPhase.SUNRISE: return "Sunrise";
+                case DayPhase.SUNSET: return "Sunset";
+
+                default: throw new ArgumentOutOfRangeException("unhandled dayphase");
+            }
+        }
+    }
+
     [Serializable]
     class WorldTime
     {

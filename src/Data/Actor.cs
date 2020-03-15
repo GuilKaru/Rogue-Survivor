@@ -83,6 +83,8 @@ namespace RogueSurvivor.Data
             }
         }
 
+        public bool IsUndead => Model.Abilities.IsUndead;
+
         public bool IsUnique
         {
             get { return GetFlag(Flags.IS_UNIQUE); }
@@ -133,6 +135,11 @@ namespace RogueSurvivor.Data
         {
             get { return IsProperName || IsPluralName ? Name : "the " + m_Name; }
         }
+
+        public string HeOrShe => Model.DollBody.IsMale ? "he" : "she";
+        public string HisOrHer => Model.DollBody.IsMale ? "his" : "her";
+        public string HimOrHer => Model.DollBody.IsMale ? "him" : "her";
+        public string HimselfOrHerself => Model.DollBody.IsMale ? "himself" : "herself";
 
         public ActorController Controller
         {

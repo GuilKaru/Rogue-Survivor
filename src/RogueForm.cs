@@ -12,9 +12,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Threading;
-using Forms = System.Windows.Forms;
 using Xna = Microsoft.Xna.Framework;
 #if DEBUG_STATS
 using RogueSurvivor.Data;
@@ -34,24 +31,18 @@ namespace RogueSurvivor
         const double KEY_REPEAT = 0.5;
         const double KEY_REPEAT_INTERVAL = 0.1;
 
-        private Xna.GraphicsDeviceManager graphics;
-        private SpriteBatch spriteBatch;
-        private List<IDrawItem> drawItems = new List<IDrawItem>();
-        private Texture2D m_MinimapTexture;
-        private Xna.Color[] m_MinimapColors = new Xna.Color[RogueGame.MAP_MAX_WIDTH * RogueGame.MAP_MAX_HEIGHT];
-        private MouseState prevMouseState;
-        private bool clearCalled;
-        private Color lastClearColor;
-
-        private List<KeyState> keyStates = new List<KeyState>();
-        private Key currentKey;
-        private MouseButton currentButton;
-        private Point cursorPos;
-
+        RogueGame game;
+        Xna.GraphicsDeviceManager graphics;
+        SpriteBatch spriteBatch;
+        Texture2D m_MinimapTexture;
+        Xna.Color[] m_MinimapColors = new Xna.Color[RogueGame.MAP_MAX_WIDTH * RogueGame.MAP_MAX_HEIGHT];
+        MouseState prevMouseState;
+        List<KeyState> keyStates = new List<KeyState>();
+        Key currentKey;
+        MouseButton currentButton;
+        Point cursorPos;
         SpriteFont m_NormalFont;
         SpriteFont m_BoldFont;
-
-        RogueGame game;
 
         public GraphicsDevice Graphics => graphics.GraphicsDevice;
 
@@ -99,34 +90,6 @@ namespace RogueSurvivor
 
             if (!game.Update(dt))
                 Exit();
-
-            /*try
-            {
-                switch (state)
-                {
-                    case State.None:
-                        state = State.Init;
-                        
-                        break;
-                    case State.Init:
-                        if (loader.Process())
-                        {
-                            loader = null;
-                            state = State.Running;
-                        }
-                        break;
-                    default:
-                        if (!m_Game.Update())
-                            Exit();
-                        break;
-                }
-            }
-            catch (BreakException)
-            {
-                Logger.WriteLine(Logger.Stage.CLEAN, "Window closed, shutting down...");
-                m_Game.Exit();
-                Exit();
-            }*/
         }
 
         protected override void Draw(Xna.GameTime gameTime)
@@ -342,74 +305,6 @@ namespace RogueSurvivor
             // !FIXME
         }
 
-        public void UI_Wait(int msecs)
-        {
-            Thread.Sleep(msecs);
-        }
-
-        private bool takeScreenshot;
-        public void UI_Repaint()
-        {
-            if (!clearCalled)
-                graphics.GraphicsDevice.Clear(lastClearColor.ToXna());
-
-            Xna.Matrix matrix;
-            if (graphics.IsFullScreen)
-            {
-                matrix = Xna.Matrix.CreateScale(new Xna.Vector3(
-                    (float)Graphics.DisplayMode.Width / Ui.CANVAS_WIDTH,
-                    (float)Graphics.DisplayMode.Height / Ui.CANVAS_HEIGHT,
-                    1f));
-            }
-            else
-                matrix = Xna.Matrix.Identity;
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, transformMatrix: matrix);
-
-            foreach (IDrawItem drawItem in drawItems)
-            {
-                switch (drawItem)
-                {
-                    case DrawTextItem drawText:
-                        if (drawText.shadowColor.HasValue)
-                            spriteBatch.DrawString(drawText.font, drawText.text, new Xna.Vector2(drawText.pos.X + 1, drawText.pos.Y + 1), drawText.shadowColor.Value);
-                        spriteBatch.DrawString(drawText.font, drawText.text, drawText.pos, drawText.color);
-                        break;
-                    case DrawLineItem drawLine:
-                        spriteBatch.DrawLine(drawLine.from, drawLine.to, drawLine.color);
-                        break;
-                    case DrawImageItem drawImage:
-                        if (drawImage.transform)
-                        {
-                            spriteBatch.Draw(drawImage.image, drawImage.pos, null, drawImage.tint, Xna.MathHelper.ToRadians(drawImage.rotation),
-                                drawImage.origin, drawImage.scale, SpriteEffects.None, 0.0f);
-                        }
-                        else
-                            spriteBatch.Draw(drawImage.image, drawImage.pos, drawImage.tint);
-                        break;
-                    case DrawRectangleItem drawRectangle:
-                        if (drawRectangle.filled)
-                            spriteBatch.DrawRectangle(drawRectangle.rectangle, drawRectangle.color);
-                        else
-                        {
-                            Xna.Rectangle rect = drawRectangle.rectangle;
-                            spriteBatch.DrawLine(new Xna.Vector2(rect.Left, rect.Bottom), new Xna.Vector2(rect.Right, rect.Bottom), drawRectangle.color);
-                            spriteBatch.DrawLine(new Xna.Vector2(rect.Left, rect.Top), new Xna.Vector2(rect.Right, rect.Top), drawRectangle.color);
-                            spriteBatch.DrawLine(new Xna.Vector2(rect.Left, rect.Bottom), new Xna.Vector2(rect.Left, rect.Top), drawRectangle.color);
-                            spriteBatch.DrawLine(new Xna.Vector2(rect.Right, rect.Bottom), new Xna.Vector2(rect.Right, rect.Top), drawRectangle.color);
-                        }
-                        break;
-                }
-            }
-
-            spriteBatch.End();
-
-            if (!takeScreenshot)
-            {
-                clearCalled = false;
-                EndDraw();
-            }
-        }
-
         public void ToggleFullscreen()
         {
             graphics.ToggleFullScreen();
@@ -417,75 +312,40 @@ namespace RogueSurvivor
 
         public void Clear(Color clearColor)
         {
-            //clearCalled = true;
-            //lastClearColor = clearColor;
             graphics.GraphicsDevice.Clear(clearColor.ToXna());
-            //drawItems.Clear();
         }
 
         public void DrawImage(string imageID, int gx, int gy)
         {
-            drawItems.Add(new DrawImageItem
-            {
-                image = GameImages.Get(imageID),
-                pos = new Xna.Vector2(gx, gy),
-                tint = Xna.Color.White
-            });
+            spriteBatch.Draw(GameImages.Get(imageID), new Xna.Vector2(gx, gy), Xna.Color.White);
         }
 
         public void DrawImage(string imageID, int gx, int gy, Color tint)
         {
-            drawItems.Add(new DrawImageItem
-            {
-                image = GameImages.Get(imageID),
-                pos = new Xna.Vector2(gx, gy),
-                tint = tint.ToXna()
-            });
+            spriteBatch.Draw(GameImages.Get(imageID), new Xna.Vector2(gx, gy), tint.ToXna());
         }
 
         public void DrawImageTransform(string imageID, int gx, int gy, float rotation, float scale)
         {
             Texture2D image = GameImages.Get(imageID);
-            drawItems.Add(new DrawImageItem
-            {
-                image = image,
-                pos = new Xna.Vector2(gx + image.Width / 2, gy + image.Height / 2),
-                origin = new Xna.Vector2(image.Width / 2, image.Height / 2),
-                tint = Xna.Color.White,
-                rotation = rotation,
-                scale = scale,
-                transform = true
-            });
+            spriteBatch.Draw(image, new Xna.Vector2(gx + image.Width / 2, gy + image.Height / 2), null, Xna.Color.White,
+                Xna.MathHelper.ToRadians(rotation), new Xna.Vector2(image.Width / 2, image.Height / 2), scale,
+                SpriteEffects.None, 0.0f);
         }
 
         public void DrawGrayLevelImage(string imageID, int gx, int gy)
         {
-            drawItems.Add(new DrawImageItem
-            {
-                image = GameImages.GetGrayLevel(imageID),
-                pos = new Xna.Vector2(gx, gy),
-                tint = Xna.Color.White
-            });
+            spriteBatch.Draw(GameImages.GetGrayLevel(imageID), new Xna.Vector2(gx, gy), Xna.Color.White);
         }
 
         public void DrawTransparentImage(float alpha, string imageID, int gx, int gy)
         {
-            drawItems.Add(new DrawImageItem
-            {
-                image = GameImages.Get(imageID),
-                pos = new Xna.Vector2(gx, gy),
-                tint = new Xna.Color(1.0f, 1.0f, 1.0f, alpha)
-            });
+            spriteBatch.Draw(GameImages.Get(imageID), new Xna.Vector2(gx, gy), new Xna.Color(1.0f, 1.0f, 1.0f, alpha));
         }
 
         public void DrawLine(Color color, int gxFrom, int gyFrom, int gxTo, int gyTo)
         {
-            drawItems.Add(new DrawLineItem
-            {
-                color = color.ToXna(),
-                from = new Xna.Vector2(gxFrom, gyFrom),
-                to = new Xna.Vector2(gxTo, gyTo)
-            });
+            spriteBatch.DrawLine(new Xna.Vector2(gxFrom, gyFrom), new Xna.Vector2(gxTo, gyTo), color.ToXna());
         }
 
         public void DrawString(Color color, string text, int gx, int gy, Color? shadowColor)
@@ -504,24 +364,18 @@ namespace RogueSurvivor
         {
             if (rect.Width <= 0 || rect.Height <= 0)
                 throw new ArgumentOutOfRangeException("rectangle Width/Height <= 0");
-            drawItems.Add(new DrawRectangleItem
-            {
-                color = color.ToXna(),
-                rectangle = rect.ToXna(),
-                filled = false
-            });
+            Xna.Color xcolor = color.ToXna();
+            spriteBatch.DrawLine(new Xna.Vector2(rect.Left, rect.Bottom), new Xna.Vector2(rect.Right, rect.Bottom), xcolor);
+            spriteBatch.DrawLine(new Xna.Vector2(rect.Left, rect.Top), new Xna.Vector2(rect.Right, rect.Top), xcolor);
+            spriteBatch.DrawLine(new Xna.Vector2(rect.Left, rect.Bottom), new Xna.Vector2(rect.Left, rect.Top), xcolor);
+            spriteBatch.DrawLine(new Xna.Vector2(rect.Right, rect.Bottom), new Xna.Vector2(rect.Right, rect.Top), xcolor);
         }
 
         public void FillRect(Color color, Rectangle rect)
         {
             if (rect.Width <= 0 || rect.Height <= 0)
                 throw new ArgumentOutOfRangeException("rectangle Width/Height <= 0");
-            drawItems.Add(new DrawRectangleItem
-            {
-                color = color.ToXna(),
-                rectangle = rect.ToXna(),
-                filled = true
-            });
+            spriteBatch.DrawRectangle(rect.ToXna(), color.ToXna());
         }
 
         public void DrawPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy)
@@ -746,44 +600,35 @@ namespace RogueSurvivor
             }
         }
 
-        public void UI_ClearMinimap(Color color)
+        public void ClearMinimap(Color color)
         {
             Xna.Color xcolor = color.ToXna();
             for (int i = 0; i < RogueGame.MAP_MAX_HEIGHT * RogueGame.MAP_MAX_WIDTH; ++i)
                 m_MinimapColors[i] = xcolor;
         }
 
-        public void UI_SetMinimapColor(int x, int y, Color color)
+        public void SetMinimapColor(int x, int y, Color color)
         {
             m_MinimapColors[x + y * RogueGame.MAP_MAX_WIDTH] = color.ToXna();
         }
 
-        public void UI_DrawMinimap(int gx, int gy)
+        public void DrawMinimap(int gx, int gy)
         {
             m_MinimapTexture.SetData(m_MinimapColors);
-            drawItems.Add(new DrawImageItem
-            {
-                image = m_MinimapTexture,
-                pos = new Xna.Vector2(gx, gy),
-                origin = Xna.Vector2.Zero,
-                tint = Xna.Color.White,
-                rotation = 0,
-                scale = RogueGame.MINITILE_SIZE,
-                transform = true
-            });
+            spriteBatch.Draw(m_MinimapTexture, new Xna.Vector2(gx, gy), null, Xna.Color.White,
+                0, Xna.Vector2.Zero, RogueGame.MINITILE_SIZE, SpriteEffects.None, 0.0f);
         }
 
-        public bool UI_SaveScreenshot(string filePath)
+        public bool SaveScreenshot(string filePath)
         {
-            takeScreenshot = true;
-
             try
             {
                 int w = GraphicsDevice.PresentationParameters.BackBufferWidth,
                     h = GraphicsDevice.PresentationParameters.BackBufferHeight;
                 RenderTarget2D screenshot = new RenderTarget2D(GraphicsDevice, w, h, false, GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.None);
                 GraphicsDevice.SetRenderTarget(screenshot);
-                UI_Repaint();
+
+                Draw(new Xna.GameTime());
 
                 using (FileStream file = new FileStream(filePath, FileMode.Create))
                 {
@@ -800,7 +645,6 @@ namespace RogueSurvivor
             finally
             {
                 GraphicsDevice.SetRenderTarget(null);
-                takeScreenshot = false;
             }
         }
     }
