@@ -196,6 +196,7 @@
     <Compile Include="Engine\GameStates\SelectSkillState.cs" />
     <Compile Include="Engine\GameStates\SelectUndeadTypeState.cs" />
     <Compile Include="Engine\Interfaces\IGameLoader.cs" />
+    <Compile Include="Engine\Overlay.cs" />
     <Compile Include="Engine\RogueGame.cs" />
     <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\RectangleExtensions.cs" />

@@ -619,7 +619,7 @@ namespace RogueSurvivor
         {
             m_MinimapTexture.SetData(m_MinimapColors);
             spriteBatch.Draw(m_MinimapTexture, new Xna.Vector2(gx, gy), null, Xna.Color.White,
-                0, Xna.Vector2.Zero, RogueGame.MINITILE_SIZE, SpriteEffects.None, 0.0f);
+                0, Xna.Vector2.Zero, GameState.MINITILE_SIZE, SpriteEffects.None, 0.0f);
         }
 
         public bool SaveScreenshot(string filePath)

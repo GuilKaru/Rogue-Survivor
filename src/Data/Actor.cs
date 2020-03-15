@@ -83,6 +83,8 @@ namespace RogueSurvivor.Data
             }
         }
 
+        public bool IsUndead => Model.Abilities.IsUndead;
+
         public bool IsUnique
         {
             get { return GetFlag(Flags.IS_UNIQUE); }
