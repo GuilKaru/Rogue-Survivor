@@ -88,7 +88,7 @@ namespace RogueSurvivor
 
             HandleInput(dt);
 
-            if (!game.Update(dt))
+            if (!game.UpdateGame(dt))
                 Exit();
         }
 
@@ -108,7 +108,7 @@ namespace RogueSurvivor
                 matrix = Xna.Matrix.Identity;
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, transformMatrix: matrix);
 
-            game.Draw();
+            game.DrawGame();
 
             spriteBatch.End();
         }

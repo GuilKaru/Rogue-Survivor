@@ -39,7 +39,7 @@
         LEAD_MODE,
         MARK_ENEMIES_MODE,
         ORDER_MODE,
-        PULL_MODE,  // alpha10
+        PULL_MODE,
         PUSH_MODE,
         REVIVE_CORPSE,
         SHOUT,
@@ -61,5 +61,30 @@
         ITEM_SLOT_7,
         ITEM_SLOT_8,
         ITEM_SLOT_9
+    }
+
+    static class PlayerCommandMethods
+    {
+        public static bool IsSpecial(this PlayerCommand playerCommand)
+        {
+            switch(playerCommand)
+            {
+                case PlayerCommand.QUIT_GAME:
+                case PlayerCommand.ABANDON_GAME:
+                case PlayerCommand.HELP_MODE:
+                case PlayerCommand.HINTS_SCREEN_MODE:
+                case PlayerCommand.ADVISOR:
+                case PlayerCommand.OPTIONS_MODE:
+                case PlayerCommand.KEYBINDING_MODE:
+                case PlayerCommand.MESSAGE_LOG:
+                case PlayerCommand.LOAD_GAME:
+                case PlayerCommand.SAVE_GAME:
+                case PlayerCommand.SCREENSHOT:
+                case PlayerCommand.CITY_INFO:
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 }

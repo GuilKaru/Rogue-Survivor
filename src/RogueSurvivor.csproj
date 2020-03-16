@@ -181,6 +181,7 @@
     <Compile Include="Engine\Actions\ActionEatFoodOnGround.cs" />
     <Compile Include="Engine\Actions\ActionTrade.cs" />
     <Compile Include="Engine\Actions\ActionReviveCorpse.cs" />
+    <Compile Include="Engine\GameStates\CityInfoState.cs" />
     <Compile Include="Engine\GameStates\CreditsState.cs" />
     <Compile Include="Engine\GameStates\GenerateWorldState.cs" />
     <Compile Include="Engine\GameStates\HelpState.cs" />
