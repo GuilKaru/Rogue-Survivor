@@ -32,7 +32,7 @@ namespace RogueSurvivor.Engine.GameStates
         public override void Enter()
         {
             selected = 0;
-            isLoadEnabled = File.Exists(game.SaveFilePath);
+            isLoadEnabled = File.Exists(RogueGame.SaveFile);
 
             game.MusicManager.Play(GameMusics.INTRO, MusicPriority.PRIORITY_EVENT);
 

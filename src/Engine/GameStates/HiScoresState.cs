@@ -39,7 +39,7 @@ namespace RogueSurvivor.Engine.GameStates
                 file.Append(string.Format("     | {0}", hi.Death));
             }
 
-            file.Save(game.HiScoreTextFilePath);
+            file.Save(RogueGame.HiScoreTextFile);
         }
 
         public override void Draw()
@@ -78,7 +78,7 @@ namespace RogueSurvivor.Engine.GameStates
             // display.
             ui.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
             gy += Ui.BOLD_LINE_SPACING;
-            ui.DrawStringBold(Color.White, game.HiScoreTextFilePath, 0, gy);
+            ui.DrawStringBold(Color.White, RogueGame.HiScoreTextFile, 0, gy);
             gy += Ui.BOLD_LINE_SPACING;
             ui.DrawFootnote(Color.White, "press ESC to leave");
         }

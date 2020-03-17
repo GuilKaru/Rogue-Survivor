@@ -165,7 +165,7 @@ namespace RogueSurvivor.Engine.GameStates
                     break;
 
                 case Key.Escape:
-                    options.Save(game.UserOptionsFilePath);
+                    options.Save(RogueGame.OptionsFile);
                     game.PopState();
                     break;
 

@@ -385,15 +385,15 @@ namespace RogueSurvivor.Engine
         enum WaitFor
         {
             None,
-            AdvisorInfo,
-            WelcomeInfo
+            Enter,
+            YesNo
         }
 
         Rules m_Rules;
         Session m_Session;
         HiScoreTable m_HiScoreTable;
         public HiScoreTable HiScoreTable => m_HiScoreTable;
-        MessageManager m_MessageManager;
+        public MessageManager m_MessageManager;
         bool m_IsGameRunning = true;
         bool m_HasLoadedGame = false;
         List<Overlay> m_Overlays = new List<Overlay>();
@@ -402,6 +402,9 @@ namespace RogueSurvivor.Engine
         Rectangle m_MapViewRect;
         public BaseTownGenerator townGenerator;
         WaitFor wait;
+        Action waitForEnter;
+        Action<bool> waitForYesNo;
+        Point prevMousePos;
 
         static GameOptions s_Options;
         static Keybindings s_KeyBindings;
@@ -477,6 +480,21 @@ namespace RogueSurvivor.Engine
             get { return m_Player; }
         }
 
+
+        public static string UserBasePath => SetupConfig.DirPath;
+        public static string SavesPath => UserBasePath + @"Saves\";
+        public static string SaveFile => SavesPath + "save.dat";
+        public static string DocsPath => UserBasePath + @"Docs\";
+        public static string GraveyardPath => UserBasePath + @"Graveyard\";
+        public static string ManualFile => UserBasePath + "RS Manual.txt";
+        public static string HiScorePath => UserBasePath;
+        public static string HiScoreFile => HiScorePath + "hiscores.dat";
+        public static string HiScoreTextFile => HiScorePath + "hiscores.txt";
+        public static string ConfigPath => UserBasePath + @"Config\";
+        public static string OptionsFile => ConfigPath + @"options.dat";
+        public static string ScreenshotsPath => UserBasePath + @"Screenshots\";
+        public static string KeyBindingsFile => ConfigPath + "keys.dat";
+
         // Looping ai detection code: 
         // detect cases where an ai is proably performing an infinite sequence of ap free actions.
         Actor m_DEBUG_prevAiActor;
@@ -516,19 +534,33 @@ namespace RogueSurvivor.Engine
             if (wait != WaitFor.None)
             {
                 Key key = ui.ReadKey();
-                if (key == Key.Enter)
+                if (wait == WaitFor.Enter)
                 {
-                    if (wait == WaitFor.AdvisorInfo)
-                        ShowWelcomeInfo();
-                    else if (wait == WaitFor.WelcomeInfo)
-                        AfterWelcomeInfo();
+                    if (key == Key.Enter)
+                    {
+                        wait = WaitFor.None;
+                        waitForEnter();
+                    }
+                }
+                else if (wait == WaitFor.YesNo)
+                {
+                    if (key == Key.Y)
+                    {
+                        wait = WaitFor.None;
+                        waitForYesNo(true);
+                    }
+                    else if (key == Key.N || key == Key.Escape)
+                    {
+                        wait = WaitFor.None;
+                        waitForYesNo(false);
+                    }
                 }
             }
             else
-                HandlePlayerActor(m_Player);
+                HandlePlayerAction(m_Player);
         }
 
-        GameState GetState<State>()
+        public State GetState<State>() where State : GameState
         {
             Type type = typeof(State);
             GameState state;
@@ -540,7 +572,7 @@ namespace RogueSurvivor.Engine
                 state.ui = ui;
                 state.Init();
             }
-            return state;
+            return (State)state;
         }
 
         public void SetState<State>(bool dispose = false) where State : GameState
@@ -568,10 +600,6 @@ namespace RogueSurvivor.Engine
         {
             states.RemoveAt(states.Count - 1);
         }
-
-        public string SaveFilePath => GetUserSave();
-        public string HiScoreTextFilePath => GetUserHiScoreTextFilePath();
-        public string KeyBindingsPath => GetUserConfigPath() + "keys.dat";
 
         //111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
 
@@ -839,15 +867,6 @@ namespace RogueSurvivor.Engine
             return actor.IsProperName && !actor.IsPluralName ? verb.HeForm : verb.YouForm;
         }
 
-        /// <summary>
-        /// </summary>
-        /// <returns>"a/an name"</returns>
-        string AorAn(string name)
-        {
-            char c = name[0];
-            return (c == 'a' || c == 'e' || c == 'i' || c == 'u' ? "an " : "a ") + name;
-        }
-
         void AnimDelay(int msecs)
         {
             //if (s_Options.IsAnimDelayOn)
@@ -922,12 +941,12 @@ namespace RogueSurvivor.Engine
                 ///////////////////////
                 // Create directories.
                 //////////////////////
-                CreateDirectory(GetUserBasePath());
-                CreateDirectory(GetUserConfigPath());
-                CreateDirectory(GetUserDocsPath());
-                CreateDirectory(GetUserGraveyardPath());
-                CreateDirectory(GetUserSavesPath());
-                CreateDirectory(GetUserScreenshotsPath());
+                CreateDirectory(UserBasePath);
+                CreateDirectory(ConfigPath);
+                CreateDirectory(DocsPath);
+                CreateDirectory(GraveyardPath);
+                CreateDirectory(SavesPath);
+                CreateDirectory(ScreenshotsPath);
 
                 //////////////////
                 // Copying manual.
@@ -941,7 +960,7 @@ namespace RogueSurvivor.Engine
         void LoadManual()
         {
             m_Manual = new TextFile();
-            if (m_Manual.Load(GetUserManualFilePath()))
+            if (m_Manual.Load(ManualFile))
                 m_Manual.FormatLines(Ui.TEXTFILE_CHARS_PER_LINE);
             else
                 m_Manual = null;
@@ -949,7 +968,7 @@ namespace RogueSurvivor.Engine
 
         void LoadHiScoreTable()
         {
-            m_HiScoreTable = HiScoreTable.Load(GetUserHiScoreFilePath());
+            m_HiScoreTable = HiScoreTable.Load(HiScoreFile);
             if (m_HiScoreTable == null)
             {
                 m_HiScoreTable = new HiScoreTable(HiScoreTable.DEFAULT_MAX_ENTRIES);
@@ -963,7 +982,7 @@ namespace RogueSurvivor.Engine
             ui.DrawStringBold(Color.White, "Saving hiscores table...", 0, 0);
             //ui.UI_Repaint();
 
-            HiScoreTable.Save(m_HiScoreTable, GetUserHiScoreFilePath());
+            
 
             ui.Clear(Color.Black);
             ui.DrawStringBold(Color.White, "Saving hiscores table... done!", 0, 0);
@@ -1010,7 +1029,8 @@ namespace RogueSurvivor.Engine
             }
             AddMessage(new Message(string.Format("Press {0} during the game to change the options.", s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE)), 0, Color.LightGreen));
             AddMessage(new Message("<press ENTER>", 0, Color.Yellow));
-            wait = WaitFor.AdvisorInfo;
+            wait = WaitFor.Enter;
+            waitForEnter = ShowWelcomeInfo;
         }
 
         void ShowWelcomeInfo()
@@ -1025,7 +1045,8 @@ namespace RogueSurvivor.Engine
             AddMessage(new Message(string.Format("Press {0} to redefine keys", s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE)), 0, Color.LightGreen));
             AddMessage(new Message("<press ENTER>", 0, Color.Yellow));
             RefreshPlayer();
-            wait = WaitFor.WelcomeInfo;
+            wait = WaitFor.Enter;
+            waitForEnter = AfterWelcomeInfo;
         }
 
         void AfterWelcomeInfo()
@@ -1043,7 +1064,9 @@ namespace RogueSurvivor.Engine
             // start simulation thread.
             StopSimThread(false);  // alpha10 stop-start
             StartSimThread();
-            wait = WaitFor.None;
+
+            // !FIXME
+            BeforePlayerAction(m_Player);
         }
 
         /// <summary>
@@ -1248,7 +1271,7 @@ namespace RogueSurvivor.Engine
             }
             else if (actor.IsPlayer)
             {
-                HandlePlayerActor(actor);
+                HandlePlayerAction(actor);
                 // if quit, dead or loaded, don't bother.
                 if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead)
                     return;
@@ -1685,7 +1708,6 @@ namespace RogueSurvivor.Engine
                                 {
                                     // FIXME replace with sfx
                                     // alpha10 
-                                    m_MusicManager.Stop();
                                     m_MusicManager.Play(GameSounds.NIGHTMARE, MusicPriority.PRIORITY_EVENT);
                                 }
                             }
@@ -1734,7 +1756,6 @@ namespace RogueSurvivor.Engine
                                     // check music.
                                     if (m_MusicManager.Music != GameMusics.SLEEP)
                                     {
-                                        m_MusicManager.Stop();
                                         m_MusicManager.PlayLooping(GameMusics.SLEEP, MusicPriority.PRIORITY_EVENT);
                                     }
                                     // message.
@@ -2362,7 +2383,6 @@ namespace RogueSurvivor.Engine
                 //{
                 //    if (unique.EventThemeMusic != null)
                 //    {
-                //        m_MusicManager.Stop();
                 //        m_MusicManager.Play(unique.EventThemeMusic, MusicPriority.PRIORITY_EVENT);
                 //    }
                 //    // message.
@@ -2387,7 +2407,6 @@ namespace RogueSurvivor.Engine
 
                 if (unique.EventThemeMusic != null)
                 {
-                    m_MusicManager.Stop();
                     m_MusicManager.Play(unique.EventThemeMusic, MusicPriority.PRIORITY_EVENT);
                 }
 
@@ -2467,7 +2486,6 @@ namespace RogueSurvivor.Engine
             if (map == m_Player.Location.Map && !m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
             {
                 // music.
-                m_MusicManager.Stop();
                 m_MusicManager.Play(GameMusics.ARMY, MusicPriority.PRIORITY_EVENT);
 
                 // message.
@@ -2557,7 +2575,6 @@ namespace RogueSurvivor.Engine
             if (map == m_Player.Location.Map && !m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
             {
                 // music.
-                m_MusicManager.Stop();
                 m_MusicManager.Play(GameMusics.ARMY, MusicPriority.PRIORITY_EVENT);
 
                 // message.
@@ -2690,7 +2707,6 @@ namespace RogueSurvivor.Engine
             if (map == m_Player.Location.Map && !m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
             {
                 // music.
-                m_MusicManager.Stop();
                 m_MusicManager.Play(GameMusics.BIKER, MusicPriority.PRIORITY_EVENT);
 
                 // message.
@@ -2763,7 +2779,6 @@ namespace RogueSurvivor.Engine
             if (map == m_Player.Location.Map && !m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
             {
                 // music.
-                m_MusicManager.Stop();
                 m_MusicManager.Play(GameMusics.GANGSTA, MusicPriority.PRIORITY_EVENT);
 
                 // message.
@@ -2831,7 +2846,6 @@ namespace RogueSurvivor.Engine
             if (map == m_Player.Location.Map && !m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
             {
                 // music.
-                m_MusicManager.Stop();
                 m_MusicManager.Play(GameMusics.ARMY, MusicPriority.PRIORITY_EVENT);
 
                 // message.
@@ -2893,7 +2907,6 @@ namespace RogueSurvivor.Engine
             if (map == m_Player.Location.Map && !m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
             {
                 // music.
-                m_MusicManager.Stop();
                 m_MusicManager.Play(GameMusics.SURVIVORS, MusicPriority.PRIORITY_EVENT);
 
                 // message.
@@ -3404,12 +3417,10 @@ namespace RogueSurvivor.Engine
         }
 #endif
 
-        Point prevMousePos = new Point(-1, -1);
-
-        void HandlePlayerActor(Actor player)
+        void BeforePlayerAction(Actor player)
         {
             // Upkeep.
-            UpdatePlayerFOV(player);    // make sure LOS is up to date.
+            UpdatePlayerFOV(m_Player);    // make sure LOS is up to date.
             m_Player = player;      // remember player.
             ComputeViewRect(player.Location.Position);
             // !FIXME - tylko na początku tury
@@ -3523,16 +3534,19 @@ namespace RogueSurvivor.Engine
                 {
                     RemoveOverlay(m_HintAvailableOverlay);
                 }
-            }
-            //RedrawPlayScreen();*/
+            }*/
 
+            prevMousePos = new Point(-1, -1);
+        }
+
+        void HandlePlayerAction(Actor player)
+        {
             // 2. Get input.
             // Peek keyboard & mouse until we got an event.
             //ui.UI_PeekKey();  // consume keys to avoid repeats.
             Key key = ui.ReadKey();
             Point mousePos = ui.GetMousePosition();
             MouseButton mouseButton = ui.ReadMouseButton();
-
 
             // 3. Handle input
             if (key != Key.None)
@@ -3545,34 +3559,20 @@ namespace RogueSurvivor.Engine
                 {
                     switch (command)
                     {
-                        case PlayerCommand.QUIT_GAME:    // quit game.
-                            if (HandleQuitGame())
-                            {
-                                // stop sim thread.
-                                StopSimThread(true);  // alpha10 abort allowed when quitting
-                                                      // quit asap.
-                                ////RedrawPlayScreen();
-                                m_IsGameRunning = false;
-                                return;
-                            }
+                        case PlayerCommand.QUIT_GAME:
+                            HandleQuitGame();
                             break;
+
                         case PlayerCommand.ABANDON_GAME:
-                            if (HandleAbandonGame())
-                            {
-                                StopSimThread(true); // alpha10 abort allowed when quitting
-                                                     //loop = false;
-                                KillActor(null, m_Player, "suicide");
-                            }
+                            HandleAbandonGame();
                             break;
 
                         case PlayerCommand.HELP_MODE:
-                            //HandleHelpMode();
-                            // !FIXME
+                            PushState<HelpState>();
                             break;
 
                         case PlayerCommand.HINTS_SCREEN_MODE:
-                            //HandleHintsScreen();
-                            // !FIXME
+                            PushState<HintsState>();
                             break;
 
                         case PlayerCommand.ADVISOR:
@@ -3580,17 +3580,15 @@ namespace RogueSurvivor.Engine
                             break;
 
                         case PlayerCommand.OPTIONS_MODE:
-                            //HandleOptions(true);
-                            // !FIXME
+                            PushState<OptionsState>();
                             break;
 
                         case PlayerCommand.KEYBINDING_MODE:
-                            //HandleRedefineKeys();
-                            // !FIXME
+                            PushState<RedefineKeysState>();
                             break;
 
                         case PlayerCommand.MESSAGE_LOG:
-                            HandleMessageLog();
+                            PushState<MessageLogState>();
                             break;
 
                         // alpha10.1 moved sim thread responsability out to DoLoadGame
@@ -3761,48 +3759,35 @@ namespace RogueSurvivor.Engine
                     }
                 }
             } // has key
-            else
+            else if (mousePos != prevMousePos || mouseButton != MouseButton.None)
             {
                 ////////////////
                 // Handle mouse
                 ////////////////
                 // Look?
                 bool isLooking = HandleMouseLook(mousePos);
-                //if (isLooking)
-                //    continue;
-
-                // Inventory?
-                bool hasDoneInventoryAction;
-                bool isInventory = HandleMouseInventory(mousePos, mouseButton, out hasDoneInventoryAction);
-                /*if (isInventory)
+                if (!isLooking)
                 {
-                    if (hasDoneInventoryAction)
+                    // Inventory?
+                    bool hasDoneInventoryAction;
+                    bool isInventory = HandleMouseInventory(mousePos, mouseButton, out hasDoneInventoryAction);
+                    if (!isInventory)
                     {
-                        loop = false;
+                        // Corpses?
+                        bool hasDoneCorpsesAction;
+                        bool isCorpses = HandleMouseOverCorpses(mousePos, mouseButton, out hasDoneCorpsesAction);
+                        if (!isCorpses)
+                        {
+                            // Neither look nor inventory nor corpses, cleanup.
+                            ClearOverlays();
+                        }
                     }
-                    else
-                        continue;
-                }*/
-
-                // Corpses?
-                bool hasDoneCorpsesAction;
-                bool isCorpses = HandleMouseOverCorpses(mousePos, mouseButton, out hasDoneCorpsesAction);
-                /*if (isCorpses)
-                {
-                    if (hasDoneCorpsesAction)
-                    {
-                        loop = false;
-                    }
-                    else
-                        continue;
-                }*/
-
-                // Neither look nor inventory nor corpses, cleanup.
-                ClearOverlays();
+                }
             }
-            //}
-            //while (loop);
+        }
 
+        void AfterPlayerAction(Actor player)
+        {
             // Upkeep.
             UpdatePlayerFOV(player);    // make sure LOS is up to date.
             ComputeViewRect(player.Location.Position);
@@ -3832,34 +3817,37 @@ namespace RogueSurvivor.Engine
             return true;
         }
 
-        bool HandleQuitGame()
+        void HandleQuitGame()
         {
             AddMessage(MakeYesNoMessage("REALLY QUIT GAME"));
-            ////RedrawPlayScreen();
-
-            bool answer = WaitYesOrNo();
-
-            if (!answer)
-                AddMessage(new Message("Good. Keep roguing!", m_Session.WorldTime.TurnCounter, Color.Yellow));
-            else
-                AddMessage(new Message("Bye!", m_Session.WorldTime.TurnCounter, Color.Yellow));
-
-            return answer;
+            wait = WaitFor.YesNo;
+            waitForYesNo = yes =>
+            {
+                if (yes)
+                {
+                    AddMessage(new Message("Bye!", m_Session.WorldTime.TurnCounter, Color.Yellow));
+                    StopSimThread(true);
+                    m_IsGameRunning = false;
+                }
+                else
+                    AddMessage(new Message("Good. Keep roguing!", m_Session.WorldTime.TurnCounter, Color.Yellow));
+            };
         }
 
-        bool HandleAbandonGame()
+        void HandleAbandonGame()
         {
             AddMessage(MakeYesNoMessage("REALLY KILL YOURSELF"));
-            ////RedrawPlayScreen();
-
-            bool answer = WaitYesOrNo();
-
-            if (!answer)
-                AddMessage(new Message("Good. No reason to make the undeads life easier by removing yours!", m_Session.WorldTime.TurnCounter, Color.Yellow));
-            else
-                AddMessage(new Message("You can't bear the horror anymore...", m_Session.WorldTime.TurnCounter, Color.Yellow));
-
-            return answer;
+            waitForYesNo = yes =>
+            {
+                if (yes)
+                {
+                    AddMessage(new Message("You can't bear the horror anymore...", m_Session.WorldTime.TurnCounter, Color.Yellow));
+                    StopSimThread(true);
+                    KillActor(null, m_Player, "suicide");
+                }
+                else
+                    AddMessage(new Message("Good. No reason to make the undeads life easier by removing yours!", m_Session.WorldTime.TurnCounter, Color.Yellow));
+            };
         }
 
         void HandleScreenshot()
@@ -3890,33 +3878,6 @@ namespace RogueSurvivor.Engine
                 return shotname;
             else
                 return null;
-        }
-
-        void HandleMessageLog()
-        {
-            // draw header.
-            ui.Clear(Color.Black);
-            int gy = 0;
-            ui.DrawHeader();
-            gy += Ui.BOLD_LINE_SPACING;
-            ui.DrawStringBold(Color.Yellow, "Message Log", 0, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-            ui.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-
-            // log.
-            foreach (Message msg in m_MessageManager.History)
-            {
-                ui.DrawString(msg.Color, msg.Text, 0, gy);
-                gy += Ui.LINE_SPACING;
-            }
-
-            // foot.
-            ui.DrawFootnote(Color.White, "press ESC to leave");
-
-            // wait.
-            //ui.UI_Repaint();
-            WaitEscape();
         }
 
         bool HandleMouseLook(Point mousePos)
@@ -4347,7 +4308,6 @@ namespace RogueSurvivor.Engine
             {
                 AddMessage(MakeMessage(a, string.Format("{0} {1} corpse.", Conjugate(a, VERB_FEAST_ON), c.DeadGuy.Name, dmg)));
                 // alpha10 replace with sfx
-                m_MusicManager.Stop();
                 m_MusicManager.Play(GameSounds.UNDEAD_EAT, MusicPriority.PRIORITY_EVENT);
             }
 
@@ -4876,6 +4836,7 @@ namespace RogueSurvivor.Engine
                 {
                     // Select 1st or 2nd item
                     Key inKey = ui.ReadKey();
+                    throw new NotImplementedException();
 
                     if (inKey == Key.Escape)  // back/abort
                     {
@@ -5449,6 +5410,7 @@ namespace RogueSurvivor.Engine
                 //RedrawPlayScreen();
 
                 // 2. Get input.
+                throw new NotImplementedException();
                 Key key = ui.ReadKey();
                 PlayerCommand command = InputTranslator.KeyToCommand(key);
 
@@ -5543,6 +5505,7 @@ namespace RogueSurvivor.Engine
                 //RedrawPlayScreen();
 
                 // 2. Get input.
+                throw new NotImplementedException();
                 Key key = ui.ReadKey();
                 PlayerCommand command = InputTranslator.KeyToCommand(key);
 
@@ -5643,6 +5606,7 @@ namespace RogueSurvivor.Engine
                 //RedrawPlayScreen();
 
                 // 2. Get input.
+                throw new NotImplementedException();
                 Key key = ui.ReadKey();
                 PlayerCommand command = InputTranslator.KeyToCommand(key);
 
@@ -5735,7 +5699,6 @@ namespace RogueSurvivor.Engine
             DoStartSleeping(player);
             //RedrawPlayScreen();
             // check music.
-            m_MusicManager.Stop();
             m_MusicManager.PlayLooping(GameMusics.SLEEP, MusicPriority.PRIORITY_EVENT);
             return true;
         }
@@ -6688,6 +6651,7 @@ namespace RogueSurvivor.Engine
                 //RedrawPlayScreen();
 
                 // 2. Get input.
+                throw new NotImplementedException();
                 Key key = ui.ReadKey();
                 int choice = key.ToChoiceNumber();
 
@@ -6759,6 +6723,7 @@ namespace RogueSurvivor.Engine
                 //RedrawPlayScreen();
 
                 // 2. Get input.
+                throw new NotImplementedException();
                 Key key = ui.ReadKey();
                 int choice = key.ToChoiceNumber();
 
@@ -6858,6 +6823,7 @@ namespace RogueSurvivor.Engine
                 //RedrawPlayScreen();
 
                 // 2. Get input.
+                throw new NotImplementedException();
                 Key key = ui.ReadKey();
                 int choice = key.ToChoiceNumber();
 
@@ -7498,6 +7464,7 @@ namespace RogueSurvivor.Engine
                 //RedrawPlayScreen();
 
                 // 2. Get input.
+                throw new NotImplementedException();
                 Key key = ui.ReadKey();
                 int choice = key.ToChoiceNumber();
 
@@ -8520,6 +8487,7 @@ namespace RogueSurvivor.Engine
 
         void WaitKeyOrMouse(out Key key, out Point mousePos, out MouseButton mouseButton)
         {
+            throw new NotImplementedException();
             // Peek keyboard & mouse until we got an event.
             //ui.ReadKey();  // consume keys to avoid repeats.
             Key inKey;
@@ -8553,6 +8521,7 @@ namespace RogueSurvivor.Engine
         /// <returns>null if Exit/Cancel</returns>
         Direction WaitDirectionOrCancel()
         {
+            throw new NotImplementedException();
             for (; ; )
             {
                 Key inKey = ui.ReadKey();
@@ -8567,6 +8536,7 @@ namespace RogueSurvivor.Engine
 
         void WaitEnter()
         {
+            throw new NotImplementedException();
             for (; ; )
             {
                 Key inKey = ui.ReadKey();
@@ -8575,19 +8545,9 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        // !FIXME delete
-        void WaitEscape()
-        {
-            for (; ; )
-            {
-                Key inKey = ui.ReadKey();
-                if (inKey == Key.Escape)
-                    return;
-            }
-        }
-
         bool WaitYesOrNo()
         {
+            throw new NotImplementedException();
             for (; ; )
             {
                 Key inKey = ui.ReadKey();
@@ -9107,7 +9067,7 @@ namespace RogueSurvivor.Engine
             return lines.ToArray();
         }
 
-        string DescribeItemShort(Item it)
+        public string DescribeItemShort(Item it)
         {
             string name = it.Quantity > 1 ? it.Model.PluralName : it.AName;
 
@@ -11785,7 +11745,7 @@ namespace RogueSurvivor.Engine
                 if (isVisible) AddMessage(MakeMessage(target, string.Format("{0}.", Conjugate(target, VERB_ACCEPT_THE_DEAL))));
                 if (target.IsPlayer || speaker.IsPlayer)
                     ;
-                    //RedrawPlayScreen();
+                //RedrawPlayScreen();
 
                 // do it
                 SwapActorItems(speaker, offered, target, asked);
@@ -11795,7 +11755,7 @@ namespace RogueSurvivor.Engine
                 if (isVisible) AddMessage(MakeMessage(target, string.Format("{0}.", Conjugate(target, VERB_REFUSE_THE_DEAL))));
                 if (target.IsPlayer || speaker.IsPlayer)
                     ;
-                    //RedrawPlayScreen();
+                //RedrawPlayScreen();
             }
         }
 
@@ -13747,7 +13707,6 @@ namespace RogueSurvivor.Engine
             StopSimThread(true);   // alpha10 abort allowed when dying
 
             // music.
-            m_MusicManager.Stop();
             m_MusicManager.Play(GameMusics.PLAYER_DEATH, MusicPriority.PRIORITY_EVENT);
 
             ///////////
@@ -13796,7 +13755,7 @@ namespace RogueSurvivor.Engine
 
             // if permadeath on delete save file.
             if (s_Options.IsPermadeathOn)
-                DeleteSavedGame(GetUserSave());
+                DeleteSavedGame(SaveFile);
 
             // screenshot.
             if (s_Options.IsDeathScreenshotOn)
@@ -13811,342 +13770,13 @@ namespace RogueSurvivor.Engine
 
             AddMessagePressEnter();
 
-            // post mortem.
-            HandlePostMortem();
-
-            // music.
-            m_MusicManager.Stop();
+            PushState<PostMortemState>();
 
             // alpha10.1 bot release control
-#if DEBUG
-            BotReleaseControl();
-#endif
-        }
-
-        void HandlePostMortem()
-        {
-            ////////////////
-            // Prepare data.
-            ////////////////
-            WorldTime deathTime = new WorldTime();
-            deathTime.TurnCounter = m_Session.Scoring.TurnsSurvived;
-            bool isMale = m_Player.Model.DollBody.IsMale;
-            string heOrShe = isMale ? "He" : "She";
-            string hisOrHer = m_Player.HisOrHer;
-            string himOrHer = isMale ? "him" : "her";
-            string name = m_Player.TheName.Replace("(YOU) ", "");
-            TimeSpan rt = m_Session.Scoring.RealLifePlayingTime;
-            string realTimeString = rt.ToStringShort();
-            m_Session.Scoring.Side = m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
-            m_Session.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber);
-
-            ////////////////////////////////////
-            // Format scoring into a text file.
-            ///////////////////////////////////
-            TextFile graveyard = new TextFile();
-
-            graveyard.Append(string.Format("ROGUE SURVIVOR REANIMATED {0}", SetupConfig.GAME_VERSION));
-            graveyard.Append("POST MORTEM");
-
-            graveyard.Append(string.Format("{0} was {1} and {2}.", name, AorAn(m_Player.Model.Name), AorAn(m_Player.Faction.MemberName)));
-            graveyard.Append(string.Format("{0} survived to see {1}.", heOrShe, deathTime.ToString()));
-            graveyard.Append(string.Format("{0}'s spirit guided {1} for {2}.", name, himOrHer, realTimeString));
-            if (m_Session.Scoring.ReincarnationNumber > 0)
-                graveyard.Append(string.Format("{0} was reincarnation {1}.", heOrShe, m_Session.Scoring.ReincarnationNumber));
-            graveyard.Append(" ");
-
-            graveyard.Append("> SCORING");
-            graveyard.Append(string.Format("{0} scored a total of {1} points.", heOrShe, m_Session.Scoring.TotalPoints));
-            graveyard.Append(string.Format("- difficulty rating of {0}%.", (int)(100 * m_Session.Scoring.DifficultyRating)));
-            graveyard.Append(string.Format("- {0} base points for survival.", m_Session.Scoring.SurvivalPoints));
-            graveyard.Append(string.Format("- {0} base points for kills.", m_Session.Scoring.KillPoints));
-            graveyard.Append(string.Format("- {0} base points for achievements.", m_Session.Scoring.AchievementPoints));
-            graveyard.Append(" ");
-
-            graveyard.Append("> ACHIEVEMENTS");
-            foreach (Achievement ach in m_Session.Scoring.Achievements)
-            {
-                if (ach.IsDone)
-                    graveyard.Append(string.Format("- {0} for {1} points!", ach.Name, ach.ScoreValue));
-                else
-                    graveyard.Append(string.Format("- Fail : {0}.", ach.TeaseName));
-            }
-            if (m_Session.Scoring.CompletedAchievementsCount == 0)
-            {
-                graveyard.Append("Didn't achieve anything notable. And then died.");
-                graveyard.Append(string.Format("(unlock all the {0} achievements to win this game version)", Scoring.MAX_ACHIEVEMENTS));
-            }
-            else
-            {
-                graveyard.Append(string.Format("Total : {0}/{1}.", m_Session.Scoring.CompletedAchievementsCount, Scoring.MAX_ACHIEVEMENTS));
-                if (m_Session.Scoring.CompletedAchievementsCount >= Scoring.MAX_ACHIEVEMENTS)
-                {
-                    graveyard.Append("*** You achieved everything! You can consider having won this version of the game! CONGRATULATIONS! ***");
-                }
-                else
-                    graveyard.Append("(unlock all the achievements to win this game version)");
-                graveyard.Append("(later versions of the game will feature real winning conditions and multiple endings...)");
-            }
-            graveyard.Append(" ");
-
-            graveyard.Append("> DEATH");
-            graveyard.Append(string.Format("{0} in {1}.", m_Session.Scoring.DeathReason, m_Session.Scoring.DeathPlace));
-            graveyard.Append(" ");
-
-            graveyard.Append("> KILLS");
-            if (m_Session.Scoring.HasNoKills)
-            {
-                graveyard.Append(string.Format("{0} was a pacifist. Or too scared to fight.", heOrShe));
-            }
-            else
-            {
-                // models kill list.
-                foreach (Scoring.KillData killData in m_Session.Scoring.Kills)
-                {
-                    string modelName = killData.Amount > 1 ? Models.Actors[killData.ActorModelID].PluralName : Models.Actors[killData.ActorModelID].Name;
-                    graveyard.Append(string.Format("{0,4} {1}.", killData.Amount, modelName));
-                }
-            }
-            // murders? only livings.
-            if (!m_Player.Model.Abilities.IsUndead)
-            {
-                if (m_Player.MurdersCounter > 0)
-                {
-                    graveyard.Append(string.Format("{0} committed {1} murder{2}!", heOrShe, m_Player.MurdersCounter, m_Player.MurdersCounter > 1 ? "s" : ""));
-                }
-            }
-
-            graveyard.Append(" ");
-
-            graveyard.Append("> FUN FACTS!");
-            graveyard.Append(string.Format("While {0} has died, others are still having fun!", name));
-            string[] funFacts = CompileDistrictFunFacts(m_Player.Location.Map.District);
-            for (int i = 0; i < funFacts.Length; i++)
-                graveyard.Append(funFacts[i]);
-            graveyard.Append("");
-
-            graveyard.Append("> SKILLS");
-            if (m_Player.Sheet.SkillTable.Skills == null)
-            {
-                graveyard.Append(string.Format("{0} was a jack of all trades. Or an incompetent.", heOrShe));
-            }
-            else
-            {
-                foreach (Skill sk in m_Player.Sheet.SkillTable.Skills)
-                {
-                    graveyard.Append(string.Format("{0}-{1}.", sk.Level, Skills.Name(sk.ID)));
-                }
-            }
-            graveyard.Append(" ");
-
-            graveyard.Append("> INVENTORY");
-            if (m_Player.Inventory.IsEmpty)
-            {
-                graveyard.Append(string.Format("{0} was humble. Or dirt poor.", heOrShe));
-            }
-            else
-            {
-                foreach (Item it in m_Player.Inventory.Items)
-                {
-                    string desc = DescribeItemShort(it);
-                    if (it.IsEquipped)
-                        graveyard.Append(string.Format("- {0} (equipped).", desc));
-                    else
-                        graveyard.Append(string.Format("- {0}.", desc));
-                }
-            }
-            graveyard.Append(" ");
-
-            graveyard.Append("> FOLLOWERS");
-            if (m_Session.Scoring.FollowersWhendDied == null || m_Session.Scoring.FollowersWhendDied.Count == 0)
-            {
-                graveyard.Append(string.Format("{0} was doing fine alone. Or everyone else was dead.", heOrShe));
-            }
-            else
-            {
-                // names.
-                StringBuilder sb = new StringBuilder(string.Format("{0} was leading", heOrShe));
-                bool firstFo = true;
-                int i = 0;
-                int count = m_Session.Scoring.FollowersWhendDied.Count;
-                foreach (Actor fo in m_Session.Scoring.FollowersWhendDied)
-                {
-                    if (firstFo)
-                        sb.Append(" ");
-                    else
-                    {
-                        if (i == count)
-                            sb.Append(".");
-                        else if (i == count - 1)
-                            sb.Append(" and ");
-                        else
-                            sb.Append(", ");
-                    }
-                    sb.Append(fo.TheName);
-                    ++i;
-                    firstFo = false;
-                }
-                sb.Append(".");
-                graveyard.Append(sb.ToString());
-
-                // skills.
-                foreach (Actor fo in m_Session.Scoring.FollowersWhendDied)
-                {
-                    graveyard.Append(string.Format("{0} skills : ", fo.Name));
-                    if (fo.Sheet.SkillTable != null && fo.Sheet.SkillTable.Skills != null)
-                    {
-                        foreach (Skill sk in fo.Sheet.SkillTable.Skills)
-                        {
-                            graveyard.Append(string.Format("{0}-{1}.", sk.Level, Skills.Name(sk.ID)));
-                        }
-                    }
-                }
-            }
-            graveyard.Append(" ");
-
-            graveyard.Append("> EVENTS");
-            if (m_Session.Scoring.HasNoEvents)
-            {
-                graveyard.Append(string.Format("{0} had a quiet life. Or dull and boring.", heOrShe));
-            }
-            else
-            {
-                foreach (Scoring.GameEventData ev in m_Session.Scoring.Events)
-                {
-                    WorldTime evTime = new WorldTime();
-                    evTime.TurnCounter = ev.Turn;
-                    graveyard.Append(string.Format("- {0,13} : {1}", evTime.ToString(), ev.Text));
-                }
-            }
-            graveyard.Append(" ");
-
-            graveyard.Append("> CUSTOM OPTIONS");
-            graveyard.Append(string.Format("- difficulty rating of {0}%.", (int)(100 * m_Session.Scoring.DifficultyRating)));
-            if (s_Options.IsPermadeathOn)
-                graveyard.Append(string.Format("- {0} : yes.", GameOptions.Name(GameOptions.IDs.GAME_PERMADEATH)));
-            if (!s_Options.AllowUndeadsEvolution && Rules.HasEvolution(m_Session.GameMode)) // alpha10 only if manually disabled
-                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION), s_Options.AllowUndeadsEvolution ? "yes" : "no"));
-            if (s_Options.CitySize != GameOptions.DEFAULT_CITY_SIZE)
-                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_CITY_SIZE), s_Options.CitySize));
-            if (s_Options.DayZeroUndeadsPercent != GameOptions.DEFAULT_DAY_ZERO_UNDEADS_PERCENT)
-                graveyard.Append(string.Format("- {0} : {1}%.", GameOptions.Name(GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT), s_Options.DayZeroUndeadsPercent));
-            if (s_Options.DistrictSize != GameOptions.DEFAULT_DISTRICT_SIZE)
-                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_DISTRICT_SIZE), s_Options.DistrictSize));
-            if (s_Options.MaxCivilians != GameOptions.DEFAULT_MAX_CIVILIANS)
-                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_MAX_CIVILIANS), s_Options.MaxCivilians));
-            if (s_Options.MaxUndeads != GameOptions.DEFAULT_MAX_UNDEADS)
-                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_MAX_UNDEADS), s_Options.MaxUndeads));
-            if (!s_Options.NPCCanStarveToDeath)
-                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH), s_Options.NPCCanStarveToDeath ? "yes" : "no"));
-            if (s_Options.StarvedZombificationChance != GameOptions.DEFAULT_STARVED_ZOMBIFICATION_CHANCE)
-                graveyard.Append(string.Format("- {0} : {1}%.", GameOptions.Name(GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE), s_Options.StarvedZombificationChance));
-            if (!s_Options.RevealStartingDistrict)
-                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT), s_Options.RevealStartingDistrict ? "yes" : "no"));
-            if (s_Options.SimulateDistricts != GameOptions.DEFAULT_SIM_DISTRICTS)
-                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_SIMULATE_DISTRICTS), GameOptions.Name(s_Options.SimulateDistricts)));
-            if (s_Options.SimulateWhenSleeping)
-                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_SIMULATE_SLEEP), s_Options.SimulateWhenSleeping ? "yes" : "no"));
-            if (s_Options.ZombieInvasionDailyIncrease != GameOptions.DEFAULT_ZOMBIE_INVASION_DAILY_INCREASE)
-                graveyard.Append(string.Format("- {0} : {1}%.", GameOptions.Name(GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE), s_Options.ZombieInvasionDailyIncrease));
-            if (s_Options.ZombificationChance != GameOptions.DEFAULT_ZOMBIFICATION_CHANCE)
-                graveyard.Append(string.Format("- {0} : {1}%.", GameOptions.Name(GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE), s_Options.ZombificationChance));
-            if (s_Options.MaxReincarnations != GameOptions.DEFAULT_MAX_REINCARNATIONS)
-                graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_MAX_REINCARNATIONS), s_Options.MaxReincarnations));
-            graveyard.Append(" ");
-
-            graveyard.Append("> R.I.P");
-            graveyard.Append(string.Format("May {0} soul rest in peace.", hisOrHer));
-            graveyard.Append(string.Format("For {0} body is now a meal for evil.", hisOrHer));
-            graveyard.Append("The End.");
-
-            /////////////////////
-            // Save to graveyard
-            /////////////////////
-            int gx, gy;
-            gx = gy = 0;
-            ui.Clear(Color.Black);
-            ui.DrawStringBold(Color.Yellow, "Saving post mortem to graveyard...", 0, 0);
-            gy += Ui.BOLD_LINE_SPACING;
-            //ui.UI_Repaint();
-            string graveName = GetUserNewGraveyardName();
-            string graveFile = GraveFilePath(graveName);
-            if (!graveyard.Save(graveFile))
-            {
-                ui.DrawStringBold(Color.Red, "Could not save to graveyard.", 0, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-            }
-            else
-            {
-                ui.DrawStringBold(Color.Yellow, "Grave saved to :", 0, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-                ui.DrawString(Color.White, graveFile, 0, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-            }
-            ui.DrawFootnote(Color.White, "press ENTER");
-            //ui.UI_Repaint();
-            WaitEnter();
-
-            ///////////////////////////////
-            // Display grave as text file.
-            ///////////////////////////////
-            graveyard.FormatLines(Ui.TEXTFILE_CHARS_PER_LINE);
-            int iLine = 0;
-            bool loop = false;
-            do
-            {
-                // header.
-                ui.Clear(Color.Black);
-                gx = gy = 0;
-                ui.DrawHeader();
-                gy += Ui.BOLD_LINE_SPACING;
-
-                // text.
-                int linesThisPage = 0;
-                ui.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-                while (linesThisPage < Ui.TEXTFILE_LINES_PER_PAGE && iLine < graveyard.FormatedLines.Count)
-                {
-                    string line = graveyard.FormatedLines[iLine];
-                    ui.DrawStringBold(Color.White, line, gx, gy);
-                    gy += Ui.BOLD_LINE_SPACING;
-                    ++iLine;
-                    ++linesThisPage;
-                }
-
-                // foot.
-                ui.DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, Ui.CANVAS_HEIGHT - 2 * Ui.BOLD_LINE_SPACING);
-                if (iLine < graveyard.FormatedLines.Count)
-                    ui.DrawFootnote(Color.White, "press ENTER for more");
-                else
-                    ui.DrawFootnote(Color.White, "press ENTER to leave");
-
-                // wait.
-                //ui.UI_Repaint();
-                WaitEnter();
-
-                // loop?
-                loop = (iLine < graveyard.FormatedLines.Count);
-            }
-            while (loop);
-
-            /////////////
-            // Hi Score?
-            /////////////
-            StringBuilder skillsSb = new StringBuilder();
-            if (m_Player.Sheet.SkillTable.Skills != null)
-            {
-                foreach (Skill sk in m_Player.Sheet.SkillTable.Skills)
-                {
-                    skillsSb.AppendFormat("{0}-{1} ", sk.Level, Skills.Name(sk.ID));
-                }
-            }
-            HiScore newHiScore = HiScore.FromScoring(name, m_Session.Scoring, skillsSb.ToString());
-            if (m_HiScoreTable.Register(newHiScore))
-            {
-                SaveHiScoreTable();
-                //HandleHiScores(true);
-                // !IFMXE
-            }
+//#if DEBUG
+//            BotReleaseControl();
+//#endif
+            // !FIXME
         }
 
         void OnNewNight()
@@ -14161,7 +13791,6 @@ namespace RogueSurvivor.Engine
                 AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
 
                 // music.
-                m_MusicManager.Stop();
                 m_MusicManager.Play(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
 
                 // Message.
@@ -14208,7 +13837,6 @@ namespace RogueSurvivor.Engine
                 AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
 
                 // music.
-                m_MusicManager.Stop();
                 m_MusicManager.Play(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
 
                 // Message.
@@ -14350,6 +13978,7 @@ namespace RogueSurvivor.Engine
                 //RedrawPlayScreen();
 
                 // 2. Read input
+                throw new NotImplementedException();
                 Key inKey = ui.ReadKey();
 
                 // 3. Handle input
@@ -16552,7 +16181,7 @@ namespace RogueSurvivor.Engine
             // manually saving the game delays (reschedule) the next autosave
             ScheduleNextAutoSave();
 
-            DoSaveGame(GetUserSave());
+            DoSaveGame(SaveFile);
         }
 
         // alpha10.1
@@ -16574,7 +16203,7 @@ namespace RogueSurvivor.Engine
             ScheduleNextAutoSave();
             Overlay popup = new OverlayPopup(new string[] { "AUTOSAVING..." }, Color.Yellow, Color.White, Color.Black, MapToScreen(m_Player.Location.Position.X, m_Player.Location.Position.Y));
             AddOverlay(popup);
-            DoSaveGame(GetUserSave(), true);
+            DoSaveGame(SaveFile, true);
             RemoveOverlay(popup);
             //RedrawPlayScreen();
         }
@@ -16587,7 +16216,7 @@ namespace RogueSurvivor.Engine
 
         void HandleLoadGame()
         {
-            DoLoadGame(GetUserSave());
+            DoLoadGame(SaveFile);
         }
 
         // alpha10.1 messages modified for autosave
@@ -16666,7 +16295,7 @@ namespace RogueSurvivor.Engine
         void LoadOptions()
         {
             // load.
-            s_Options = GameOptions.Load(UserOptionsFilePath);
+            s_Options = GameOptions.Load(OptionsFile);
         }
 
         public void ApplyOptions()
@@ -16704,81 +16333,19 @@ namespace RogueSurvivor.Engine
 
         void LoadKeybindings()
         {
-            s_KeyBindings = Keybindings.Load(KeyBindingsPath);
+            s_KeyBindings = Keybindings.Load(KeyBindingsFile);
         }
 
         void LoadHints()
         {
-            s_Hints = GameHintsStatus.Load(GetUserConfigPath() + "hints.dat");
+            s_Hints = GameHintsStatus.Load(ConfigPath + "hints.dat");
         }
 
         void SaveHints()
         {
-            GameHintsStatus.Save(s_Hints, GetUserConfigPath() + "hints.dat");
+            GameHintsStatus.Save(s_Hints, ConfigPath + "hints.dat");
         }
-
-        public static string GetUserBasePath()
-        {
-            return SetupConfig.DirPath;
-        }
-
-        public static string GetUserSavesPath()
-        {
-            return GetUserBasePath() + @"Saves\";
-        }
-
-        public static string GetUserSave()
-        {
-            return GetUserSavesPath() + "save.dat";
-        }
-
-        public static string GetUserDocsPath()
-        {
-            return GetUserBasePath() + @"Docs\";
-        }
-
-        public static string GetUserGraveyardPath()
-        {
-            return GetUserBasePath() + @"Graveyard\";
-        }
-
-        /// <summary>
-        /// "grave_[id]"
-        /// </summary>
-        /// <returns></returns>
-        public string GetUserNewGraveyardName()
-        {
-            string name;
-            int i = 0;
-            bool isFreeID = false;
-            do
-            {
-                name = string.Format("grave_{0:D3}", i);
-                isFreeID = !File.Exists(GraveFilePath(name));
-                ++i;
-            }
-            while (!isFreeID);
-
-            return name;
-        }
-
-        public static string GraveFilePath(string graveName)
-        {
-            return GetUserGraveyardPath() + graveName + ".txt";
-        }
-
-        public static string GetUserConfigPath()
-        {
-            return GetUserBasePath() + @"Config\";
-        }
-
-        public string UserOptionsFilePath => GetUserConfigPath() + @"options.dat";
-
-        public static string GetUserScreenshotsPath()
-        {
-            return GetUserBasePath() + @"Screenshots\";
-        }
-
+        
         /// <summary>
         /// "screenshot_[id]"
         /// </summary>
@@ -16801,7 +16368,7 @@ namespace RogueSurvivor.Engine
 
         public string ScreenshotFilePath(string shotname)
         {
-            return GetUserScreenshotsPath() + shotname + ".png";
+            return ScreenshotsPath + shotname + ".png";
         }
 
         bool CreateDirectory(string path)
@@ -16815,23 +16382,10 @@ namespace RogueSurvivor.Engine
                 return false;
         }
 
-        bool CheckDirectory(string path, string description, ref int gy)
-        {
-            ui.DrawString(Color.White, string.Format("{0} : {1}...", description, path), 0, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-            //ui.UI_Repaint();
-            bool created = CreateDirectory(path);
-            ui.DrawString(Color.White, "ok.", 0, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-            //ui.UI_Repaint();
-
-            return created;
-        }
-
         bool CheckCopyOfManual()
         {
             string src_path = @"Resources\Manual\";
-            string dst_path = GetUserDocsPath();
+            string dst_path = DocsPath;
             string filename = "RS Manual.txt";
 
             // copy file.
@@ -16847,26 +16401,6 @@ namespace RogueSurvivor.Engine
             Logger.WriteLine(Logger.Stage.INIT, "checking for manual... done!");
 
             return copied;
-        }
-
-        string GetUserManualFilePath()
-        {
-            return GetUserDocsPath() + "RS Manual.txt";
-        }
-
-        static string GetUserHiScorePath()
-        {
-            return GetUserSavesPath();
-        }
-
-        string GetUserHiScoreFilePath()
-        {
-            return GetUserHiScorePath() + "hiscores.dat";
-        }
-
-        public static string GetUserHiScoreTextFilePath()
-        {
-            return GetUserHiScorePath() + "hiscores.txt";
         }
 
         public void RefreshPlayer()
@@ -16934,7 +16468,6 @@ namespace RogueSurvivor.Engine
                 if (turnsToCatchup > 0)
                 {
                     // music.
-                    m_MusicManager.Stop();
                     m_MusicManager.PlayLooping(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
 
                     // force player view to darkness (so he gets no messages).
@@ -16999,6 +16532,7 @@ namespace RogueSurvivor.Engine
                             break;
 
                         // check for abort.
+                        throw new NotImplementedException();
                         Key key = ui.ReadKey();
                         if (key == Key.Escape)
                         {
@@ -17277,7 +16811,6 @@ namespace RogueSurvivor.Engine
             m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("** Achievement : {0} for {1} points. **", title, ach.ScoreValue));
 
             // music.
-            m_MusicManager.Stop();
             m_MusicManager.Play(musicToPlay, MusicPriority.PRIORITY_EVENT);
 
             // prepare banner.
@@ -17304,7 +16837,6 @@ namespace RogueSurvivor.Engine
         void ShowSpecialDialogue(Actor speaker, string[] text)
         {
             // music.
-            m_MusicManager.Stop();
             m_MusicManager.Play(GameMusics.INTERLUDE, MusicPriority.PRIORITY_EVENT);
 
             // overlays.
@@ -17419,7 +16951,6 @@ namespace RogueSurvivor.Engine
                             m_Session.PlayerKnows_TheSewersThingLocation = true;
 
                             // message + music, so the player notices it.
-                            m_MusicManager.Stop();
                             m_MusicManager.Play(GameMusics.FIGHT, MusicPriority.PRIORITY_EVENT);
                             ClearMessages();
                             AddMessage(new Message("Hey! What's that THING!?", m_Session.WorldTime.TurnCounter, Color.Yellow));
@@ -17555,7 +17086,6 @@ namespace RogueSurvivor.Engine
                             // music.
                             if (m_MusicManager.Music != GameMusics.INSANE)
                             {
-                                m_MusicManager.Stop();
                                 m_MusicManager.Play(GameMusics.INSANE, MusicPriority.PRIORITY_EVENT);
                             }
 
@@ -17635,7 +17165,6 @@ namespace RogueSurvivor.Engine
             }
 
             // play music.
-            m_MusicManager.Stop();
             m_MusicManager.PlayLooping(GameMusics.LIMBO, MusicPriority.PRIORITY_EVENT);
 
             // Waiting screen...
@@ -17709,6 +17238,7 @@ namespace RogueSurvivor.Engine
                 //ui.UI_Repaint();
 
                 // get menu action.
+                throw new NotImplementedException();
                 Key key = ui.ReadKey();
                 switch (key)
                 {
@@ -17797,7 +17327,6 @@ namespace RogueSurvivor.Engine
             if (m_Player == m_Session.UniqueActors.JasonMyers.TheActor)
                 music = GameMusics.INSANE;
             // apha10 replace with sfx
-            m_MusicManager.Stop();
             m_MusicManager.Play(music, MusicPriority.PRIORITY_EVENT);
 
             // restart sim thread.
@@ -18572,7 +18101,7 @@ namespace RogueSurvivor.Engine
                 info, a.TheName, a.Model.Name, a.Location.Map.Name);
         }
 
-        string[] CompileDistrictFunFacts(District d)
+        public string[] CompileDistrictFunFacts(District d)
         {
             List<string> list = new List<string>();
 
@@ -18796,7 +18325,6 @@ namespace RogueSurvivor.Engine
             if (m_MusicManager.Music == mapMusic && m_MusicManager.IsPlaying)
                 return;
 
-            m_MusicManager.Stop();
             m_MusicManager.Play(mapMusic, MusicPriority.PRIORITY_BGM);
         }
     }

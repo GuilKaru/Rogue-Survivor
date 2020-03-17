@@ -302,7 +302,7 @@ namespace RogueSurvivor.Engine.GameStates
                 case Key.Escape:
                     if (!conflict)
                     {
-                        RogueGame.KeyBindings.Save(game.KeyBindingsPath);
+                        RogueGame.KeyBindings.Save(RogueGame.KeyBindingsFile);
                         game.PopState();
                     }
                     break;
