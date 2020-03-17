@@ -386,7 +386,8 @@ namespace RogueSurvivor.Engine
         {
             None,
             Enter,
-            YesNo
+            YesNo,
+            Dir
         }
 
         Rules m_Rules;
@@ -404,6 +405,7 @@ namespace RogueSurvivor.Engine
         WaitFor wait;
         Action waitForEnter;
         Action<bool> waitForYesNo;
+        Func<Direction, bool> waitForDir;
         Point prevMousePos;
 
         static GameOptions s_Options;
@@ -534,26 +536,46 @@ namespace RogueSurvivor.Engine
             if (wait != WaitFor.None)
             {
                 Key key = ui.ReadKey();
-                if (wait == WaitFor.Enter)
+                switch (wait)
                 {
-                    if (key == Key.Enter)
-                    {
-                        wait = WaitFor.None;
-                        waitForEnter();
-                    }
-                }
-                else if (wait == WaitFor.YesNo)
-                {
-                    if (key == Key.Y)
-                    {
-                        wait = WaitFor.None;
-                        waitForYesNo(true);
-                    }
-                    else if (key == Key.N || key == Key.Escape)
-                    {
-                        wait = WaitFor.None;
-                        waitForYesNo(false);
-                    }
+                    case WaitFor.Enter:
+                        if (key == Key.Enter)
+                        {
+                            wait = WaitFor.None;
+                            waitForEnter();
+                        }
+                        break;
+                    case WaitFor.YesNo:
+                        if (key == Key.Y)
+                        {
+                            wait = WaitFor.None;
+                            waitForYesNo(true);
+                        }
+                        else if (key == Key.N || key == Key.Escape)
+                        {
+                            wait = WaitFor.None;
+                            waitForYesNo(false);
+                        }
+                        break;
+                    case WaitFor.Dir:
+                        {
+                            PlayerCommand command = InputTranslator.KeyToCommand(key);
+                            if (key == Key.Escape)
+                            {
+                                if (!waitForDir(null))
+                                    wait = WaitFor.None;
+                            }
+                            else
+                            {
+                                Direction dir = CommandToDirection(command);
+                                if (dir != null)
+                                {
+                                    if (!waitForDir(dir))
+                                        wait = WaitFor.None;
+                                }
+                            }
+                        }
+                        break;
                 }
             }
             else
@@ -974,21 +996,6 @@ namespace RogueSurvivor.Engine
                 m_HiScoreTable = new HiScoreTable(HiScoreTable.DEFAULT_MAX_ENTRIES);
                 m_HiScoreTable.Clear();
             }
-        }
-
-        void SaveHiScoreTable()
-        {
-            ui.Clear(Color.Black);
-            ui.DrawStringBold(Color.White, "Saving hiscores table...", 0, 0);
-            //ui.UI_Repaint();
-
-            
-
-            ui.Clear(Color.Black);
-            ui.DrawStringBold(Color.White, "Saving hiscores table... done!", 0, 0);
-            //ui.UI_Repaint();
-
-            // !FIXME
         }
 
         public override void Enter()
@@ -3541,9 +3548,6 @@ namespace RogueSurvivor.Engine
 
         void HandlePlayerAction(Actor player)
         {
-            // 2. Get input.
-            // Peek keyboard & mouse until we got an event.
-            //ui.UI_PeekKey();  // consume keys to avoid repeats.
             Key key = ui.ReadKey();
             Point mousePos = ui.GetMousePosition();
             MouseButton mouseButton = ui.ReadMouseButton();
@@ -3683,11 +3687,11 @@ namespace RogueSurvivor.Engine
                             break;
 
                         case PlayerCommand.RUN_TOGGLE:
-                            HandlePlayerRunToggle(player);
+                            HandlePlayerRunToggle();
                             break;
 
                         case PlayerCommand.CLOSE_DOOR:
-                            HandlePlayerCloseDoor(player);
+                            HandlePlayerCloseDoor();
                             break;
                         case PlayerCommand.BARRICADE_MODE:
                             HandlePlayerBarricade(player);
@@ -3764,6 +3768,7 @@ namespace RogueSurvivor.Engine
                 ////////////////
                 // Handle mouse
                 ////////////////
+                prevMousePos = mousePos;
                 // Look?
                 bool isLooking = HandleMouseLook(mousePos);
                 if (!isLooking)
@@ -4979,81 +4984,57 @@ namespace RogueSurvivor.Engine
             return actionDone;
         }
 
-        void HandlePlayerRunToggle(Actor player)
+        void HandlePlayerRunToggle()
         {
-            string reason;
-            if (!m_Rules.CanActorRun(player, out reason))
-            {
+            if (!m_Rules.CanActorRun(m_Player, out string reason))
                 AddMessage(MakeErrorMessage(string.Format("Cannot run now : {0}.", reason)));
-                return;
+            else
+            {
+                m_Player.IsRunning = !m_Player.IsRunning;
+                AddMessage(MakeMessage(m_Player, string.Format("{0} running.", Conjugate(m_Player, m_Player.IsRunning ? VERB_START : VERB_STOP))));
             }
-
-            // ok.
-            player.IsRunning = !player.IsRunning;
-            AddMessage(MakeMessage(player, string.Format("{0} running.", Conjugate(player, player.IsRunning ? VERB_START : VERB_STOP))));
         }
 
-        bool HandlePlayerCloseDoor(Actor player)
+        void HandlePlayerCloseDoor()
         {
-            bool loop = true;
-            bool actionDone = false;
-
             ClearOverlays();
             AddOverlay(new OverlayPopup(CLOSE_DOOR_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
 
-            do
+            wait = WaitFor.Dir;
+            waitForDir = HandlePlayerCloseDoor;
+        }
+
+        bool HandlePlayerCloseDoor(Direction dir)
+        {
+            if (dir == null)
             {
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
-                //RedrawPlayScreen();
-
-                // 2. Get input.
-                Direction dir = WaitDirectionOrCancel();
-
-                // 3. Handle input
-                if (dir == null)
+                ClearOverlays();
+                return false;
+            }
+            else if (dir != Direction.NEUTRAL)
+            {
+                Point pos = m_Player.Location.Position + dir;
+                if (m_Player.Location.Map.IsInBounds(pos))
                 {
-                    loop = false;
-                }
-                else if (dir != Direction.NEUTRAL)
-                {
-                    Point pos = player.Location.Position + dir;
-                    if (player.Location.Map.IsInBounds(pos))
+                    MapObject mapObj = m_Player.Location.Map.GetMapObjectAt(pos);
+                    if (mapObj != null && mapObj is DoorWindow)
                     {
-                        MapObject mapObj = player.Location.Map.GetMapObjectAt(pos);
-                        if (mapObj != null && mapObj is DoorWindow)
+                        DoorWindow door = mapObj as DoorWindow;
+                        string reason;
+                        if (m_Rules.IsClosableFor(m_Player, door, out reason))
                         {
-                            DoorWindow door = mapObj as DoorWindow;
-                            string reason;
-                            if (m_Rules.IsClosableFor(player, door, out reason))
-                            {
-                                DoCloseDoor(player, door);
-                                //RedrawPlayScreen();
-                                loop = false;
-                                actionDone = true;
-                            }
-                            else
-                            {
-                                AddMessage(MakeErrorMessage(string.Format("Can't close {0} : {1}.", door.TheName, reason)));
-                            }
+                            DoCloseDoor(m_Player, door);
+                            ClearOverlays();
+                            return false;
                         }
                         else
-                            AddMessage(MakeErrorMessage("Nothing to close there."));
+                            AddMessage(MakeErrorMessage(string.Format("Can't close {0} : {1}.", door.TheName, reason)));
                     }
+                    else
+                        AddMessage(MakeErrorMessage("Nothing to close there."));
                 }
             }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+            return true;
         }
 
         bool HandlePlayerBarricade(Actor player)
@@ -13773,9 +13754,9 @@ namespace RogueSurvivor.Engine
             PushState<PostMortemState>();
 
             // alpha10.1 bot release control
-//#if DEBUG
-//            BotReleaseControl();
-//#endif
+            //#if DEBUG
+            //            BotReleaseControl();
+            //#endif
             // !FIXME
         }
 
@@ -16345,7 +16326,7 @@ namespace RogueSurvivor.Engine
         {
             GameHintsStatus.Save(s_Hints, ConfigPath + "hints.dat");
         }
-        
+
         /// <summary>
         /// "screenshot_[id]"
         /// </summary>
@@ -17158,131 +17139,16 @@ namespace RogueSurvivor.Engine
         {
             // Reincarnate?
             // don't bother if option set to zero.
-            if (s_Options.MaxReincarnations <= 0 || !AskForReincarnation())
+            if (s_Options.MaxReincarnations <= 0 /*|| !AskForReincarnation()*/)
             {
                 m_MusicManager.Stop();
                 return;
             }
 
-            // play music.
-            m_MusicManager.PlayLooping(GameMusics.LIMBO, MusicPriority.PRIORITY_EVENT);
+            game.PushState<ReincarnationState>();
+            // !FIXME
 
-            // Waiting screen...
-            ui.Clear(Color.Black);
-            ui.DrawStringBold(Color.Yellow, "Reincarnation - Purgatory", 0, 0);
-            ui.DrawStringBold(Color.White, "(preparing reincarnations, please wait...)", 0, 2 * Ui.BOLD_LINE_SPACING);
-            //ui.UI_Repaint();
-
-            // Decide available reincarnation targets.
-            int countDummy;
-            Actor randomR = FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_ACTOR, out countDummy);
-            int countLivings;
-            Actor livingR = FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_LIVING, out countLivings);
-            int countUndead;
-            Actor undeadR = FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_UNDEAD, out countUndead);
-            int countFollower;
-            Actor followerR = FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_FOLLOWER, out countFollower);
-            Actor killerR = FindReincarnationAvatar(GameOptions.ReincMode.KILLER, out countDummy);
-            Actor zombifiedR = FindReincarnationAvatar(GameOptions.ReincMode.ZOMBIFIED, out countDummy);
-
-            // Get fun facts.
-            string[] funFacts = CompileDistrictFunFacts(m_Player.Location.Map.District);
-
-            // Reincarnate.
-            // Choose avatar from a set of reincarnation modes.
-            bool choiceMade = false;
-            string[] entries =
-            {
-                GameOptions.Name(GameOptions.ReincMode.RANDOM_ACTOR),
-                GameOptions.Name(GameOptions.ReincMode.RANDOM_LIVING),
-                GameOptions.Name(GameOptions.ReincMode.RANDOM_UNDEAD),
-                GameOptions.Name(GameOptions.ReincMode.RANDOM_FOLLOWER),
-                GameOptions.Name(GameOptions.ReincMode.KILLER),
-                GameOptions.Name(GameOptions.ReincMode.ZOMBIFIED)
-            };
-            string[] values =
-            {
-                DescribeAvatar(randomR),
-                string.Format("{0}   (out of {1} possibilities)", DescribeAvatar(livingR), countLivings),
-                string.Format("{0}   (out of {1} possibilities)", DescribeAvatar(undeadR), countUndead),
-                string.Format("{0}   (out of {1} possibilities)", DescribeAvatar(followerR), countFollower),
-                DescribeAvatar(killerR),
-                DescribeAvatar(zombifiedR)
-            };
-            int selected = 0;
             Actor avatar = null;
-            do
-            {
-                // show screen.
-                int gx, gy;
-                gx = gy = 0;
-                ui.Clear(Color.Black);
-                ui.DrawStringBold(Color.Yellow, "Reincarnation - Choose Avatar", gx, gy);
-                gy += 2 * Ui.BOLD_LINE_SPACING;
-
-                ui.DrawMenuOrOptions(selected, Color.White, entries, Color.LightGreen, values, gx, ref gy);
-                gy += 2 * Ui.BOLD_LINE_SPACING;
-
-                ui.DrawStringBold(Color.Pink, ".-* District Fun Facts! *-.", gx, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-                ui.DrawStringBold(Color.Pink, string.Format("at current date : {0}.", new WorldTime(m_Session.WorldTime.TurnCounter).ToString()), gx, gy);
-                gy += 2 * Ui.BOLD_LINE_SPACING;
-                for (int i = 0; i < funFacts.Length; i++)
-                {
-                    ui.DrawStringBold(Color.Pink, funFacts[i], gx, gy);
-                    gy += Ui.BOLD_LINE_SPACING;
-                }
-
-                ui.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel and end game");
-
-                //ui.UI_Repaint();
-
-                // get menu action.
-                throw new NotImplementedException();
-                Key key = ui.ReadKey();
-                switch (key)
-                {
-                    case Key.Up:       // move up
-                        if (selected > 0) --selected;
-                        else selected = entries.Length - 1;
-                        break;
-                    case Key.Down:     // move down
-                        selected = (selected + 1) % entries.Length;
-                        break;
-                    case Key.Escape:   // cancel & end game
-                        choiceMade = true;
-                        avatar = null;
-                        break;
-
-                    case Key.Enter:    // validate
-                        {
-                            switch (selected)
-                            {
-                                case 0: // random actor
-                                    avatar = randomR;
-                                    break;
-                                case 1: // random survivor
-                                    avatar = livingR;
-                                    break;
-                                case 2: // random undead
-                                    avatar = undeadR;
-                                    break;
-                                case 3: // random follower
-                                    avatar = followerR;
-                                    break;
-                                case 4: // killer
-                                    avatar = killerR;
-                                    break;
-                                case 5: // zombified
-                                    avatar = zombifiedR;
-                                    break;
-                            }
-                            choiceMade = avatar != null;
-                            break;
-                        }
-                }
-            }
-            while (!choiceMade);
 
             // If canceled, stop.
             if (avatar == null)
@@ -17332,63 +17198,6 @@ namespace RogueSurvivor.Engine
             // restart sim thread.
             StopSimThread(false);  // alpha10 stop-start
             StartSimThread();
-        }
-
-        string DescribeAvatar(Actor a)
-        {
-            if (a == null)
-                return "(N/A)";
-            bool isLeader = a.CountFollowers > 0;
-            bool isFollower = a.HasLeader;
-            return string.Format("{0}, a {1}{2}", a.Name, a.Model.Name, isLeader ? ", leader" : isFollower ? ", follower" : "");
-        }
-
-        bool AskForReincarnation()
-        {
-            // show screen.
-            int gx, gy;
-            gx = gy = 0;
-            ui.Clear(Color.Black);
-            ui.DrawStringBold(Color.Yellow, "Limbo", gx, gy);
-            gy += 2 * Ui.BOLD_LINE_SPACING;
-            ui.DrawStringBold(Color.White, string.Format("Leave body {0}/{1}.", (1 + m_Session.Scoring.ReincarnationNumber), (1 + s_Options.MaxReincarnations)), gx, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-            ui.DrawStringBold(Color.White, "Remember lives.", gx, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-            ui.DrawStringBold(Color.White, "Remember purpose.", gx, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-            ui.DrawStringBold(Color.White, "Clear again.", gx, gy);
-            gy += Ui.BOLD_LINE_SPACING;
-
-            // ask question or no more lives left.
-            if (m_Session.Scoring.ReincarnationNumber >= s_Options.MaxReincarnations)
-            {
-                // no more lives left.
-                ui.DrawStringBold(Color.LightGreen, "Humans interesting.", gx, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-                ui.DrawStringBold(Color.LightGreen, "Time to leave.", gx, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-                gy += 2 * Ui.BOLD_LINE_SPACING;
-                ui.DrawStringBold(Color.Yellow, "No more reincarnations left.", gx, gy);
-                ui.DrawFootnote(Color.White, "press ENTER");
-                //ui.UI_Repaint();
-                WaitEnter();
-                return false;
-            }
-            else
-            {
-                // one more life available.
-                ui.DrawStringBold(Color.White, "Leave?", gx, gy);
-                gy += Ui.BOLD_LINE_SPACING;
-                ui.DrawStringBold(Color.White, "Live?", gx, gy);
-
-                gy += 2 * Ui.BOLD_LINE_SPACING;
-                ui.DrawStringBold(Color.Yellow, "Reincarnate? Y to confirm, N to cancel.", gx, gy);
-                //ui.UI_Repaint();
-
-                // ask question.
-                return WaitYesOrNo();
-            }
         }
 
         bool IsSuitableReincarnation(Actor a, bool asLiving)
@@ -17446,7 +17255,7 @@ namespace RogueSurvivor.Engine
         /// <param name="reincMode"></param>
         /// <param name="matchingActors">how many actors where matching the reincarnation mode</param>
         /// <returns>null if not found</returns>
-        Actor FindReincarnationAvatar(GameOptions.ReincMode reincMode, out int matchingActors)
+        public Actor FindReincarnationAvatar(GameOptions.ReincMode reincMode, out int matchingActors)
         {
             switch (reincMode)
             {

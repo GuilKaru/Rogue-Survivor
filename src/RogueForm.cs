@@ -190,8 +190,17 @@ namespace RogueSurvivor
             // Mouse
             MouseState mouseState = Mouse.GetState();
             Xna.Point point = mouseState.Position;
-            float scaleX = (float)Graphics.DisplayMode.Width / Ui.CANVAS_WIDTH;
-            float scaleY = (float)Graphics.DisplayMode.Height / Ui.CANVAS_HEIGHT;
+            float scaleX, scaleY;
+            if (graphics.IsFullScreen)
+            {
+                scaleX = (float)Graphics.DisplayMode.Width / Ui.CANVAS_WIDTH;
+                scaleY = (float)Graphics.DisplayMode.Height / Ui.CANVAS_HEIGHT;
+            }
+            else
+            {
+                scaleX = 1;
+                scaleY = 1;
+            }
             cursorPos = new Point((int)(point.X / scaleX), (int)(point.Y / scaleY));
 
             if (prevMouseState != null)
