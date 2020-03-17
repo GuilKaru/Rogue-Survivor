@@ -426,6 +426,7 @@ namespace RogueSurvivor.Engine
         GameItems m_GameItems;
         GameTiles m_GameTiles;
 
+        bool isPlayerTurn;
         bool m_IsPlayerLongWait;
         bool m_IsPlayerLongWaitForcedStop;
         WorldTime m_PlayerLongWaitEnd;
@@ -578,8 +579,15 @@ namespace RogueSurvivor.Engine
                         break;
                 }
             }
-            else
+            else if (isPlayerTurn)
+            {
+                int prev = m_Player.ActionPoints;
                 HandlePlayerAction(m_Player);
+                if (prev != m_Player.ActionPoints)
+                    AfterPlayerAction(m_Player);
+            }
+            else
+                AdvancePlay2();
         }
 
         public State GetState<State>() where State : GameState
@@ -1076,6 +1084,49 @@ namespace RogueSurvivor.Engine
             BeforePlayerAction(m_Player);
         }
 
+        int prevLocalTurn;
+
+        void OnStartTurn()
+        {
+            prevLocalTurn = m_Session.WorldTime.TurnCounter;
+            isPlayerTurn = false;
+        }
+
+        void AdvancePlay2()
+        {
+            District district = m_Session.CurrentMap.District;
+
+            lock (district)
+            {
+                // 1. Advance all maps.
+                // if player quit/loaded at any time, don't bother!
+                foreach (Map map in district.Maps)
+                {
+                    while (map.LocalTime.TurnCounter == prevLocalTurn)
+                    {
+                        // play this map.
+                        if (AdvancePlay(map, SimFlags.NOT_SIMULATING))
+                            return;
+                        // check for reincarnation.
+                        //if (m_Player.IsDead)
+                        //    HandleReincarnation();
+                        // check stopping game.
+                        //if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead)
+                        //    return;
+                    }
+                }
+
+                // 2. Advance district.
+                // 2.1. Advance world time if current district.
+                // alpha10 also check weather change
+                if (district == m_Session.CurrentMap.District)
+                {
+                    ++m_Session.WorldTime.TurnCounter;
+                    OnStartTurn();
+                }
+            }
+        }
+
         /// <summary>
         /// Advance play in district : could be player district (live district) or simulated district.
         /// </summary>
@@ -1217,7 +1268,7 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        void AdvancePlay(Map map, SimFlags sim)
+        bool AdvancePlay(Map map, SimFlags sim)
         {
             //////////////////////////////////////////////////////////
             // 0. Secret maps.
@@ -1231,7 +1282,7 @@ namespace RogueSurvivor.Engine
             {
                 // don't play the map at all, jump in time.
                 ++map.LocalTime.TurnCounter;
-                return;
+                return false;
             }
 
             // 1. Get next actor to Act.
@@ -1267,7 +1318,7 @@ namespace RogueSurvivor.Engine
             if (actor == null)
             {
                 NextMapTurn(map, sim);
-                return;
+                return false;
             }
 
             // 3. Ask actor to act. Handle player and AI differently.
@@ -1278,12 +1329,17 @@ namespace RogueSurvivor.Engine
             }
             else if (actor.IsPlayer)
             {
-                HandlePlayerAction(actor);
+                BeforePlayerAction(m_Player);
+                return true;
+                //  int prev = actor.ActionPoints;
+                //   HandlePlayerAction(actor);
                 // if quit, dead or loaded, don't bother.
-                if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead)
-                    return;
+                //if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead)
+                //    return;
                 // Check special player events
-                CheckSpecialPlayerEventsAfterAction(actor);
+                //CheckSpecialPlayerEventsAfterAction(actor);
+                //   if (actor.ActionPoints == prev)
+                //       return true;
             }
             else
             {
@@ -1293,6 +1349,7 @@ namespace RogueSurvivor.Engine
             actor.PreviousFoodPoints = actor.FoodPoints;
             actor.PreviousSleepPoints = actor.SleepPoints;
             actor.PreviousSanity = actor.Sanity;
+            return false;
         }
 
         void SpendActorActionPoints(Actor actor, int actionCost)
@@ -3544,6 +3601,7 @@ namespace RogueSurvivor.Engine
             }*/
 
             prevMousePos = new Point(-1, -1);
+            isPlayerTurn = true;
         }
 
         void HandlePlayerAction(Actor player)
@@ -3686,11 +3744,11 @@ namespace RogueSurvivor.Engine
                             DoPlayerItemSlot(player, 9, key);
                             break;
 
-                        case PlayerCommand.RUN_TOGGLE:
+                        case PlayerCommand.RUN_TOGGLE: // R
                             HandlePlayerRunToggle();
                             break;
 
-                        case PlayerCommand.CLOSE_DOOR:
+                        case PlayerCommand.CLOSE_DOOR: // C
                             HandlePlayerCloseDoor();
                             break;
                         case PlayerCommand.BARRICADE_MODE:
@@ -3708,11 +3766,11 @@ namespace RogueSurvivor.Engine
                         case PlayerCommand.ORDER_MODE:
                             HandlePlayerOrderMode(player);
                             break;
-                        case PlayerCommand.PULL_MODE:
-                            HandlePlayerPull(player);
+                        case PlayerCommand.PULL_MODE: // Ctrl P
+                            HandlePlayerPull();
                             break;
-                        case PlayerCommand.PUSH_MODE:
-                            HandlePlayerPush(player);
+                        case PlayerCommand.PUSH_MODE: // P
+                            HandlePlayerPush();
                             break;
                         case PlayerCommand.FIRE_MODE:
                             HandlePlayerFireMode(player);
@@ -3722,8 +3780,8 @@ namespace RogueSurvivor.Engine
                             HandlePlayerShout(player, null);
                             break;
 
-                        case PlayerCommand.SLEEP:
-                            HandlePlayerSleep(player);
+                        case PlayerCommand.SLEEP: // Z
+                            HandlePlayerSleep();
                             break;
 
                         case PlayerCommand.SWITCH_PLACE:
@@ -3797,6 +3855,7 @@ namespace RogueSurvivor.Engine
             UpdatePlayerFOV(player);    // make sure LOS is up to date.
             ComputeViewRect(player.Location.Position);
             m_Session.LastTurnPlayerActed = m_Session.WorldTime.TurnCounter;
+            isPlayerTurn = false;
         }
 
         bool TryPlayerInsanity()
@@ -5001,40 +5060,38 @@ namespace RogueSurvivor.Engine
             AddOverlay(new OverlayPopup(CLOSE_DOOR_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
 
             wait = WaitFor.Dir;
-            waitForDir = HandlePlayerCloseDoor;
-        }
-
-        bool HandlePlayerCloseDoor(Direction dir)
-        {
-            if (dir == null)
+            waitForDir = dir =>
             {
-                ClearOverlays();
-                return false;
-            }
-            else if (dir != Direction.NEUTRAL)
-            {
-                Point pos = m_Player.Location.Position + dir;
-                if (m_Player.Location.Map.IsInBounds(pos))
+                if (dir == null)
                 {
-                    MapObject mapObj = m_Player.Location.Map.GetMapObjectAt(pos);
-                    if (mapObj != null && mapObj is DoorWindow)
+                    ClearOverlays();
+                    return false;
+                }
+                else if (dir != Direction.NEUTRAL)
+                {
+                    Point pos = m_Player.Location.Position + dir;
+                    if (m_Player.Location.Map.IsInBounds(pos))
                     {
-                        DoorWindow door = mapObj as DoorWindow;
-                        string reason;
-                        if (m_Rules.IsClosableFor(m_Player, door, out reason))
+                        MapObject mapObj = m_Player.Location.Map.GetMapObjectAt(pos);
+                        if (mapObj != null && mapObj is DoorWindow)
                         {
-                            DoCloseDoor(m_Player, door);
-                            ClearOverlays();
-                            return false;
+                            DoorWindow door = mapObj as DoorWindow;
+                            string reason;
+                            if (m_Rules.IsClosableFor(m_Player, door, out reason))
+                            {
+                                DoCloseDoor(m_Player, door);
+                                ClearOverlays();
+                                return false;
+                            }
+                            else
+                                AddMessage(MakeErrorMessage(string.Format("Can't close {0} : {1}.", door.TheName, reason)));
                         }
                         else
-                            AddMessage(MakeErrorMessage(string.Format("Can't close {0} : {1}.", door.TheName, reason)));
+                            AddMessage(MakeErrorMessage("Nothing to close there."));
                     }
-                    else
-                        AddMessage(MakeErrorMessage("Nothing to close there."));
                 }
-            }
-            return true;
+                return true;
+            };
         }
 
         bool HandlePlayerBarricade(Actor player)
@@ -5652,36 +5709,35 @@ namespace RogueSurvivor.Engine
             return actionDone;
         }
 
-        bool HandlePlayerSleep(Actor player)
+        void HandlePlayerSleep()
         {
             // Check rule.
-            string reason;
-            if (!m_Rules.CanActorSleep(player, out reason))
+            if (!m_Rules.CanActorSleep(m_Player, out string reason))
             {
                 AddMessage(MakeErrorMessage(string.Format("Cannot sleep now : {0}.", reason)));
-                return false;
+                return;
             }
 
             // Ask for confirmation.
             AddMessage(MakeYesNoMessage("Really sleep there"));
-            //RedrawPlayScreen();
-            bool confirm = WaitYesOrNo();
-            if (!confirm)
+            wait = WaitFor.YesNo;
+            waitForYesNo = yes =>
             {
-                AddMessage(new Message("Good, keep those eyes wide open.", m_Session.WorldTime.TurnCounter, Color.Yellow));
-                return false;
-            }
+                if (yes)
+                {
+                    // check autosave before player starts to sleep
+                    CheckAutoSaveTime();
 
-            // alpha10.1 check autosave before player starts to sleep
-            CheckAutoSaveTime();
+                    // Start sleeping.
+                    AddMessage(new Message("Goodnight, happy nightmares!", m_Session.WorldTime.TurnCounter, Color.Yellow));
+                    DoStartSleeping(m_Player);
 
-            // Start sleeping.
-            AddMessage(new Message("Goodnight, happy nightmares!", m_Session.WorldTime.TurnCounter, Color.Yellow));
-            DoStartSleeping(player);
-            //RedrawPlayScreen();
-            // check music.
-            m_MusicManager.PlayLooping(GameMusics.SLEEP, MusicPriority.PRIORITY_EVENT);
-            return true;
+                    // check music.
+                    m_MusicManager.PlayLooping(GameMusics.SLEEP, MusicPriority.PRIORITY_EVENT);
+                }
+                else
+                    AddMessage(new Message("Good, keep those eyes wide open.", m_Session.WorldTime.TurnCounter, Color.Yellow));
+            };
         }
 
         bool HandlePlayerSwitchPlace(Actor player)
@@ -5847,85 +5903,54 @@ namespace RogueSurvivor.Engine
             return actionDone;
         }
 
-        bool HandlePlayerPush(Actor player)
+        void HandlePlayerPush()
         {
             // fail immediatly for stupid cases.
-            if (!m_Rules.HasActorPushAbility(player))
+            if (!m_Rules.HasActorPushAbility(m_Player))
             {
                 AddMessage(MakeErrorMessage("Cannot push objects."));
-                return false;
+                return;
             }
-            if (m_Rules.IsActorTired(player))
+            if (m_Rules.IsActorTired(m_Player))
             {
                 AddMessage(MakeErrorMessage("Too tired to push."));
-                return false;
+                return;
             }
-
-
-            bool loop = true;
-            bool actionDone = false;
 
             ClearOverlays();
             AddOverlay(new OverlayPopup(PUSH_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
 
-            do
+            wait = WaitFor.Dir;
+            waitForDir = dir =>
             {
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
-                //RedrawPlayScreen();
-
-                // 2. Get input.
-                Direction dir = WaitDirectionOrCancel();
-
-                // 3. Handle input
                 if (dir == null)
                 {
-                    loop = false;
+                    ClearOverlays();
+                    return false;
                 }
                 else if (dir != Direction.NEUTRAL)
                 {
-                    Point pos = player.Location.Position + dir;
-                    if (player.Location.Map.IsInBounds(pos))
+                    Point pos = m_Player.Location.Position + dir;
+                    if (m_Player.Location.Map.IsInBounds(pos))
                     {
                         // shove actor vs push object.
-                        Actor other = player.Location.Map.GetActorAt(pos);
-                        MapObject mapObj = player.Location.Map.GetMapObjectAt(pos);
-                        string reason;
+                        Actor other = m_Player.Location.Map.GetActorAt(pos);
+                        MapObject mapObj = m_Player.Location.Map.GetMapObjectAt(pos);
                         if (other != null)
                         {
                             // shove.
-                            if (m_Rules.CanActorShove(player, other, out reason))
-                            {
-                                if (HandlePlayerShoveActor(player, other))
-                                {
-                                    loop = false;
-                                    actionDone = true;
-                                }
-                            }
+                            if (m_Rules.CanActorShove(m_Player, other, out string reason))
+                                HandlePlayerShoveActor(other);
                             else
                                 AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} : {1}.", other.TheName, reason)));
-
                         }
                         else if (mapObj != null)
                         {
                             // push.
-                            if (m_Rules.CanActorPush(player, mapObj, out reason))
-                            {
-                                if (HandlePlayerPushObject(player, mapObj))
-                                {
-                                    loop = false;
-                                    actionDone = true;
-                                }
-                            }
+                            if (m_Rules.CanActorPush(m_Player, mapObj, out string reason))
+                                HandlePlayerPushObject(mapObj);
                             else
-                            {
                                 AddMessage(MakeErrorMessage(string.Format("Cannot move {0} : {1}.", mapObj.TheName, reason)));
-                            }
                         }
                         else
                         {
@@ -5934,212 +5959,127 @@ namespace RogueSurvivor.Engine
                         }
                     }
                 }
-            }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+                return true;
+            };
         }
 
-        bool HandlePlayerPushObject(Actor player, MapObject mapObj)
+        void HandlePlayerPushObject(MapObject mapObj)
         {
-            bool loop = true;
-            bool actionDone = false;
-
             ClearOverlays();
             AddOverlay(new OverlayPopup(new string[] { string.Format(PUSH_OBJECT_MODE_TEXT, mapObj.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
             AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(mapObj.Location.Position), new Size(TILE_SIZE, TILE_SIZE))));
 
-            do
+            waitForDir = dir =>
             {
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
-                //RedrawPlayScreen();
-
-                // 2. Get input.
-                Direction dir = WaitDirectionOrCancel();
-
-                // 3. Handle input
                 if (dir == null)
                 {
-                    loop = false;
+                    ClearOverlays();
+                    return false;
                 }
                 else if (dir != Direction.NEUTRAL)
                 {
                     Point movePos = mapObj.Location.Position + dir;
-                    if (player.Location.Map.IsInBounds(movePos))
+                    if (m_Player.Location.Map.IsInBounds(movePos))
                     {
-                        string reason;
-                        if (m_Rules.CanPushObjectTo(mapObj, movePos, out reason))
+                        if (m_Rules.CanPushObjectTo(mapObj, movePos, out string reason))
                         {
-                            DoPush(player, mapObj, movePos);
-                            loop = false;
-                            actionDone = true;
+                            DoPush(m_Player, mapObj, movePos);
+                            ClearOverlays();
+                            return false;
                         }
                         else
-                        {
                             AddMessage(MakeErrorMessage(string.Format("Cannot move {0} there : {1}.", mapObj.TheName, reason)));
-                        }
                     }
                 }
-            }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+                return true;
+            };
         }
 
-        bool HandlePlayerShoveActor(Actor player, Actor other)
+        void HandlePlayerShoveActor(Actor other)
         {
-            bool loop = true;
-            bool actionDone = false;
-
             ClearOverlays();
             AddOverlay(new OverlayPopup(new string[] { string.Format(SHOVE_ACTOR_MODE_TEXT, other.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
             AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(other.Location.Position), new Size(TILE_SIZE, TILE_SIZE))));
 
-            do
+            waitForDir = dir =>
             {
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
-                //RedrawPlayScreen();
-
-                // 2. Get input.
-                Direction dir = WaitDirectionOrCancel();
-
-                // 3. Handle input
                 if (dir == null)
                 {
-                    loop = false;
+                    ClearOverlays();
+                    return false;
                 }
                 else if (dir != Direction.NEUTRAL)
                 {
                     Point movePos = other.Location.Position + dir;
-                    if (player.Location.Map.IsInBounds(movePos))
+                    if (m_Player.Location.Map.IsInBounds(movePos))
                     {
-                        string reason;
-                        if (m_Rules.CanShoveActorTo(other, movePos, out reason))
+                        if (m_Rules.CanShoveActorTo(other, movePos, out string reason))
                         {
-                            DoShove(player, other, movePos);
-                            loop = false;
-                            actionDone = true;
+                            DoShove(m_Player, other, movePos);
+                            ClearOverlays();
+                            return false;
                         }
                         else
-                        {
                             AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} there : {1}.", other.TheName, reason)));
-                        }
                     }
                 }
-            }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+                return true;
+            };
         }
 
-        // alpha10
-        bool HandlePlayerPull(Actor player)
+        void HandlePlayerPull()
         {
             // fail immediatly for stupid cases.
-            if (!m_Rules.HasActorPushAbility(player))
+            if (!m_Rules.HasActorPushAbility(m_Player))
             {
                 AddMessage(MakeErrorMessage("Cannot pull objects."));
-                return false;
+                return;
             }
-            if (m_Rules.IsActorTired(player))
+            if (m_Rules.IsActorTired(m_Player))
             {
                 AddMessage(MakeErrorMessage("Too tired to pull."));
-                return false;
+                return;
             }
-            MapObject otherMobj = player.Location.Map.GetMapObjectAt(player.Location.Position);
+            MapObject otherMobj = m_Player.Location.Map.GetMapObjectAt(m_Player.Location.Position);
             if (otherMobj != null)
             {
                 AddMessage(MakeErrorMessage(string.Format("Cannot pull : {0} is blocking.", otherMobj.TheName)));
-                return false;
+                return;
             }
-
-
-            bool loop = true;
-            bool actionDone = false;
 
             ClearOverlays();
             AddOverlay(new OverlayPopup(PULL_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
 
-            do
+            wait = WaitFor.Dir;
+            waitForDir = dir =>
             {
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
-                //RedrawPlayScreen();
-
-                // 2. Get input.
-                Direction dir = WaitDirectionOrCancel();
-
-                // 3. Handle input
                 if (dir == null)
                 {
-                    loop = false;
+                    ClearOverlays();
+                    return false;
                 }
                 else if (dir != Direction.NEUTRAL)
                 {
-                    Point pos = player.Location.Position + dir;
-                    if (player.Location.Map.IsInBounds(pos))
+                    Point pos = m_Player.Location.Position + dir;
+                    if (m_Player.Location.Map.IsInBounds(pos))
                     {
-                        MapObject mapObj = player.Location.Map.GetMapObjectAt(pos);
-                        Actor other = player.Location.Map.GetActorAt(pos);
-                        string reason;
+                        MapObject mapObj = m_Player.Location.Map.GetMapObjectAt(pos);
+                        Actor other = m_Player.Location.Map.GetActorAt(pos);
                         if (other != null)
                         {
                             // pull-shove.
-                            if (m_Rules.CanActorShove(player, other, out reason))  // if can shove, can pull-shove.
-                            {
-                                if (HandlePlayerPullActor(player, other))
-                                {
-                                    loop = false;
-                                    actionDone = true;
-                                }
-                            }
+                            if (m_Rules.CanActorShove(m_Player, other, out string reason))  // if can shove, can pull-shove.
+                                HandlePlayerPullActor(other);
                             else
                                 AddMessage(MakeErrorMessage(string.Format("Cannot pull {0} : {1}.", other.TheName, reason)));
                         }
                         else if (mapObj != null)
                         {
                             // pull.
-                            if (m_Rules.CanActorPush(player, mapObj, out reason))  // if can push, can pull.
-                            {
-                                if (HandlePlayerPullObject(player, mapObj))
-                                {
-                                    loop = false;
-                                    actionDone = true;
-                                }
-                            }
+                            if (m_Rules.CanActorPush(m_Player, mapObj, out string reason))  // if can push, can pull.
+                                HandlePlayerPullObject(mapObj);
                             else
-                            {
                                 AddMessage(MakeErrorMessage(string.Format("Cannot move {0} : {1}.", mapObj.TheName, reason)));
-                            }
                         }
                         else
                         {
@@ -6148,128 +6088,72 @@ namespace RogueSurvivor.Engine
                         }
                     }
                 }
-            }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+                return true;
+            };
         }
 
-        // alpha10
-        bool HandlePlayerPullObject(Actor player, MapObject mapObj)
+        void HandlePlayerPullObject(MapObject mapObj)
         {
-            bool loop = true;
-            bool actionDone = false;
-
             ClearOverlays();
             AddOverlay(new OverlayPopup(new string[] { string.Format(PULL_OBJECT_MODE_TEXT, mapObj.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
             AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(mapObj.Location.Position), new Size(TILE_SIZE, TILE_SIZE))));
 
-            do
+            waitForDir = dir =>
             {
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
-                //RedrawPlayScreen();
-
-                // 2. Get input.
-                Direction dir = WaitDirectionOrCancel();
-
-                // 3. Handle input
                 if (dir == null)
                 {
-                    loop = false;
+                    ClearOverlays();
+                    return false;
                 }
                 else if (dir != Direction.NEUTRAL)
                 {
-                    Point moveToPos = player.Location.Position + dir;
-                    if (player.Location.Map.IsInBounds(moveToPos))
+                    Point moveToPos = m_Player.Location.Position + dir;
+                    if (m_Player.Location.Map.IsInBounds(moveToPos))
                     {
-                        string reason;
-                        if (m_Rules.CanPullObject(player, mapObj, moveToPos, out reason))
+                        if (m_Rules.CanPullObject(m_Player, mapObj, moveToPos, out string reason))
                         {
-                            DoPull(player, mapObj, moveToPos);
-                            loop = false;
-                            actionDone = true;
+                            DoPull(m_Player, mapObj, moveToPos);
+                            ClearOverlays();
+                            return false;
                         }
                         else
-                        {
                             AddMessage(MakeErrorMessage(string.Format("Cannot pull there : {0}.", reason)));
-                        }
                     }
                 }
-            }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+                return true;
+            };
         }
 
-        // alpha10
-        bool HandlePlayerPullActor(Actor player, Actor other)
+        void HandlePlayerPullActor(Actor other)
         {
-            bool loop = true;
-            bool actionDone = false;
-
             ClearOverlays();
             AddOverlay(new OverlayPopup(new string[] { string.Format(PULL_ACTOR_MODE_TEXT, other.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
             AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(other.Location.Position), new Size(TILE_SIZE, TILE_SIZE))));
 
-            do
+            waitForDir = dir =>
             {
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
-                //RedrawPlayScreen();
-
-                // 2. Get input.
-                Direction dir = WaitDirectionOrCancel();
-
-                // 3. Handle input
                 if (dir == null)
                 {
-                    loop = false;
+                    ClearOverlays();
+                    return false;
                 }
                 else if (dir != Direction.NEUTRAL)
                 {
-                    Point moveToPos = player.Location.Position + dir;
-                    if (player.Location.Map.IsInBounds(moveToPos))
+                    Point moveToPos = m_Player.Location.Position + dir;
+                    if (m_Player.Location.Map.IsInBounds(moveToPos))
                     {
-                        string reason;
-                        if (m_Rules.CanPullActor(player, other, moveToPos, out reason))
+                        if (m_Rules.CanPullActor(m_Player, other, moveToPos, out string reason))
                         {
-                            DoPullActor(player, other, moveToPos);
-                            loop = false;
-                            actionDone = true;
+                            DoPullActor(m_Player, other, moveToPos);
+                            ClearOverlays();
+                            return false;
                         }
                         else
-                        {
                             AddMessage(MakeErrorMessage(string.Format("Cannot pull there : {0}.", reason)));
-                        }
                     }
                 }
-            }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+                return true;
+            };
         }
 
         bool HandlePlayerUseSpray(Actor player)
