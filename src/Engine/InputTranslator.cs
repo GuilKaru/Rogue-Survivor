@@ -1,6 +1,4 @@
-﻿using RogueSurvivor.UI;
-
-namespace RogueSurvivor.Engine
+﻿namespace RogueSurvivor.Engine
 {
     static class InputTranslator
     {
@@ -12,11 +10,10 @@ namespace RogueSurvivor.Engine
 
             // check special case for item slot keys.
             // slots keys are always used with Ctrl, Shift or Alt modifiers so they are unbound in keybindings.
-            KeyInfo keyInfo = new KeyInfo(key);
-            if (keyInfo.Modifiers != Key.None)
+            if (key.HaveModifiers())
             {
                 // clear modifiers.
-                Key unmodifiedKey = keyInfo.KeyCode;
+                Key unmodifiedKey = key.GetUnmodified();
 
                 // slot key?
                 if (unmodifiedKey == RogueGame.KeyBindings.Get(PlayerCommand.ITEM_SLOT_0))

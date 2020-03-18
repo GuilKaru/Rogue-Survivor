@@ -1,4 +1,4 @@
-﻿namespace RogueSurvivor.UI
+﻿namespace RogueSurvivor.Engine
 {
     public enum MouseButton
     {

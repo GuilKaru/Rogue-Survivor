@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Windows.Forms;
 
-namespace RogueSurvivor.UI
+namespace RogueSurvivor.Engine
 {
     [Flags]
     [TypeConverter(typeof(KeysConverter))]
@@ -766,6 +766,31 @@ namespace RogueSurvivor.UI
 
     static class KeyMethods
     {
+        public static bool HaveShift(this Key key)
+        {
+            return (key & Key.Shift) != 0;
+        }
+
+        public static bool HaveControl(this Key key)
+        {
+            return (key & Key.Control) != 0;
+        }
+
+        public static bool HaveAlt(this Key key)
+        {
+            return (key & Key.Alt) != 0;
+        }
+
+        public static bool HaveModifiers(this Key key)
+        {
+            return (key & Key.Modifiers) != 0;
+        }
+
+        public static Key GetUnmodified(this Key key)
+        {
+            return key & ~Key.Modifiers;
+        }
+
         public static int ToChoiceNumber(this Key key)
         {
             switch (key)

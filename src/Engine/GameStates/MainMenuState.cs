@@ -1,21 +1,16 @@
-﻿using RogueSurvivor.Engine;
-using RogueSurvivor.Engine.Interfaces;
+﻿using RogueSurvivor.Engine.Interfaces;
 using RogueSurvivor.Gameplay;
-using RogueSurvivor.UI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RogueSurvivor.Engine.GameStates
 {
     class MainMenuState : GameState
     {
         int selected;
-        bool isLoadEnabled;
+        bool isLoadEnabled, loading;
         List<Point> santas;
 
         string[] menuEntries => new string[] {
@@ -33,6 +28,7 @@ namespace RogueSurvivor.Engine.GameStates
         {
             selected = 0;
             isLoadEnabled = File.Exists(RogueGame.SaveFile);
+            loading = false;
 
             game.MusicManager.Play(GameMusics.INTRO, MusicPriority.PRIORITY_EVENT);
 
@@ -69,6 +65,12 @@ namespace RogueSurvivor.Engine.GameStates
             ui.DrawMenuOrOptions(selected, Color.White, menuEntries, Color.White, null, gx, ref gy);
             ui.DrawFootnote(Color.White, "cursor to move, ENTER to select");
 
+            if (loading)
+            {
+                gy += 2 * Ui.BOLD_LINE_SPACING;
+                ui.DrawStringBold(Color.Yellow, "Loading game, please wait...", gx, gy);
+            }
+
             // christmas special.
             if (santas != null)
             {
@@ -82,6 +84,14 @@ namespace RogueSurvivor.Engine.GameStates
 
         public override void Update(double dt)
         {
+            if (loading)
+            {
+                game.LoadGame(RogueGame.SaveFile);
+                game.PopState();
+                game.PushState<RogueGame>();
+                return;
+            }
+
             Key key = ui.ReadKey();
             switch (key)
             {
@@ -106,17 +116,9 @@ namespace RogueSurvivor.Engine.GameStates
                             break;
 
                         case 1:
-                            // !FIXME
-                            /*if (!isLoadEnabled)
+                            if (!isLoadEnabled)
                                 break;
-                            gy += 2 * Ui.BOLD_LINE_SPACING;
-                            m_UI.DrawStringBold(Color.Yellow, "Loading game, please wait...", gx, gy);
-                            m_UI.UI_Repaint();
-                            LoadGame(GetUserSave());
-                            loop = false;
-                            // alpha10
-                            if (s_Options.IsSimON && s_Options.SimThread)
-                                StartSimThread();*/
+                            loading = true;
                             break;
 
                         case 2:

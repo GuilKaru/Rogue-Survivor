@@ -1,7 +1,6 @@
 ﻿using RogueSurvivor.Data;
 using RogueSurvivor.Engine.Interfaces;
 using RogueSurvivor.Gameplay;
-using RogueSurvivor.UI;
 using System;
 using System.Drawing;
 

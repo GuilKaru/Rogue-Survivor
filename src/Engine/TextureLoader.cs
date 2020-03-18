@@ -3,7 +3,7 @@ using System.Drawing;
 using System.IO;
 using Xna = Microsoft.Xna.Framework;
 
-namespace RogueSurvivor.UI
+namespace RogueSurvivor.Engine
 {
     /// <summary>
     /// Based on http://jakepoz.com/jake_poznanski__background_load_xna.html 

@@ -1,5 +1,4 @@
 ﻿using RogueSurvivor.Engine.Interfaces;
-using RogueSurvivor.UI;
 using System.Drawing;
 
 namespace RogueSurvivor.Engine.GameStates

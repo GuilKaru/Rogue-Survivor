@@ -1,5 +1,4 @@
-﻿using RogueSurvivor.UI;
-using System.Drawing;
+﻿using System.Drawing;
 
 namespace RogueSurvivor.Engine.Interfaces
 {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
+using RogueSurvivor.Engine;
 using RogueSurvivor.Engine.Interfaces;
 using RogueSurvivor.Extensions;
-using RogueSurvivor.UI;
 using System;
 using System.Collections.Generic;
 using Xna = Microsoft.Xna.Framework;

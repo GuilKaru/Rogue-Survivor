@@ -331,10 +331,9 @@
     <Compile Include="RogueForm.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UI\Key.cs" />
-    <Compile Include="UI\KeyInfo.cs" />
-    <Compile Include="UI\MouseButton.cs" />
-    <Compile Include="UI\TextureLoader.cs" />
+    <Compile Include="Engine\Key.cs" />
+    <Compile Include="Engine\MouseButton.cs" />
+    <Compile Include="Engine\TextureLoader.cs" />
     <EmbeddedResource Include="Bugreport.resx">
       <DependentUpon>Bugreport.cs</DependentUpon>
     </EmbeddedResource>

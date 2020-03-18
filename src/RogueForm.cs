@@ -5,7 +5,6 @@ using RogueSurvivor.Engine.GameStates;
 using RogueSurvivor.Engine.Interfaces;
 using RogueSurvivor.Extensions;
 using RogueSurvivor.Gameplay;
-using RogueSurvivor.UI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

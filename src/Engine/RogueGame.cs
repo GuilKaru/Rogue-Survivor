@@ -9,7 +9,6 @@ using RogueSurvivor.Extensions;
 using RogueSurvivor.Gameplay;
 using RogueSurvivor.Gameplay.AI;
 using RogueSurvivor.Gameplay.Generators;
-using RogueSurvivor.UI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -99,7 +98,7 @@ namespace RogueSurvivor.Engine
         readonly string SHOVE_ACTOR_MODE_TEXT = "SHOVING {0} - directions to shove, ESC cancels";
         readonly string[] ORDER_MODE_TEXT = new string[] { "ORDER MODE - follow instructions in the message panel, ESC cancels" };
         readonly string[] GIVE_MODE_TEXT = new string[] { "GIVE MODE - directions to give item to someone, ESC cancels" };
-        readonly string[] THROW_GRENADE_MODE_TEXT = new string[] { "THROW GRENADE MODE - directions to select, F to fire,  ESC cancels" };
+        readonly string[] THROW_GRENADE_MODE_TEXT = new string[] { "THROW GRENADE MODE - directions to select, F to fire, ESC cancels" };
         readonly string[] MARK_ENEMIES_MODE = new string[] { "MARK ENEMIES MODE - E to make enemy, T next actor, ESC cancels" };
         readonly string[] TRADING_DIALOG_MODE_TEXT = new string[] { "TRADING MODE - TAB switch mode, 0..9 select, ESC cancels" };
         readonly Color MODE_TEXTCOLOR = Color.Yellow;
@@ -387,7 +386,8 @@ namespace RogueSurvivor.Engine
             None,
             Enter,
             YesNo,
-            Dir
+            Dir,
+            Custom
         }
 
         Rules m_Rules;
@@ -406,6 +406,7 @@ namespace RogueSurvivor.Engine
         Action waitForEnter;
         Action<bool> waitForYesNo;
         Func<Direction, bool> waitForDir;
+        Func<Key, bool> waitForCustom;
         Point prevMousePos;
 
         static GameOptions s_Options;
@@ -577,6 +578,10 @@ namespace RogueSurvivor.Engine
                                 }
                             }
                         }
+                        break;
+                    case WaitFor.Custom:
+                        if (!waitForCustom(key))
+                            wait = WaitFor.None;
                         break;
                 }
 
@@ -1018,24 +1023,34 @@ namespace RogueSurvivor.Engine
 
         public override void Enter()
         {
-            bool isUndead = m_Session.charGen.IsUndead;
+            if (!m_HasLoadedGame)
+            {
+                bool isUndead = m_Session.charGen.IsUndead;
 
-            // scoring : hello there.
-            m_Session.Scoring.AddVisit(m_Session.WorldTime.TurnCounter, m_Player.Location.Map);
-            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", m_Player.Location.Map.Name));
+                // scoring : hello there.
+                m_Session.Scoring.AddVisit(m_Session.WorldTime.TurnCounter, m_Player.Location.Map);
+                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", m_Player.Location.Map.Name));
 
-            // setup proper scoring mode.
-            m_Session.Scoring.Side = (isUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR);
+                // setup proper scoring mode.
+                m_Session.Scoring.Side = (isUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR);
 
-            // schedule first autosave.
-            ScheduleNextAutoSave();
+                // schedule first autosave.
+                ScheduleNextAutoSave();
 
-            // advisor on?
-            // alpha10 not if undead
-            if (s_Options.IsAdvisorEnabled)
-                ShowAdvisorInfo();
+                // advisor on?
+                // alpha10 not if undead
+                if (s_Options.IsAdvisorEnabled)
+                    ShowAdvisorInfo();
+                else
+                    ShowWelcomeInfo();
+            }
             else
-                ShowWelcomeInfo();
+            {
+                if (s_Options.IsSimON && s_Options.SimThread)
+                    StartSimThread();
+                RefreshPlayer();
+                BeginPlayerAction();
+            }
         }
 
         void ShowAdvisorInfo()
@@ -3547,6 +3562,14 @@ namespace RogueSurvivor.Engine
                             }
             #endif*/
 
+            prevMousePos = new Point(-1, -1);
+            isPlayerTurn = true;
+        }
+
+        void HandlePlayerAction(Actor player)
+        {
+            ClearOverlays();
+
             // hint available?
             // no hint if undead
             if (m_Player != null && !m_Player.IsDead && !m_Player.Model.Abilities.IsUndead)
@@ -3583,12 +3606,6 @@ namespace RogueSurvivor.Engine
                 }
             }
 
-            prevMousePos = new Point(-1, -1);
-            isPlayerTurn = true;
-        }
-
-        void HandlePlayerAction(Actor player)
-        {
             Key key = ui.ReadKey();
             Point mousePos = ui.GetMousePosition();
             MouseButton mouseButton = ui.ReadMouseButton();
@@ -3645,14 +3662,14 @@ namespace RogueSurvivor.Engine
                             // stop looping.
                             //loop = false;
                             // stop the update loop!
-                            m_HasLoadedGame = true;
+
                             break;
                         // alpha10.1 moved sim thread responsability out to DoSaveGame
                         case PlayerCommand.SAVE_GAME:
                             HandleSaveGame();
                             break;
 
-                        case PlayerCommand.SCREENSHOT:
+                        case PlayerCommand.SCREENSHOT: // Shift N
                             HandleScreenshot();
                             break;
 
@@ -3660,7 +3677,7 @@ namespace RogueSurvivor.Engine
                             PushState<CityInfoState>();
                             break;
 
-                        case PlayerCommand.WAIT_OR_SELF:
+                        case PlayerCommand.WAIT_OR_SELF: // Num5
                             DoWait(player);
                             break;
 
@@ -3696,35 +3713,35 @@ namespace RogueSurvivor.Engine
                             DoUseExit(player, player.Location.Position);
                             break;
 
-                        case PlayerCommand.ITEM_SLOT_0:
-                            DoPlayerItemSlot(player, 0, key);
+                        case PlayerCommand.ITEM_SLOT_0: // 1
+                            DoPlayerItemSlot(0, key);
                             break;
-                        case PlayerCommand.ITEM_SLOT_1:
-                            DoPlayerItemSlot(player, 1, key);
+                        case PlayerCommand.ITEM_SLOT_1: // 2
+                            DoPlayerItemSlot(1, key);
                             break;
-                        case PlayerCommand.ITEM_SLOT_2:
-                            DoPlayerItemSlot(player, 2, key);
+                        case PlayerCommand.ITEM_SLOT_2: // 3
+                            DoPlayerItemSlot(2, key);
                             break;
-                        case PlayerCommand.ITEM_SLOT_3:
-                            DoPlayerItemSlot(player, 3, key);
+                        case PlayerCommand.ITEM_SLOT_3: // 4
+                            DoPlayerItemSlot(3, key);
                             break;
-                        case PlayerCommand.ITEM_SLOT_4:
-                            DoPlayerItemSlot(player, 4, key);
+                        case PlayerCommand.ITEM_SLOT_4: // 5
+                            DoPlayerItemSlot(4, key);
                             break;
-                        case PlayerCommand.ITEM_SLOT_5:
-                            DoPlayerItemSlot(player, 5, key);
+                        case PlayerCommand.ITEM_SLOT_5: // 6
+                            DoPlayerItemSlot(5, key);
                             break;
-                        case PlayerCommand.ITEM_SLOT_6:
-                            DoPlayerItemSlot(player, 6, key);
+                        case PlayerCommand.ITEM_SLOT_6: // 7
+                            DoPlayerItemSlot(6, key);
                             break;
-                        case PlayerCommand.ITEM_SLOT_7:
-                            DoPlayerItemSlot(player, 7, key);
+                        case PlayerCommand.ITEM_SLOT_7: // 8
+                            DoPlayerItemSlot(7, key);
                             break;
-                        case PlayerCommand.ITEM_SLOT_8:
-                            DoPlayerItemSlot(player, 8, key);
+                        case PlayerCommand.ITEM_SLOT_8: // 9
+                            DoPlayerItemSlot(8, key);
                             break;
-                        case PlayerCommand.ITEM_SLOT_9:
-                            DoPlayerItemSlot(player, 9, key);
+                        case PlayerCommand.ITEM_SLOT_9: // 0
+                            DoPlayerItemSlot(9, key);
                             break;
 
                         case PlayerCommand.RUN_TOGGLE: // R
@@ -3755,8 +3772,8 @@ namespace RogueSurvivor.Engine
                         case PlayerCommand.PUSH_MODE: // P
                             HandlePlayerPush();
                             break;
-                        case PlayerCommand.FIRE_MODE:
-                            HandlePlayerFireMode(player);
+                        case PlayerCommand.FIRE_MODE: // F
+                            HandlePlayerFireMode();
                             break;
 
                         case PlayerCommand.SHOUT: // S
@@ -3792,11 +3809,11 @@ namespace RogueSurvivor.Engine
                             break;
 
                         case PlayerCommand.EAT_CORPSE:
-                            HandlePlayerEatCorpse(player, mousePos);
+                            HandlePlayerEatCorpse(mousePos);
                             break;
 
                         case PlayerCommand.REVIVE_CORPSE:
-                            HandlePlayerReviveCorpse(player, mousePos);
+                            HandlePlayerReviveCorpse(mousePos);
                             break;
 
                         default:
@@ -3810,25 +3827,9 @@ namespace RogueSurvivor.Engine
                 // Handle mouse
                 ////////////////
                 prevMousePos = mousePos;
-                // Look?
-                bool isLooking = HandleMouseLook(mousePos);
-                if (!isLooking)
-                {
-                    // Inventory?
-                    bool hasDoneInventoryAction;
-                    bool isInventory = HandleMouseInventory(mousePos, mouseButton, out hasDoneInventoryAction);
-                    if (!isInventory)
-                    {
-                        // Corpses?
-                        bool hasDoneCorpsesAction;
-                        bool isCorpses = HandleMouseOverCorpses(mousePos, mouseButton, out hasDoneCorpsesAction);
-                        if (!isCorpses)
-                        {
-                            // Neither look nor inventory nor corpses, cleanup.
-                            ClearOverlays();
-                        }
-                    }
-                }
+                bool handled = HandleMouseLook(mousePos)
+                    || HandleMouseInventory(mousePos, mouseButton)
+                    || HandleMouseOverCorpses(mousePos, mouseButton);
             }
         }
 
@@ -3901,7 +3902,6 @@ namespace RogueSurvivor.Engine
         {
             // prepare.
             AddMessage(new Message("Taking screenshot...", m_Session.WorldTime.TurnCounter, Color.Yellow));
-            //RedrawPlayScreen();
 
             // shot it!
             string shotname = DoTakeScreenshot();
@@ -3913,9 +3913,6 @@ namespace RogueSurvivor.Engine
             {
                 AddMessage(new Message(string.Format("screenshot {0} saved.", shotname), m_Session.WorldTime.TurnCounter, Color.Yellow));
             }
-
-            // refresh.
-            //RedrawPlayScreen();
         }
 
         string DoTakeScreenshot()
@@ -3961,22 +3958,15 @@ namespace RogueSurvivor.Engine
             return true;
         }
 
-        bool HandleMouseInventory(Point mousePos, MouseButton mouseButton, out bool hasDoneAction)
+        bool HandleMouseInventory(Point mousePos, MouseButton mouseButton)
         {
             // Ignore if not on an inventory slot.
-            Inventory inv;
-            Point itemPos;
-            int iSlot;
-            Item it = MouseToInventoryItem(mousePos, out inv, out itemPos, out iSlot);
+            Item it = MouseToInventoryItem(mousePos, out Inventory inv, out Point itemPos, out int iSlot);
             if (inv == null)
-            {
-                hasDoneAction = false;
                 return false;
-            }
 
             // Do inventory stuff.
             bool isPlayerInventory = (inv == m_Player.Inventory);
-            hasDoneAction = false;
             ClearOverlays();
             AddOverlay(new OverlayRect(Color.Cyan, new Rectangle(itemPos.X, itemPos.Y, 32, 32)));
             AddOverlay(new OverlayRect(Color.Cyan, new Rectangle(itemPos.X + 1, itemPos.Y + 1, 30, 30)));
@@ -3993,9 +3983,9 @@ namespace RogueSurvivor.Engine
                 if (mouseButton != MouseButton.None)
                 {
                     if (mouseButton == MouseButton.Left)
-                        hasDoneAction = OnLMBItem(inv, it);
+                        OnLMBItem(inv, it);
                     else if (mouseButton == MouseButton.Right)
-                        hasDoneAction = OnRMBItem(inv, it);
+                        OnRMBItem(inv, it);
                 }
             }
 
@@ -4007,7 +3997,7 @@ namespace RogueSurvivor.Engine
         {
             inv = null;
             itemPos = Point.Empty;
-            iSlot = -1; // alpha10
+            iSlot = -1;
 
             if (m_Player == null)
                 return null;
@@ -4019,7 +4009,7 @@ namespace RogueSurvivor.Engine
             {
                 inv = playerInv;
                 itemPos = InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, playerSlot.X, playerSlot.Y);
-                iSlot = playerItemIndex; // alpha10
+                iSlot = playerItemIndex;
                 return playerInv[playerItemIndex];
             }
 
@@ -4032,133 +4022,88 @@ namespace RogueSurvivor.Engine
             if (groundItemIndex >= 0 && groundItemIndex < groundInv.MaxCapacity)
             {
                 inv = groundInv;
-                iSlot = groundItemIndex; // alpha10
+                iSlot = groundItemIndex;
                 return groundInv[groundItemIndex];
             }
 
             return null;
         }
 
-        bool OnLMBItem(Inventory inv, Item it)
+        void OnLMBItem(Inventory inv, Item it)
         {
             if (inv == m_Player.Inventory)
             {
                 // LMB in player inv = use/equip toggle
                 if (it.IsEquipped)
                 {
-                    string reason;
-                    if (m_Rules.CanActorUnequipItem(m_Player, it, out reason))
-                    {
+                    if (m_Rules.CanActorUnequipItem(m_Player, it, out string reason))
                         DoUnequipItem(m_Player, it);
-                        return false;
-                    }
                     else
-                    {
                         AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", it.TheName, reason)));
-                        return false;
-                    }
                 }
                 else if (it.Model.IsEquipable)
                 {
-                    string reason;
-                    if (m_Rules.CanActorEquipItem(m_Player, it, out reason))
-                    {
+                    if (m_Rules.CanActorEquipItem(m_Player, it, out string reason))
                         DoEquipItem(m_Player, it);
-                        return false;
-                    }
                     else
-                    {
                         AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
-                        return false;
-                    }
                 }
                 else
                 {
                     // try to use item.
-                    string reason;
-                    if (m_Rules.CanActorUseItem(m_Player, it, out reason))
-                    {
+                    if (m_Rules.CanActorUseItem(m_Player, it, out string reason))
                         DoUseItem(m_Player, it);
-                        return true;
-                    }
                     else
-                    {
                         AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", it.TheName, reason)));
-                    }
                 }
             }
             else // ground inventory
             {
                 // LMB in ground inv = take
-                string reason;
-                if (m_Rules.CanActorGetItem(m_Player, it, out reason))
-                {
+                if (m_Rules.CanActorGetItem(m_Player, it, out string reason))
                     DoTakeItem(m_Player, m_Player.Location.Position, it);
-                    return true;
-                }
                 else
-                {
                     AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", it.TheName, reason)));
-                    return false;
-                }
             }
-
-            return false;
         }
 
-        bool OnRMBItem(Inventory inv, Item it)
+        void OnRMBItem(Inventory inv, Item it)
         {
             if (inv == m_Player.Inventory)
             {
-                string reason;
-                if (m_Rules.CanActorDropItem(m_Player, it, out reason))
-                {
+                if (m_Rules.CanActorDropItem(m_Player, it, out string reason))
                     DoDropItem(m_Player, it);
-                    return true;
-                }
                 else
-                {
                     AddMessage(MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", it.TheName, reason)));
-                    return false;
-                }
             }
-
-            return false;
         }
 
-        bool HandleMouseOverCorpses(Point mousePos, MouseButton mouseButton, out bool hasDoneAction)
+        bool HandleMouseOverCorpses(Point mousePos, MouseButton mouseButton)
         {
             // Ignore if not on a corpse slot.
-            Point corpsePos;
-            Corpse corpse = MouseToCorpse(mousePos, out corpsePos);
+            Corpse corpse = MouseToCorpse(mousePos, out Point corpsePos);
             if (corpse == null)
-            {
-                hasDoneAction = false;
                 return false;
-            }
 
             // Do corpse stuff.
-            hasDoneAction = false;
             ClearOverlays();
             AddOverlay(new OverlayRect(Color.Cyan, new Rectangle(corpsePos.X, corpsePos.Y, 32, 32)));
             AddOverlay(new OverlayRect(Color.Cyan, new Rectangle(corpsePos.X + 1, corpsePos.Y + 1, 30, 30)));
-            if (corpse != null)
+
+            string[] lines = DescribeCorpseLong(corpse, true);
+            int longestLine = 1 + FindLongestLine(lines);
+            int ovX = corpsePos.X - 7 * longestLine;
+            int ovY = corpsePos.Y + 32;
+
+            AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new Point(ovX, ovY)));
+
+            // mouse action?
+            if (mouseButton != MouseButton.None)
             {
-                string[] lines = DescribeCorpseLong(corpse, true);
-                int longestLine = 1 + FindLongestLine(lines);
-                int ovX = corpsePos.X - 7 * longestLine;
-                int ovY = corpsePos.Y + 32;
-
-                AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new Point(ovX, ovY)));
-
-                // mouse action?
-                if (mouseButton != MouseButton.None)
-                {
-                    if (mouseButton == MouseButton.Left)
-                        hasDoneAction = OnLMBCorpse(corpse);
-                    else if (mouseButton == MouseButton.Right)
-                        hasDoneAction = OnRMBCorpse(corpse);
-                }
+                if (mouseButton == MouseButton.Left)
+                    OnLMBCorpse(corpse);
+                else if (mouseButton == MouseButton.Right)
+                    OnRMBCorpse(corpse);
             }
 
             // Handled mouse.
@@ -4184,136 +4129,101 @@ namespace RogueSurvivor.Engine
             return null;
         }
 
-        bool OnLMBCorpse(Corpse c)
+        void OnLMBCorpse(Corpse c)
         {
             if (c.IsDragged)
             {
-                string reason;
-                if (m_Rules.CanActorStopDragCorpse(m_Player, c, out reason))
-                {
+                if (m_Rules.CanActorStopDragCorpse(m_Player, c, out string reason))
                     DoStopDragCorpse(m_Player, c);
-                    return false;
-                }
                 else
-                {
                     AddMessage(MakeErrorMessage(string.Format("Cannot stop dragging {0} corpse : {1}.", c.DeadGuy.Name, reason)));
-                    return false;
-                }
             }
             else
             {
-                string reason;
-                if (m_Rules.CanActorStartDragCorpse(m_Player, c, out reason))
-                {
+                if (m_Rules.CanActorStartDragCorpse(m_Player, c, out string reason))
                     DoStartDragCorpse(m_Player, c);
-                    return false;
-                }
                 else
-                {
                     AddMessage(MakeErrorMessage(string.Format("Cannot start dragging {0} corpse : {1}.", c.DeadGuy.Name, reason)));
-                    return false;
-                }
             }
         }
 
-        bool OnRMBCorpse(Corpse c)
+        void OnRMBCorpse(Corpse c)
         {
-            string reason;
             if (m_Player.Model.Abilities.IsUndead)
             {
-                if (m_Rules.CanActorEatCorpse(m_Player, c, out reason))
-                {
+                if (m_Rules.CanActorEatCorpse(m_Player, c, out string reason))
                     DoEatCorpse(m_Player, c);
-                    return true;
-                }
                 else
-                {
                     AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", c.DeadGuy.Name, reason)));
-                    return false;
-                }
             }
             else
             {
-                if (m_Rules.CanActorButcherCorpse(m_Player, c, out reason))
-                {
+                if (m_Rules.CanActorButcherCorpse(m_Player, c, out string reason))
                     DoButcherCorpse(m_Player, c);
-                    return true;
-                }
                 else
-                {
                     AddMessage(MakeErrorMessage(string.Format("Cannot butcher {0} corpse : {1}.", c.DeadGuy.Name, reason)));
-                    return false;
-                }
             }
         }
 
-        bool HandlePlayerEatCorpse(Actor player, Point mousePos)
+        void HandlePlayerEatCorpse(Point mousePos)
         {
             // Ignore if not on a corpse slot.
-            Point corpsePos;
-            Corpse corpse = MouseToCorpse(mousePos, out corpsePos);
+            Corpse corpse = MouseToCorpse(mousePos, out Point corpsePos);
             if (corpse == null)
-                return false;
+                return;
 
             // Check legality.
-            string reason;
-            if (!m_Rules.CanActorEatCorpse(player, corpse, out reason))
+            if (!m_Rules.CanActorEatCorpse(m_Player, corpse, out string reason))
             {
                 AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", corpse.DeadGuy.Name, reason)));
-                return false;
+                return;
             }
 
             // Do it.
-            DoEatCorpse(player, corpse);
-            return true;
+            DoEatCorpse(m_Player, corpse);
         }
 
-        bool HandlePlayerReviveCorpse(Actor player, Point mousePos)
+        void HandlePlayerReviveCorpse(Point mousePos)
         {
             // Ignore if not on a corpse slot.
-            Point corpsePos;
-            Corpse corpse = MouseToCorpse(mousePos, out corpsePos);
+            Corpse corpse = MouseToCorpse(mousePos, out Point corpsePos);
             if (corpse == null)
-                return false;
+                return;
 
             // Check legality.
-            string reason;
-            if (!m_Rules.CanActorReviveCorpse(player, corpse, out reason))
+            if (!m_Rules.CanActorReviveCorpse(m_Player, corpse, out string reason))
             {
                 AddMessage(MakeErrorMessage(string.Format("Cannot revive {0} : {1}.", corpse.DeadGuy.Name, reason)));
-                return false;
+                return;
             }
 
             // Do it.
-            DoReviveCorpse(player, corpse);
-            return true;
+            DoReviveCorpse(m_Player, corpse);
         }
 
-        public void DoStartDragCorpse(Actor a, Corpse c)
+        public void DoStartDragCorpse(Actor actor, Corpse corpse)
         {
-            c.DraggedBy = a;
-            a.DraggedCorpse = c;
-            if (IsVisibleToPlayer(a))
-                AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", Conjugate(a, VERB_START), c.DeadGuy.Name)));
+            corpse.DraggedBy = actor;
+            actor.DraggedCorpse = corpse;
+            if (IsVisibleToPlayer(actor))
+                AddMessage(MakeMessage(actor, string.Format("{0} dragging {1} corpse.", Conjugate(actor, VERB_START), corpse.DeadGuy.Name)));
         }
 
-        public void DoStopDragCorpse(Actor a, Corpse c)
+        public void DoStopDragCorpse(Actor actor, Corpse corpse)
         {
-            c.DraggedBy = null;
-            a.DraggedCorpse = null;
-            if (IsVisibleToPlayer(a))
-                AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", Conjugate(a, VERB_STOP), c.DeadGuy.Name)));
+            corpse.DraggedBy = null;
+            actor.DraggedCorpse = null;
+            if (IsVisibleToPlayer(actor))
+                AddMessage(MakeMessage(actor, string.Format("{0} dragging {1} corpse.", Conjugate(actor, VERB_STOP), corpse.DeadGuy.Name)));
         }
 
-        public void DoStopDraggingCorpses(Actor a)
+        void DoStopDraggingCorpses(Actor actor)
         {
-            if (a.DraggedCorpse != null)
-            {
-                DoStopDragCorpse(a, a.DraggedCorpse);
-            }
+            if (actor.DraggedCorpse != null)
+                DoStopDragCorpse(actor, actor.DraggedCorpse);
         }
 
-        public void DoButcherCorpse(Actor actor, Corpse corpse)
+        void DoButcherCorpse(Actor actor, Corpse corpse)
         {
             bool isVisible = IsVisibleToPlayer(actor);
 
@@ -4358,7 +4268,7 @@ namespace RogueSurvivor.Engine
                 m_MusicManager.Play(GameSounds.UNDEAD_EAT, MusicPriority.PRIORITY_EVENT);
             }
 
-            // dmh corpse.
+            // dmg corpse.
             InflictDamageToCorpse(corpse, dmg);
 
             // destroy?
@@ -4459,34 +4369,30 @@ namespace RogueSurvivor.Engine
             m.RemoveCorpse(c);
         }
 
-        bool DoPlayerItemSlot(Actor player, int slot, Key key)
+        void DoPlayerItemSlot(int slot, Key key)
         {
             // get key modifier and redirect to proper action.
             // Ctrl  -> equip/unequip/use item from player inv
             // Shift -> take item from ground inv
             // Alt -> drop item from player inv.
-            KeyInfo keyInfo = new KeyInfo(key);
-            if (keyInfo.Control)
-                return DoPlayerItemSlotUse(player, slot);
-            else if (keyInfo.Shift)
-                return DoPlayerItemSlotTake(player, slot);
-            else if (keyInfo.Alt)
-                return DoPlayerItemSlotDrop(player, slot);
-
-            // nope.
-            return false;
+            if (key.HaveControl())
+                DoPlayerItemSlotUse(slot);
+            else if (key.HaveShift())
+                DoPlayerItemSlotTake(slot);
+            else if (key.HaveAlt())
+                DoPlayerItemSlotDrop(slot);
         }
 
-        bool DoPlayerItemSlotUse(Actor player, int slot)
+        void DoPlayerItemSlotUse(int slot)
         {
-            Inventory inv = player.Inventory;
+            Inventory inv = m_Player.Inventory;
             Item it = inv[slot];
 
             // if no item, nothing to do.
             if (it == null)
             {
                 AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", (slot + 1))));
-                return false;
+                return;
             }
 
             // ty to unequip/equip/use.
@@ -4494,60 +4400,37 @@ namespace RogueSurvivor.Engine
             // shame on me.
             if (it.IsEquipped)
             {
-                string reason;
-                if (m_Rules.CanActorUnequipItem(player, it, out reason))
-                {
-                    DoUnequipItem(player, it);
-                    return false;
-                }
+                if (m_Rules.CanActorUnequipItem(m_Player, it, out string reason))
+                    DoUnequipItem(m_Player, it);
                 else
-                {
                     AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", it.TheName, reason)));
-                    return false;
-                }
             }
             else if (it.Model.IsEquipable)
             {
-                string reason;
-                if (m_Rules.CanActorEquipItem(player, it, out reason))
-                {
-                    DoEquipItem(player, it);
-                    return false;
-                }
+                if (m_Rules.CanActorEquipItem(m_Player, it, out string reason))
+                    DoEquipItem(m_Player, it);
                 else
-                {
                     AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
-                    return false;
-                }
             }
             else
             {
                 // try to use item.
-                string reason;
-                if (m_Rules.CanActorUseItem(player, it, out reason))
-                {
-                    DoUseItem(player, it);
-                    return true;
-                }
+                if (m_Rules.CanActorUseItem(m_Player, it, out string reason))
+                    DoUseItem(m_Player, it);
                 else
-                {
                     AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", it.TheName, reason)));
-                }
             }
-
-            // nothing done.
-            return false;
         }
 
-        bool DoPlayerItemSlotTake(Actor player, int slot)
+        void DoPlayerItemSlotTake(int slot)
         {
-            Inventory inv = player.Location.Map.GetItemsAt(player.Location.Position);
+            Inventory inv = m_Player.Location.Map.GetItemsAt(m_Player.Location.Position);
 
             // if no items on ground, nothing to do.
             if (inv == null || inv.IsEmpty)
             {
                 AddMessage(MakeErrorMessage("No items on ground."));
-                return false;
+                return;
             }
 
             // if no item, nothing to do.
@@ -4555,47 +4438,33 @@ namespace RogueSurvivor.Engine
             if (it == null)
             {
                 AddMessage(MakeErrorMessage(string.Format("No item at ground slot {0}.", (slot + 1))));
-                return false;
+                return;
             }
 
             // try to take.
-            string reason;
-            if (m_Rules.CanActorGetItem(player, it, out reason))
-            {
-                DoTakeItem(player, player.Location.Position, it);
-                return true;
-            }
+            if (m_Rules.CanActorGetItem(m_Player, it, out string reason))
+                DoTakeItem(m_Player, m_Player.Location.Position, it);
             else
-            {
                 AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", it.TheName, reason)));
-                return false;
-            }
         }
 
-        bool DoPlayerItemSlotDrop(Actor player, int slot)
+        void DoPlayerItemSlotDrop(int slot)
         {
-            Inventory inv = player.Inventory;
+            Inventory inv = m_Player.Inventory;
             Item it = inv[slot];
 
             // if no item, nothing to do.
             if (it == null)
             {
                 AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", (slot + 1))));
-                return false;
+                return;
             }
 
             // try to drop.
-            string reason;
-            if (m_Rules.CanActorDropItem(player, it, out reason))
-            {
-                DoDropItem(player, it);
-                return true;
-            }
+            if (m_Rules.CanActorDropItem(m_Player, it, out string reason))
+                DoDropItem(m_Player, it);
             else
-            {
                 AddMessage(MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", it.TheName, reason)));
-                return false;
-            }
         }
 
         void HandlePlayerShout()
@@ -5224,69 +5093,61 @@ namespace RogueSurvivor.Engine
             };
         }
 
-        bool HandlePlayerFireMode(Actor player)
+        void HandlePlayerFireMode()
         {
-            bool loop = true;
-            bool actionDone = false;
-
             // If grenade equipped, redirected to HandlePlayerThrowGrenade.
-            ItemGrenade grenade = player.GetEquippedWeapon() as ItemGrenade;
-            ItemGrenadePrimed primedGrenade = player.GetEquippedWeapon() as ItemGrenadePrimed;
+            ItemGrenade grenade = m_Player.GetEquippedWeapon() as ItemGrenade;
+            ItemGrenadePrimed primedGrenade = m_Player.GetEquippedWeapon() as ItemGrenadePrimed;
             if (grenade != null || primedGrenade != null)
-                return HandlePlayerThrowGrenade(player);
+            {
+                HandlePlayerThrowGrenade();
+                return;
+            }
 
             // Check if weapon to fire.
-            ItemRangedWeapon rangedWeapon = player.GetEquippedWeapon() as ItemRangedWeapon;
+            ItemRangedWeapon rangedWeapon = m_Player.GetEquippedWeapon() as ItemRangedWeapon;
             if (rangedWeapon == null)
             {
                 AddMessage(MakeErrorMessage("No weapon ready to fire."));
-                //RedrawPlayScreen();
-                return false;
+                return;
             }
             if (rangedWeapon.Ammo <= 0)
             {
                 AddMessage(MakeErrorMessage("No ammo left."));
-                //RedrawPlayScreen();
-                return false;
+                return;
             }
 
             // Get targeting data.
-            HashSet<Point> fov = LOS.ComputeFOVFor(m_Rules, player, m_Session.WorldTime, m_Session.World.Weather);
-            List<Actor> potentialTargets = m_Rules.GetEnemiesInFov(player, fov);
-
+            HashSet<Point> fov = LOS.ComputeFOVFor(m_Rules, m_Player, m_Session.WorldTime, m_Session.World.Weather);
+            List<Actor> potentialTargets = m_Rules.GetEnemiesInFov(m_Player, fov);
             if (potentialTargets == null || potentialTargets.Count == 0)
             {
                 AddMessage(MakeErrorMessage("No targets to fire at."));
-                //RedrawPlayScreen();
-                return false;
+                return;
             }
 
-            // Loop.
-            Attack rangedAttack = m_Rules.ActorRangedAttack(player, player.CurrentRangedAttack, 0, null);
+            Attack rangedAttack = m_Rules.ActorRangedAttack(m_Player, m_Player.CurrentRangedAttack, 0, null);
             int iCurrentTarget = 0;
             List<Point> LoF = new List<Point>(rangedAttack.Range);
-            FireMode mode = m_Session.Player_CurrentFireMode;  // alpha10
-            do
+            FireMode mode = m_Session.Player_CurrentFireMode;
+            Actor currentTarget;
+            string reason;
+            bool canFireAtTarget;
+            int dToTarget;
+
+            void update()
             {
-                Actor currentTarget = potentialTargets[iCurrentTarget];
+                currentTarget = potentialTargets[iCurrentTarget];
                 LoF.Clear();
-                string reason;
-                bool canFireAtTarget = m_Rules.CanActorFireAt(player, currentTarget, LoF, out reason);
-                int dToTarget = m_Rules.GridDistance(player.Location.Position, currentTarget.Location.Position);
+                canFireAtTarget = m_Rules.CanActorFireAt(m_Player, currentTarget, LoF, out reason);
+                dToTarget = m_Rules.GridDistance(m_Player.Location.Position, currentTarget.Location.Position);
 
                 string modeDesc;
                 if (mode == FireMode.RAPID)
-                    modeDesc = string.Format("RAPID fire average hit chances {0}% {1}%", m_Rules.ComputeChancesRangedHit(player, currentTarget, 1), m_Rules.ComputeChancesRangedHit(player, currentTarget, 2));
+                    modeDesc = string.Format("RAPID fire average hit chances {0}% {1}%", m_Rules.ComputeChancesRangedHit(m_Player, currentTarget, 1), m_Rules.ComputeChancesRangedHit(m_Player, currentTarget, 2));
                 else
-                    modeDesc = string.Format("Normal fire average hit chance {0}%", m_Rules.ComputeChancesRangedHit(player, currentTarget, 0));
+                    modeDesc = string.Format("Normal fire average hit chance {0}%", m_Rules.ComputeChancesRangedHit(m_Player, currentTarget, 0));
 
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
                 List<string> overlayPopupText = new List<string>();
                 overlayPopupText.AddRange(FIRE_MODE_TEXT);
                 overlayPopupText.Add(modeDesc);
@@ -5300,54 +5161,46 @@ namespace RogueSurvivor.Engine
                     Point screenPt = MapToScreen(pt);
                     AddOverlay(new OverlayImage(screenPt, lineImage));
                 }
-                //RedrawPlayScreen();
+            }
 
-                // 2. Get input.
-                throw new NotImplementedException();
-                Key key = ui.ReadKey();
-                PlayerCommand command = InputTranslator.KeyToCommand(key);
+            update();
 
-                // 3. Handle input
-                if (key == Key.Escape) //command == PlayerCommand.EXIT_OR_CANCEL)
+            wait = WaitFor.Custom;
+            waitForCustom = key =>
+            {
+                if (key == Key.Escape)
                 {
-                    loop = false;
+                    ClearOverlays();
+                    return false;
                 }
-                else if (key == Key.T)  // next target
+                else if (key == Key.T)
                 {
+                    // next target
                     iCurrentTarget = (iCurrentTarget + 1) % potentialTargets.Count;
+                    update();
                 }
-                else if (key == Key.M)    // next mode
+                else if (key == Key.M)
                 {
-                    // switch.
+                    // next mode
                     mode = (FireMode)(((int)mode + 1) % (int)FireMode._COUNT);
-                    // tell.
                     AddMessage(new Message(string.Format("Switched to {0} fire mode.", mode.ToString()), m_Session.WorldTime.TurnCounter, Color.Yellow));
-                    // alpha10
-                    // save preference to session
                     m_Session.Player_CurrentFireMode = mode;
+                    update();
                 }
-                else if (key == Key.F) // do fire
+                else if (key == Key.F)
                 {
+                    // do fire
                     if (canFireAtTarget)
                     {
-                        DoRangedAttack(player, currentTarget, LoF, mode);
-                        //RedrawPlayScreen();
-                        loop = false;
-                        actionDone = true;
+                        DoRangedAttack(m_Player, currentTarget, LoF, mode);
+                        ClearOverlays();
+                        return false;
                     }
                     else
-                    {
                         AddMessage(MakeErrorMessage(string.Format("Can't fire at {0} : {1}.", currentTarget.TheName, reason)));
-                    }
                 }
-            }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+                return true;
+            };
         }
 
         void HandlePlayerMarkEnemies(Actor player)
@@ -5447,19 +5300,15 @@ namespace RogueSurvivor.Engine
             ClearOverlays();
         }
 
-        bool HandlePlayerThrowGrenade(Actor player)
+        void HandlePlayerThrowGrenade()
         {
-            bool loop = true;
-            bool actionDone = false;
-
             // Get grenade equipped.
-            ItemGrenade unprimedGrenade = player.GetEquippedWeapon() as ItemGrenade;
-            ItemGrenadePrimed primedGrenade = player.GetEquippedWeapon() as ItemGrenadePrimed;
+            ItemGrenade unprimedGrenade = m_Player.GetEquippedWeapon() as ItemGrenade;
+            ItemGrenadePrimed primedGrenade = m_Player.GetEquippedWeapon() as ItemGrenadePrimed;
             if (unprimedGrenade == null && primedGrenade == null)
             {
                 AddMessage(MakeErrorMessage("No grenade to throw."));
-                //RedrawPlayScreen();
-                return false;
+                return;
             }
             ItemGrenadeModel grenadeModel;
             if (unprimedGrenade != null)
@@ -5468,26 +5317,18 @@ namespace RogueSurvivor.Engine
                 grenadeModel = (primedGrenade.Model as ItemGrenadePrimedModel).GrenadeModel;
 
             // Get data.
-            Map map = player.Location.Map;
-            Point targetThrow = player.Location.Position;
-            int maxThrowDist = m_Rules.ActorMaxThrowRange(player, grenadeModel.MaxThrowDistance);
-
-            // Loop.
+            Map map = m_Player.Location.Map;
+            Point targetThrow = m_Player.Location.Position;
+            int maxThrowDist = m_Rules.ActorMaxThrowRange(m_Player, grenadeModel.MaxThrowDistance);
             List<Point> LoT = new List<Point>();
-            do
+            string reason;
+            bool canThrowAtTarget, confirm = false;
+
+            void update()
             {
-                // get LoT.
                 LoT.Clear();
-                string reason;
-                bool canThrowAtTarget = m_Rules.CanActorThrowTo(player, targetThrow, LoT, out reason);
+                canThrowAtTarget = m_Rules.CanActorThrowTo(m_Player, targetThrow, LoT, out reason);
 
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
                 ClearOverlays();
                 AddOverlay(new OverlayPopup(THROW_GRENADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
                 string lineImage = canThrowAtTarget ? GameImages.ICON_LINE_CLEAR : GameImages.ICON_LINE_BLOCKED;
@@ -5496,72 +5337,81 @@ namespace RogueSurvivor.Engine
                     Point screenPt = MapToScreen(pt);
                     AddOverlay(new OverlayImage(screenPt, lineImage));
                 }
-                //RedrawPlayScreen();
+            }
 
-                // 2. Get input.
-                throw new NotImplementedException();
-                Key key = ui.ReadKey();
+            void throwGranade()
+            {
+                if (unprimedGrenade != null)
+                    DoThrowGrenadeUnprimed(m_Player, targetThrow);
+                else
+                    DoThrowGrenadePrimed(m_Player, targetThrow);
+                ClearOverlays();
+            }
+
+            update();
+            wait = WaitFor.Custom;
+            waitForCustom = key =>
+            {
                 PlayerCommand command = InputTranslator.KeyToCommand(key);
-
-                // 3. Handle input
-                if (key == Key.Escape)// command == PlayerCommand.EXIT_OR_CANCEL)
+                if (confirm && key == Key.Y)
                 {
-                    loop = false;
+                    throwGranade();
+                    return false;
                 }
-                else if (key == Key.F) // do throw.
+                else if (key == Key.Escape)
+                {
+                    if (confirm)
+                        confirm = false;
+                    else
+                    {
+                        ClearOverlays();
+                        return false;
+                    }
+                }
+                else if (confirm && key == Key.N)
+                    confirm = false;
+                else if (!confirm && key == Key.F) // do throw.
                 {
                     if (canThrowAtTarget)
                     {
                         bool doIt = true;
 
                         // if within the blast radius, ask for confirmation...
-                        if (m_Rules.GridDistance(player.Location.Position, targetThrow) <= grenadeModel.BlastAttack.Radius)
+                        if (m_Rules.GridDistance(m_Player.Location.Position, targetThrow) <= grenadeModel.BlastAttack.Radius)
                         {
                             ClearMessages();
                             AddMessage(new Message("You are in the blast radius!", m_Session.WorldTime.TurnCounter, Color.Yellow));
                             AddMessage(MakeYesNoMessage("Really throw there"));
-                            //RedrawPlayScreen();
-                            doIt = WaitYesOrNo();
-                            ClearMessages();
-                            //RedrawPlayScreen();
+                            confirm = true;
+                            return true;
                         }
 
                         if (doIt)
                         {
                             // fire in the hole!
-                            if (unprimedGrenade != null)
-                                DoThrowGrenadeUnprimed(player, targetThrow);
-                            else
-                                DoThrowGrenadePrimed(player, targetThrow);
-                            //RedrawPlayScreen();
-                            loop = false;
-                            actionDone = true;
+                            throwGranade();
+                            return false;
                         }
                     }
                     else
-                    {
                         AddMessage(MakeErrorMessage(string.Format("Can't throw there : {0}.", reason)));
-                    }
                 }
-                else
+                else if (!confirm)
                 {
                     // direction?
                     Direction dir = CommandToDirection(command);
                     if (dir != null)
                     {
                         Point pos = targetThrow + dir;
-                        if (map.IsInBounds(pos) && m_Rules.GridDistance(player.Location.Position, pos) <= maxThrowDist)
+                        if (map.IsInBounds(pos) && m_Rules.GridDistance(m_Player.Location.Position, pos) <= maxThrowDist)
+                        {
                             targetThrow = pos;
+                            update();
+                        }
                     }
                 }
-            }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+                return true;
+            };
         }
 
         void HandlePlayerSleep()
@@ -15724,7 +15574,7 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        bool LoadGame(string saveName)
+        public bool LoadGame(string saveName)
         {
             // load session object.
             bool loaded = Session.Load(saveName);
@@ -15732,13 +15582,12 @@ namespace RogueSurvivor.Engine
                 return false;
             m_Session = Session.Get;
             m_Rules = new Rules(new DiceRoller(m_Session.Seed));
+            m_HasLoadedGame = true;
 
             RefreshPlayer();
 
             AddMessage(new Message("LOADING DONE.", m_Session.WorldTime.TurnCounter, Color.Yellow));
             AddMessage(new Message("Welcome back to Rogue Survivor!", m_Session.WorldTime.TurnCounter, Color.LightGreen));
-            //RedrawPlayScreen();
-            //ui.UI_Repaint();
 
             // Log ;/
             m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "<Loaded game>");
