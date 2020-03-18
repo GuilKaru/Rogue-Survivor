@@ -1,4 +1,5 @@
-﻿using RogueSurvivor.Engine.Items;
+﻿using RogueSurvivor.Engine;
+using RogueSurvivor.Engine.Items;
 using RogueSurvivor.Gameplay;
 using System;
 using System.Collections.Generic;
@@ -802,6 +803,12 @@ namespace RogueSurvivor.Data
             // alpha10 inventory
             if (m_Inventory != null)
                 m_Inventory.OptimizeBeforeSaving();
+        }
+
+        public void SpendActionPoints(int actionCost = Rules.BASE_ACTION_COST)
+        {
+            ActionPoints -= actionCost;
+            LastActionTurn = Location.Map.LocalTime.TurnCounter;
         }
     }
 }

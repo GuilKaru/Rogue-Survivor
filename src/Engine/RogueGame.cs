@@ -533,6 +533,8 @@ namespace RogueSurvivor.Engine
 
         public override void Update(double dt)
         {
+            int prev = m_Player.ActionPoints;
+
             if (wait != WaitFor.None)
             {
                 Key key = ui.ReadKey();
@@ -577,16 +579,18 @@ namespace RogueSurvivor.Engine
                         }
                         break;
                 }
+
+                if (wait == WaitFor.None && isPlayerTurn && prev != m_Player.ActionPoints)
+                    EndPlayerAction();
             }
 
-            if (wait != WaitFor.None)
+            if (wait == WaitFor.None)
             {
                 if (isPlayerTurn)
                 {
-                    int prev = m_Player.ActionPoints;
                     HandlePlayerAction(m_Player);
                     if (prev != m_Player.ActionPoints)
-                        AfterPlayerAction();
+                        EndPlayerAction();
                 }
 
                 while (!isPlayerTurn)
@@ -1175,27 +1179,28 @@ namespace RogueSurvivor.Engine
                 {
                     ++m_Session.WorldTime.TurnCounter;
 
-                    // sunrise/sunset.
-                    bool canSeeSky = m_Rules.CanActorSeeSky(m_Player);  // alpha10 message ony if can see sky
+                    // sunrise/sunset, message ony if can see sky.
+                    bool canSeeSky = m_Rules.CanActorSeeSky(m_Player);
                     bool isNight = m_Session.WorldTime.IsNight;
                     DayPhase newPhase = m_Session.WorldTime.Phase;
                     if (wasNight && !isNight)
                     {
-                        if (canSeeSky) AddMessage(new Message("The sun is rising again for you...", m_Session.WorldTime.TurnCounter, DAY_COLOR));
+                        if (canSeeSky)
+                            AddMessage(new Message("The sun is rising again for you...", m_Session.WorldTime.TurnCounter, DAY_COLOR));
                         OnNewDay();
                     }
                     else if (!wasNight && isNight)
                     {
-                        if (canSeeSky) AddMessage(new Message("Night is falling upon you...", m_Session.WorldTime.TurnCounter, NIGHT_COLOR));
+                        if (canSeeSky)
+                            AddMessage(new Message("Night is falling upon you...", m_Session.WorldTime.TurnCounter, NIGHT_COLOR));
                         OnNewNight();
                     }
                     else if (prevPhase != newPhase)
                     {
-                        if (canSeeSky) AddMessage(new Message(string.Format("Time passes, it is now {0}...", newPhase.AsString()), m_Session.WorldTime.TurnCounter, isNight ? NIGHT_COLOR : DAY_COLOR));
+                        if (canSeeSky)
+                            AddMessage(new Message(string.Format("Time passes, it is now {0}...", newPhase.AsString()), m_Session.WorldTime.TurnCounter, isNight ? NIGHT_COLOR : DAY_COLOR));
                     }
 
-
-                    // alpha10
                     // if time to change weather do it and roll next change time.
                     if (m_Session.WorldTime.TurnCounter >= m_Session.World.NextWeatherCheckTurn)
                     {
@@ -1329,12 +1334,10 @@ namespace RogueSurvivor.Engine
             // 3. Ask actor to act. Handle player and AI differently.
             actor.PreviousStaminaPoints = actor.StaminaPoints;
             if (actor.Controller == null)
-            {
-                SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-            }
+                actor.SpendActionPoints();
             else if (actor.IsPlayer)
             {
-                BeforePlayerAction();
+                BeginPlayerAction();
                 return true;
                 // !FIXME
                 // if quit, dead or loaded, don't bother.
@@ -1354,12 +1357,6 @@ namespace RogueSurvivor.Engine
             actor.PreviousSleepPoints = actor.SleepPoints;
             actor.PreviousSanity = actor.Sanity;
             return false;
-        }
-
-        void SpendActorActionPoints(Actor actor, int actionCost)
-        {
-            actor.ActionPoints -= actionCost;
-            actor.LastActionTurn = actor.Location.Map.LocalTime.TurnCounter;
         }
 
         void SpendActorStaminaPoints(Actor actor, int staminaCost)
@@ -3485,7 +3482,7 @@ namespace RogueSurvivor.Engine
         }
 #endif
 
-        void BeforePlayerAction()
+        void BeginPlayerAction()
         {
             // Upkeep.
             UpdatePlayerFOV(m_Player);    // make sure LOS is up to date.
@@ -3672,30 +3669,30 @@ namespace RogueSurvivor.Engine
                             break;
 
                         case PlayerCommand.MOVE_N: // Num8
-                            DoPlayerBump(player, Direction.N);
+                            DoPlayerBump(Direction.N);
                             break;
                         case PlayerCommand.MOVE_NE: // Num9
-                            DoPlayerBump(player, Direction.NE);
+                            DoPlayerBump(Direction.NE);
                             break;
                         case PlayerCommand.MOVE_E: // Num6
-                            DoPlayerBump(player, Direction.E);
+                            DoPlayerBump(Direction.E);
                             break;
                         case PlayerCommand.MOVE_SE: // Num3
-                            DoPlayerBump(player, Direction.SE);
+                            DoPlayerBump(Direction.SE);
                             break;
                         case PlayerCommand.MOVE_S: // Num2
-                            DoPlayerBump(player, Direction.S);
+                            DoPlayerBump(Direction.S);
                             break;
                         case PlayerCommand.MOVE_SW: // Num1
-                            DoPlayerBump(player, Direction.SW);
+                            DoPlayerBump(Direction.SW);
                             break;
                         case PlayerCommand.MOVE_W: // Num4
-                            DoPlayerBump(player, Direction.W);
+                            DoPlayerBump(Direction.W);
                             break;
                         case PlayerCommand.MOVE_NW: // Num7
-                            DoPlayerBump(player, Direction.NW);
+                            DoPlayerBump(Direction.NW);
                             break;
-                        case PlayerCommand.USE_EXIT:
+                        case PlayerCommand.USE_EXIT: // X
                             DoUseExit(player, player.Location.Position);
                             break;
 
@@ -3737,17 +3734,17 @@ namespace RogueSurvivor.Engine
                         case PlayerCommand.CLOSE_DOOR: // C
                             HandlePlayerCloseDoor();
                             break;
-                        case PlayerCommand.BARRICADE_MODE:
-                            HandlePlayerBarricade(player);
+                        case PlayerCommand.BARRICADE_MODE: // B
+                            HandlePlayerBarricade();
                             break;
                         case PlayerCommand.BREAK_MODE: // K
                             HandlePlayerBreak();
                             break;
-                        case PlayerCommand.BUILD_LARGE_FORTIFICATION:
-                            HandlePlayerBuildFortification(player, true);
+                        case PlayerCommand.BUILD_LARGE_FORTIFICATION: // Ctrl N
+                            HandlePlayerBuildFortification(true);
                             break;
-                        case PlayerCommand.BUILD_SMALL_FORTIFICATION:
-                            HandlePlayerBuildFortification(player, false);
+                        case PlayerCommand.BUILD_SMALL_FORTIFICATION: // N
+                            HandlePlayerBuildFortification(false);
                             break;
                         case PlayerCommand.ORDER_MODE:
                             HandlePlayerOrderMode(player);
@@ -3770,24 +3767,24 @@ namespace RogueSurvivor.Engine
                             HandlePlayerSleep();
                             break;
 
-                        case PlayerCommand.SWITCH_PLACE:
-                            HandlePlayerSwitchPlace(player);
+                        case PlayerCommand.SWITCH_PLACE: // Ctrl S
+                            HandlePlayerSwitchPlace();
                             break;
 
-                        case PlayerCommand.USE_SPRAY:
-                            HandlePlayerUseSpray(player);
+                        case PlayerCommand.USE_SPRAY: // A
+                            HandlePlayerUseSpray();
                             break;
 
-                        case PlayerCommand.LEAD_MODE:
-                            HandlePlayerTakeLead(player);
+                        case PlayerCommand.LEAD_MODE: // T
+                            HandlePlayerTakeLead();
                             break;
 
-                        case PlayerCommand.GIVE_ITEM:
-                            HandlePlayerGiveItem(player, mousePos);
+                        case PlayerCommand.GIVE_ITEM: // G
+                            HandlePlayerGiveItem(mousePos);
                             break;
 
-                        case PlayerCommand.NEGOCIATE_TRADE:
-                            HandlePlayerNegociateTrade(player);
+                        case PlayerCommand.NEGOCIATE_TRADE: // E
+                            HandlePlayerNegociateTrade();
                             break;
 
                         case PlayerCommand.MARK_ENEMIES_MODE:
@@ -3835,7 +3832,7 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        void AfterPlayerAction()
+        void EndPlayerAction()
         {
             // Upkeep.
             UpdatePlayerFOV(m_Player);    // make sure LOS is up to date.
@@ -4316,79 +4313,79 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        public void DoButcherCorpse(Actor a, Corpse c)
+        public void DoButcherCorpse(Actor actor, Corpse corpse)
         {
-            bool isVisible = IsVisibleToPlayer(a);
+            bool isVisible = IsVisibleToPlayer(actor);
 
             // spend ap.
-            SpendActorActionPoints(a, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // cause insanity.
-            SeeingCauseInsanity(a, a.Location, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", a.Name, c.DeadGuy.Name));
+            SeeingCauseInsanity(actor, actor.Location, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", actor.Name, corpse.DeadGuy.Name));
 
             // damage.
-            int dmg = m_Rules.ActorDamageVsCorpses(a);
+            int dmg = m_Rules.ActorDamageVsCorpses(actor);
 
             if (isVisible)
-                AddMessage(MakeMessage(a, string.Format("{0} {1} corpse for {2} damage.", Conjugate(a, VERB_BUTCHER), c.DeadGuy.Name, dmg)));
+                AddMessage(MakeMessage(actor, string.Format("{0} {1} corpse for {2} damage.", Conjugate(actor, VERB_BUTCHER), corpse.DeadGuy.Name, dmg)));
 
-            InflictDamageToCorpse(c, dmg);
+            InflictDamageToCorpse(corpse, dmg);
 
             // destroy?
-            if (c.HitPoints <= 0)
+            if (corpse.HitPoints <= 0)
             {
-                DestroyCorpse(c, a.Location.Map);
+                DestroyCorpse(corpse, actor.Location.Map);
                 if (isVisible)
-                    AddMessage(new Message(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
+                    AddMessage(new Message(string.Format("{0} corpse is no more.", corpse.DeadGuy.Name), actor.Location.Map.LocalTime.TurnCounter, Color.Purple));
             }
         }
 
-        public void DoEatCorpse(Actor a, Corpse c)
+        public void DoEatCorpse(Actor actor, Corpse corpse)
         {
-            bool isVisible = IsVisibleToPlayer(a);
+            bool isVisible = IsVisibleToPlayer(actor);
 
             // spend ap.
-            SpendActorActionPoints(a, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // damage.
-            int dmg = m_Rules.ActorDamageVsCorpses(a);
+            int dmg = m_Rules.ActorDamageVsCorpses(actor);
 
             // msg.
             if (isVisible)
             {
-                AddMessage(MakeMessage(a, string.Format("{0} {1} corpse.", Conjugate(a, VERB_FEAST_ON), c.DeadGuy.Name, dmg)));
+                AddMessage(MakeMessage(actor, string.Format("{0} {1} corpse.", Conjugate(actor, VERB_FEAST_ON), corpse.DeadGuy.Name, dmg)));
                 // alpha10 replace with sfx
                 m_MusicManager.Play(GameSounds.UNDEAD_EAT, MusicPriority.PRIORITY_EVENT);
             }
 
             // dmh corpse.
-            InflictDamageToCorpse(c, dmg);
+            InflictDamageToCorpse(corpse, dmg);
 
             // destroy?
-            if (c.HitPoints <= 0)
+            if (corpse.HitPoints <= 0)
             {
-                DestroyCorpse(c, a.Location.Map);
+                DestroyCorpse(corpse, actor.Location.Map);
                 if (isVisible)
-                    AddMessage(new Message(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
+                    AddMessage(new Message(string.Format("{0} corpse is no more.", corpse.DeadGuy.Name), actor.Location.Map.LocalTime.TurnCounter, Color.Purple));
             }
 
             // heal if undead / food.
-            if (a.Model.Abilities.IsUndead)
+            if (actor.Model.Abilities.IsUndead)
             {
-                RegenActorHitPoints(a, Rules.ActorBiteHpRegen(a, dmg));
-                a.FoodPoints = Math.Min(a.FoodPoints + m_Rules.ActorBiteNutritionValue(a, dmg), m_Rules.ActorMaxRot(a));
+                RegenActorHitPoints(actor, Rules.ActorBiteHpRegen(actor, dmg));
+                actor.FoodPoints = Math.Min(actor.FoodPoints + m_Rules.ActorBiteNutritionValue(actor, dmg), m_Rules.ActorMaxRot(actor));
             }
             else
             {
                 // recover food points.
-                a.FoodPoints = Math.Min(a.FoodPoints + m_Rules.ActorBiteNutritionValue(a, dmg), m_Rules.ActorMaxFood(a));
+                actor.FoodPoints = Math.Min(actor.FoodPoints + m_Rules.ActorBiteNutritionValue(actor, dmg), m_Rules.ActorMaxFood(actor));
                 // infection!
-                InfectActor(a, m_Rules.CorpseEeatingInfectionTransmission(c.DeadGuy.Infection));
+                InfectActor(actor, m_Rules.CorpseEeatingInfectionTransmission(corpse.DeadGuy.Infection));
             }
 
             // cause insanity.
-            SeeingCauseInsanity(a, a.Location, a.Model.Abilities.IsUndead ? Rules.SANITY_HIT_UNDEAD_EATING_CORPSE : Rules.SANITY_HIT_LIVING_EATING_CORPSE,
-                string.Format("{0} eating {1}", a.Name, c.DeadGuy.Name));
+            SeeingCauseInsanity(actor, actor.Location, actor.Model.Abilities.IsUndead ? Rules.SANITY_HIT_UNDEAD_EATING_CORPSE : Rules.SANITY_HIT_LIVING_EATING_CORPSE,
+                string.Format("{0} eating {1}", actor.Name, corpse.DeadGuy.Name));
         }
 
         public void DoReviveCorpse(Actor actor, Corpse corpse)
@@ -4396,7 +4393,7 @@ namespace RogueSurvivor.Engine
             bool visible = IsVisibleToPlayer(actor);
 
             // spend ap.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // make sure there is a walkable spot for revival.
             Map map = actor.Location.Map;
@@ -4609,74 +4606,48 @@ namespace RogueSurvivor.Engine
                 AddMessage(MakeErrorMessage(string.Format("Can't shout : {0}.", reason)));
         }
 
-        bool HandlePlayerGiveItem(Actor player, Point screen)
+        void HandlePlayerGiveItem(Point screen)
         {
             // get player inventory item under mouse.
-            Inventory inv;
-            Point itemPos;
-            int iSlot;
-            Item gift = MouseToInventoryItem(screen, out inv, out itemPos, out iSlot);
-            if (inv == null || inv != player.Inventory || gift == null)
-                return false;
+            Item gift = MouseToInventoryItem(screen, out Inventory inv, out Point itemPos, out int iSlot);
+            if (inv == null || inv != m_Player.Inventory || gift == null)
+                return;
 
-            // handle give item.
-            bool loop = true;
-            bool actionDone = false;
             ClearOverlays();
-            AddOverlay(new OverlayPopup(GIVE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-            do
+            AddOverlay(new OverlayPopup(GIVE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
+            AddMessage(new Message(string.Format("Giving {0} to...", gift.TheName), m_Session.WorldTime.TurnCounter, Color.Yellow));
+
+            wait = WaitFor.Dir;
+            waitForDir = dir =>
             {
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
-                AddMessage(new Message(string.Format("Giving {0} to...", gift.TheName), m_Session.WorldTime.TurnCounter, Color.Yellow));
-                //RedrawPlayScreen();
-
-                // 2. Get input.
-                Direction dir = WaitDirectionOrCancel();
-
-                // 3. Handle input
                 if (dir == null)
                 {
-                    loop = false;
+                    ClearOverlays();
+                    return false;
                 }
                 else if (dir != Direction.NEUTRAL)
                 {
-                    Point pos = player.Location.Position + dir;
-                    if (player.Location.Map.IsInBounds(pos))
+                    Point pos = m_Player.Location.Position + dir;
+                    if (m_Player.Location.Map.IsInBounds(pos))
                     {
-                        Actor other = player.Location.Map.GetActorAt(pos);
+                        Actor other = m_Player.Location.Map.GetActorAt(pos);
                         if (other != null)
                         {
-                            string reason;
-                            if (m_Rules.CanActorGiveItemTo(player, other, gift, out reason))
+                            if (m_Rules.CanActorGiveItemTo(m_Player, other, gift, out string reason))
                             {
-                                // do it.
-                                actionDone = true;
-                                loop = false;
-                                DoGiveItemTo(player, other, gift);
+                                DoGiveItemTo(m_Player, other, gift);
+                                ClearOverlays();
+                                return false;
                             }
                             else
-                            {
                                 AddMessage(MakeErrorMessage(string.Format("Can't give {0} to {1} : {2}.", gift.TheName, other.TheName, reason)));
-                            }
                         }
                         else
                             AddMessage(MakeErrorMessage("Noone there."));
                     }
                 }
-            }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+                return true;
+            };
         }
 
         // alpha10 new trade window dialog
@@ -4956,7 +4927,7 @@ namespace RogueSurvivor.Engine
 
             // if trade done, spend player ap.
             if (actionDone)
-                SpendActorActionPoints(player, Rules.BASE_ACTION_COST);
+                player.SpendActionPoints();
 
             // alpha10.1
             // cleanup
@@ -4965,63 +4936,43 @@ namespace RogueSurvivor.Engine
             return actionDone;
         }
 
-        bool HandlePlayerNegociateTrade(Actor player)
+        void HandlePlayerNegociateTrade()
         {
             // handle select adjacent npc
-            bool loop = true;
-            bool actionDone = false;
             ClearOverlays();
             AddOverlay(new OverlayPopup(NEGOCIATE_TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-            do
+
+            wait = WaitFor.Dir;
+            waitForDir = dir =>
             {
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
-                //RedrawPlayScreen();
-
-                // 2. Get input.
-                Direction dir = WaitDirectionOrCancel();
-
-                // 3. Handle input
                 if (dir == null)
                 {
-                    loop = false;
+                    ClearOverlays();
+                    return false;
                 }
                 else if (dir != Direction.NEUTRAL)
                 {
-                    Point pos = player.Location.Position + dir;
-                    if (player.Location.Map.IsInBounds(pos))
+                    Point pos = m_Player.Location.Position + dir;
+                    if (m_Player.Location.Map.IsInBounds(pos))
                     {
-                        Actor other = player.Location.Map.GetActorAt(pos);
+                        Actor other = m_Player.Location.Map.GetActorAt(pos);
                         if (other != null)
                         {
-                            string reason;
-                            if (m_Rules.CanActorInitiateTradeWith(player, other, out reason))
+                            if (m_Rules.CanActorInitiateTradeWith(m_Player, other, out string reason))
                             {
-                                actionDone = HandlePlayerTradeNegociation(player, other);
-                                loop = false;
+                                HandlePlayerTradeNegociation(m_Player, other);
+                                ClearOverlays();
+                                return false;
                             }
                             else
-                            {
                                 AddMessage(MakeErrorMessage(string.Format("Can't trade with {0} : {1}.", other.TheName, reason)));
-                            }
                         }
                         else
                             AddMessage(MakeErrorMessage("Noone there."));
                     }
                 }
-            }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+                return true;
+            };
         }
 
         void HandlePlayerRunToggle()
@@ -5075,74 +5026,52 @@ namespace RogueSurvivor.Engine
             };
         }
 
-        bool HandlePlayerBarricade(Actor player)
+        void HandlePlayerBarricade()
         {
-            bool loop = true;
-            bool actionDone = false;
-
             ClearOverlays();
             AddOverlay(new OverlayPopup(BARRICADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
 
-            do
+            wait = WaitFor.Dir;
+            waitForDir = dir =>
             {
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
-                //RedrawPlayScreen();
-
-                // 2. Get input.
-                Direction dir = WaitDirectionOrCancel();
-
-                // 3. Handle input
                 if (dir == null)
                 {
-                    loop = false;
+                    ClearOverlays();
+                    return false;
                 }
                 else if (dir != Direction.NEUTRAL)
                 {
-                    Point pos = player.Location.Position + dir;
-                    if (player.Location.Map.IsInBounds(pos))
+                    Point pos = m_Player.Location.Position + dir;
+                    if (m_Player.Location.Map.IsInBounds(pos))
                     {
-                        MapObject mapObj = player.Location.Map.GetMapObjectAt(pos);
+                        MapObject mapObj = m_Player.Location.Map.GetMapObjectAt(pos);
                         if (mapObj != null)
                         {
                             // barricading a door.
                             if (mapObj is DoorWindow)
                             {
                                 DoorWindow door = mapObj as DoorWindow;
-                                string reason;
-                                if (m_Rules.CanActorBarricadeDoor(player, door, out reason))
+                                if (m_Rules.CanActorBarricadeDoor(m_Player, door, out string reason))
                                 {
-                                    DoBarricadeDoor(player, door);
-                                    //RedrawPlayScreen();
-                                    loop = false;
-                                    actionDone = true;
+                                    DoBarricadeDoor(m_Player, door);
+                                    ClearOverlays();
+                                    return false;
                                 }
                                 else
-                                {
                                     AddMessage(MakeErrorMessage(string.Format("Cannot barricade {0} : {1}.", door.TheName, reason)));
-                                }
                             }
                             // repairing a fortification.
                             else if (mapObj is Fortification)
                             {
                                 Fortification fort = mapObj as Fortification;
-                                string reason;
-                                if (m_Rules.CanActorRepairFortification(player, fort, out reason))
+                                if (m_Rules.CanActorRepairFortification(m_Player, fort, out string reason))
                                 {
-                                    DoRepairFortification(player, fort);
-                                    //RedrawPlayScreen();
-                                    loop = false;
-                                    actionDone = true;
+                                    DoRepairFortification(m_Player, fort);
+                                    ClearOverlays();
+                                    return false;
                                 }
                                 else
-                                {
                                     AddMessage(MakeErrorMessage(string.Format("Cannot repair {0} : {1}.", fort.TheName, reason)));
-                                }
                             }
                             else
                                 AddMessage(MakeErrorMessage(string.Format("{0} cannot be repaired or barricaded.", mapObj.TheName)));
@@ -5151,14 +5080,8 @@ namespace RogueSurvivor.Engine
                             AddMessage(MakeErrorMessage("Nothing to barricade there."));
                     }
                 }
-            }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+                return true;
+            };
         }
 
         void HandlePlayerBreak()
@@ -5254,75 +5177,51 @@ namespace RogueSurvivor.Engine
             };
         }
 
-        bool HandlePlayerBuildFortification(Actor player, bool isLarge)
+        void HandlePlayerBuildFortification(bool isLarge)
         {
             /////////////////////////////////////
             // Check skill & has enough material.
             /////////////////////////////////////
-            if (player.Sheet.SkillTable.GetSkillLevel((int)Skills.IDs.CARPENTRY) == 0)
+            if (m_Player.Sheet.SkillTable.GetSkillLevel((int)Skills.IDs.CARPENTRY) == 0)
             {
                 AddMessage(MakeErrorMessage("need carpentry skill."));
-                return false;
+                return;
             }
-            int need = m_Rules.ActorBarricadingMaterialNeedForFortification(player, isLarge);
-            if (m_Rules.CountBarricadingMaterial(player) < need)
+            int need = m_Rules.ActorBarricadingMaterialNeedForFortification(m_Player, isLarge);
+            if (m_Rules.CountBarricadingMaterial(m_Player) < need)
             {
                 AddMessage(MakeErrorMessage(string.Format("not enough barricading material, need {0}.", need)));
-                return false;
+                return;
             }
-
-            bool loop = true;
-            bool actionDone = false;
 
             ClearOverlays();
             AddOverlay(new OverlayPopup(isLarge ? BUILD_LARGE_FORT_MODE_TEXT : BUILD_SMALL_FORT_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
 
-            do
+            wait = WaitFor.Dir;
+            waitForDir = dir =>
             {
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
-                //RedrawPlayScreen();
-
-                // 2. Get input.
-                Direction dir = WaitDirectionOrCancel();
-
-                // 3. Handle input
                 if (dir == null)
                 {
-                    loop = false;
+                    ClearOverlays();
+                    return false;
                 }
                 else if (dir != Direction.NEUTRAL)
                 {
-                    Point pos = player.Location.Position + dir;
-                    if (player.Location.Map.IsInBounds(pos))
+                    Point pos = m_Player.Location.Position + dir;
+                    if (m_Player.Location.Map.IsInBounds(pos))
                     {
-                        string reason;
-                        if (m_Rules.CanActorBuildFortification(player, pos, isLarge, out reason))
+                        if (m_Rules.CanActorBuildFortification(m_Player, pos, isLarge, out string reason))
                         {
-                            DoBuildFortification(player, pos, isLarge);
-                            //RedrawPlayScreen();
-                            loop = false;
-                            actionDone = true;
+                            DoBuildFortification(m_Player, pos, isLarge);
+                            ClearOverlays();
+                            return false;
                         }
                         else
-                        {
                             AddMessage(MakeErrorMessage(string.Format("Cannot build here : {0}.", reason)));
-                        }
                     }
                 }
-            }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+                return true;
+            };
         }
 
         bool HandlePlayerFireMode(Actor player)
@@ -5696,115 +5595,73 @@ namespace RogueSurvivor.Engine
             };
         }
 
-        bool HandlePlayerSwitchPlace(Actor player)
+        void HandlePlayerSwitchPlace()
         {
-            bool loop = true;
-            bool actionDone = false;
-
             ClearOverlays();
             AddOverlay(new OverlayPopup(SWITCH_PLACE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
 
-            do
+            wait = WaitFor.Dir;
+            waitForDir = dir =>
             {
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
-                //RedrawPlayScreen();
-
-                // 2. Get input.
-                Direction dir = WaitDirectionOrCancel();
-
-                // 3. Handle input
                 if (dir == null)
                 {
-                    loop = false;
+                    ClearOverlays();
+                    return false;
                 }
                 else if (dir != Direction.NEUTRAL)
                 {
-                    Point pos = player.Location.Position + dir;
-                    if (player.Location.Map.IsInBounds(pos))
+                    Point pos = m_Player.Location.Position + dir;
+                    if (m_Player.Location.Map.IsInBounds(pos))
                     {
-                        Actor other = player.Location.Map.GetActorAt(pos);
+                        Actor other = m_Player.Location.Map.GetActorAt(pos);
                         if (other != null)
                         {
-                            string reason;
-                            if (m_Rules.CanActorSwitchPlaceWith(player, other, out reason))
+                            if (m_Rules.CanActorSwitchPlaceWith(m_Player, other, out string reason))
                             {
                                 // switch place.
-                                actionDone = true;
-                                loop = false;
-                                DoSwitchPlace(player, other);
+                                DoSwitchPlace(m_Player, other);
+                                ClearOverlays();
+                                return false;
                             }
                             else
-                            {
                                 AddMessage(MakeErrorMessage(string.Format("Can't switch place : {0}", reason)));
-                            }
                         }
                         else
                             AddMessage(MakeErrorMessage("Noone there."));
                     }
                 }
-            }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+                return true;
+            };
         }
 
-        bool HandlePlayerTakeLead(Actor player)
+        void HandlePlayerTakeLead()
         {
-            bool loop = true;
-            bool actionDone = false;
-
             ClearOverlays();
             AddOverlay(new OverlayPopup(TAKE_LEAD_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
 
-            do
+            wait = WaitFor.Dir;
+            waitForDir = dir =>
             {
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
-                //RedrawPlayScreen();
-
-                // 2. Get input.
-                Direction dir = WaitDirectionOrCancel();
-
-                // 3. Handle input
                 if (dir == null)
                 {
-                    loop = false;
+                    ClearOverlays();
+                    return false;
                 }
                 else if (dir != Direction.NEUTRAL)
                 {
-                    Point pos = player.Location.Position + dir;
-                    if (player.Location.Map.IsInBounds(pos))
+                    Point pos = m_Player.Location.Position + dir;
+                    if (m_Player.Location.Map.IsInBounds(pos))
                     {
-                        Actor other = player.Location.Map.GetActorAt(pos);
+                        Actor other = m_Player.Location.Map.GetActorAt(pos);
                         if (other != null)
                         {
-                            string reason;
-                            if (m_Rules.CanActorTakeLead(player, other, out reason))
+                            if (m_Rules.CanActorTakeLead(m_Player, other, out string reason))
                             {
-                                // take lead.
-                                actionDone = true;
-                                loop = false;
-
-                                // alpha10.1 steal lead vs take lead
+                                // steal lead vs take lead
                                 if (other.HasLeader)
-                                    DoStealLead(player, other);
+                                    DoStealLead(m_Player, other);
                                 else
-                                    DoTakeLead(player, other);
+                                    DoTakeLead(m_Player, other);
 
                                 // scoring.
                                 m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Recruited {0}.", other.TheName));
@@ -5813,50 +5670,45 @@ namespace RogueSurvivor.Engine
                                 AddMessage(new Message("(you can now set directives and orders for your new follower).", m_Session.WorldTime.TurnCounter, Color.White));
                                 AddMessage(new Message(string.Format("(to give order : press <{0}>).", s_KeyBindings.Get(PlayerCommand.ORDER_MODE).ToString()), m_Session.WorldTime.TurnCounter, Color.White));
 
+                                ClearOverlays();
+                                return false;
                             }
-                            else if (other.Leader == player)
+                            else if (other.Leader == m_Player)
                             {
-                                if (m_Rules.CanActorCancelLead(player, other, out reason))
+                                if (m_Rules.CanActorCancelLead(m_Player, other, out reason))
                                 {
                                     // ask for confirmation.
                                     AddMessage(MakeYesNoMessage(string.Format("Really ask {0} to leave", other.TheName)));
-                                    //RedrawPlayScreen();
-                                    bool confirm = WaitYesOrNo();
-                                    if (confirm)
+                                    wait = WaitFor.YesNo;
+                                    waitForYesNo = yes =>
                                     {
-                                        // cancel lead.
-                                        actionDone = true;
-                                        loop = false;
-                                        DoCancelLead(player, other);
+                                        if (yes)
+                                        {
+                                            // cancel lead.
+                                            DoCancelLead(m_Player, other);
 
-                                        // scoring.
-                                        m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Fired {0}.", other.TheName));
-                                    }
-                                    else
-                                        AddMessage(new Message("Good, together you are strong.", m_Session.WorldTime.TurnCounter, Color.Yellow));
+                                            // scoring.
+                                            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Fired {0}.", other.TheName));
+
+                                            ClearOverlays();
+                                        }
+                                        else
+                                            AddMessage(new Message("Good, together you are strong.", m_Session.WorldTime.TurnCounter, Color.Yellow));
+                                    };
+                                    return true;
                                 }
                                 else
-                                {
                                     AddMessage(MakeErrorMessage(string.Format("{0} can't leave : {1}.", other.TheName, reason)));
-                                }
                             }
                             else
-                            {
                                 AddMessage(MakeErrorMessage(string.Format("Can't lead {0} : {1}.", other.TheName, reason)));
-                            }
                         }
                         else
                             AddMessage(MakeErrorMessage("Noone there."));
                     }
                 }
-            }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+                return true;
+            };
         }
 
         void HandlePlayerPush()
@@ -6112,112 +5964,60 @@ namespace RogueSurvivor.Engine
             };
         }
 
-        bool HandlePlayerUseSpray(Actor player)
+        void HandlePlayerUseSpray()
         {
-            // get equipped item.
-            Item it = player.GetEquippedItem(DollPart.LEFT_HAND);
-            if (it == null)
-            {
+            Item it = m_Player.GetEquippedItem(DollPart.LEFT_HAND);
+            if (it is ItemSprayPaint)
+                HandlePlayerTag();
+            else if (it is ItemSprayScent)
+                HandlePlayerSprayOdorSuppressor();
+            else
                 AddMessage(MakeErrorMessage("No spray equipped."));
-                //RedrawPlayScreen();
-                return false;
-            }
-
-            //////////////////////////////////////////////
-            // Handle concrete action depending on spray.
-            // 1. Spray paint.
-            // 2. Spray scent.
-            //////////////////////////////////////////////
-
-            // 1. Spray paint.
-            ItemSprayPaint sprayPaint = it as ItemSprayPaint;
-            if (sprayPaint != null)
-                return HandlePlayerTag(player);
-
-            // 2. Spray scent.
-            ItemSprayScent sprayScent = it as ItemSprayScent;
-            if (sprayScent != null)
-            {
-                // alpha10 new way to use stench killer
-                return HandlePlayerSprayOdorSuppressor(player);
-            }
-
-            // no spray equipped.
-            AddMessage(MakeErrorMessage("No spray equipped."));
-            //RedrawPlayScreen();
-            return false;
         }
 
-        bool HandlePlayerTag(Actor player)
+        void HandlePlayerTag()
         {
-            bool loop = true;
-            bool actionDone = false;
-
             // Check if has spray paint.
-            ItemSprayPaint sprayPaint = player.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayPaint;
+            ItemSprayPaint sprayPaint = m_Player.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayPaint;
             if (sprayPaint == null)
             {
                 AddMessage(MakeErrorMessage("No spray paint equipped."));
-                //RedrawPlayScreen();
-                return false;
+                return;
             }
             if (sprayPaint.PaintQuantity <= 0)
             {
                 AddMessage(MakeErrorMessage("No paint left."));
-                //RedrawPlayScreen();
-                return false;
+                return;
             }
-
 
             ClearOverlays();
             AddOverlay(new OverlayPopup(TAG_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-            do
+
+            wait = WaitFor.Dir;
+            waitForDir = dir =>
             {
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
-                //RedrawPlayScreen();
-
-                // 2. Get input.
-                Direction dir = WaitDirectionOrCancel();
-
-                // 3. Handle input
                 if (dir == null)
                 {
-                    loop = false;
+                    ClearOverlays();
+                    return false;
                 }
                 else if (dir != Direction.NEUTRAL)
                 {
-                    Point pos = player.Location.Position + dir;
-                    if (player.Location.Map.IsInBounds(pos))
+                    Point pos = m_Player.Location.Position + dir;
+                    if (m_Player.Location.Map.IsInBounds(pos))
                     {
-                        string reason;
-                        if (CanTag(player.Location.Map, pos, out reason))
+                        if (CanTag(m_Player.Location.Map, pos, out string reason))
                         {
-                            DoTag(player, sprayPaint, pos);
-                            loop = false;
-                            actionDone = true;
+                            DoTag(m_Player, sprayPaint, pos);
+                            ClearOverlays();
+                            return false;
                         }
                         else
-                        {
                             AddMessage(MakeErrorMessage(string.Format("Can't tag there : {0}.", reason)));
-                            //RedrawPlayScreen();
-                        }
-
                     }
                 }
-            }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+                return true;
+            };
         }
 
         bool CanTag(Map map, Point pos, out string reason)
@@ -6256,93 +6056,57 @@ namespace RogueSurvivor.Engine
             return true;
         }
 
-        // alpha10 new way to use stench killer
-        bool HandlePlayerSprayOdorSuppressor(Actor player)
+        void HandlePlayerSprayOdorSuppressor()
         {
-            bool loop = true;
-            bool actionDone = false;
-
             // Check if has odor suppressor.
-            ItemSprayScent spray = player.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayScent;
+            ItemSprayScent spray = m_Player.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayScent;
             if (spray == null)
             {
                 AddMessage(MakeErrorMessage("No spray equipped."));
-                //RedrawPlayScreen();
-                return false;
+                return;
             }
             if (spray.SprayQuantity <= 0)
             {
                 AddMessage(MakeErrorMessage("No spray left."));
-                //RedrawPlayScreen();
-                return false;
+                return;
             }
 
             ClearOverlays();
             AddOverlay(new OverlayPopup(SPRAY_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-            do
+
+            wait = WaitFor.Dir;
+            waitForDir = dir =>
             {
-                ///////////////////
-                // 1. Redraw
-                // 2. Get input.
-                // 3. Handle input
-                ///////////////////
-
-                // 1. Redraw
-                //RedrawPlayScreen();
-
-                // 2. Get input.
-                Direction dir = WaitDirectionOrCancel();
-
-                // 3. Handle input
                 if (dir == null)
                 {
-                    loop = false;
+                    ClearOverlays();
+                    return false;
                 }
                 else
                 {
                     Actor sprayOn = null;
-
                     if (dir == Direction.NEUTRAL)
-                    {
-                        sprayOn = player;
-                    }
+                        sprayOn = m_Player;
                     else
                     {
-                        Point pos = player.Location.Position + dir;
-                        if (player.Location.Map.IsInBounds(pos))
-                            sprayOn = player.Location.Map.GetActorAt(pos);
+                        Point pos = m_Player.Location.Position + dir;
+                        if (m_Player.Location.Map.IsInBounds(pos))
+                            sprayOn = m_Player.Location.Map.GetActorAt(pos);
                     }
 
                     if (sprayOn == null)
-                    {
                         AddMessage(MakeErrorMessage("No one to spray on here."));
-                        //RedrawPlayScreen();
-                    }
+                    else if (!m_Rules.CanActorSprayOdorSuppressor(m_Player, spray, sprayOn, out string reason))
+                        AddMessage(MakeErrorMessage(string.Format("Can't spray here : {0}.", reason)));
                     else
                     {
-                        string reason;
-                        if (m_Rules.CanActorSprayOdorSuppressor(player, spray, sprayOn, out reason))
-                        {
-                            DoSprayOdorSuppressor(player, spray, sprayOn);
-                            loop = false;
-                            actionDone = true;
-                        }
-                        else
-                        {
-                            AddMessage(MakeErrorMessage(string.Format("Can't spray here : {0}.", reason)));
-                            //RedrawPlayScreen();
-                        }
-
+                        DoSprayOdorSuppressor(m_Player, spray, sprayOn);
+                        ClearOverlays();
+                        return false;
                     }
                 }
-            }
-            while (loop);
-
-            // cleanup.
-            ClearOverlays();
-
-            // return if we did an action.
-            return actionDone;
+                return true;
+            };
         }
 
         void StartPlayerWaitLong(Actor player)
@@ -7349,7 +7113,7 @@ namespace RogueSurvivor.Engine
                 else
                 {
                     // AI attempted illegal action.
-                    SpendActorActionPoints(aiActor, Rules.BASE_ACTION_COST);
+                    aiActor.SpendActionPoints();
 
                     // alpha10.1
                     // in debug build, throw exception.
@@ -8333,36 +8097,6 @@ namespace RogueSurvivor.Engine
                         return;
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        /// Loop input until Exit/Cancel or a direction command is issued.
-        /// </summary>
-        /// <returns>null if Exit/Cancel</returns>
-        Direction WaitDirectionOrCancel()
-        {
-            throw new NotImplementedException();
-            for (; ; )
-            {
-                Key inKey = ui.ReadKey();
-                PlayerCommand command = InputTranslator.KeyToCommand(inKey);
-                if (inKey == Key.Escape)// command == PlayerCommand.EXIT_OR_CANCEL)
-                    return null;
-                Direction dir = CommandToDirection(command);
-                if (dir != null)
-                    return dir;
-            }
-        }
-
-        void WaitEnter()
-        {
-            throw new NotImplementedException();
-            for (; ; )
-            {
-                Key inKey = ui.ReadKey();
-                if (inKey == Key.Enter)
-                    return;
             }
         }
 
@@ -9586,7 +9320,7 @@ namespace RogueSurvivor.Engine
             if (!TryActorLeaveTile(actor))
             {
                 // waste ap.
-                SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+                actor.SpendActionPoints();
                 return;
             }
 
@@ -9652,7 +9386,7 @@ namespace RogueSurvivor.Engine
             }
 
             // spend move AP.
-            SpendActorActionPoints(actor, moveCost);
+            actor.SpendActionPoints(moveCost);
 
             // If actor can move again, make sure he drops his scent here.
             // If we don't do this, since scents are dropped only in new turns,
@@ -10010,13 +9744,13 @@ namespace RogueSurvivor.Engine
             if (!TryActorLeaveTile(actor))
             {
                 // waste ap.
-                SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+                actor.SpendActionPoints();
                 return;
             }
 
             // spend AP **IF AI**
             if (!actor.IsPlayer)
-                SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+                actor.SpendActionPoints();
 
             // if player is leaving and changing district, prepare district.
             // alpha10.1 disallow bots from leaving districts
@@ -10181,7 +9915,7 @@ namespace RogueSurvivor.Engine
         public void DoSwitchPlace(Actor actor, Actor other)
         {
             // spend a bunch of ap.
-            SpendActorActionPoints(actor, 2 * Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints(2 * Rules.BASE_ACTION_COST);
 
             // swap positions.
             Map map = other.Location.Map;
@@ -10192,15 +9926,13 @@ namespace RogueSurvivor.Engine
 
             // message.
             if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(other))
-            {
                 AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH_PLACE_WITH), other));
-            }
         }
 
         public void DoTakeLead(Actor actor, Actor other)
         {
             // spend AP.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // take lead.
             actor.AddFollower(other);
@@ -10220,13 +9952,12 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        // alpha10.1
         public void DoStealLead(Actor actor, Actor other)
         {
             Actor prevLeader = other.Leader;
 
             // spend AP.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // remove from previous leader
             prevLeader.RemoveFollower(other);
@@ -10252,7 +9983,7 @@ namespace RogueSurvivor.Engine
         public void DoCancelLead(Actor actor, Actor follower)
         {
             // spend AP.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // remove lead.
             actor.RemoveFollower(follower);
@@ -10273,7 +10004,7 @@ namespace RogueSurvivor.Engine
         public void DoWait(Actor actor)
         {
             // spend AP.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // message.
             if (IsVisibleToPlayer(actor))
@@ -10288,79 +10019,41 @@ namespace RogueSurvivor.Engine
             RegenActorStaminaPoints(actor, Rules.STAMINA_REGEN_WAIT);
         }
 
-        public bool DoPlayerBump(Actor player, Direction direction)
+        public void DoPlayerBump(Direction direction)
         {
-            ActionBump bump = new ActionBump(player, this, direction);
+            ActionBump bump = new ActionBump(m_Player, this, direction);
 
             // special case: tearing down barricades as living.
-            // alpha10.1 moved up because civs models can now bash doors as a bump action; added break check and simplified test
-            if ((bump.ConcreteAction is ActionBreak || bump.ConcreteAction is ActionBashDoor) && !player.Model.Abilities.IsUndead)
+            // moved up because civs models can now bash doors as a bump action; added break check and simplified test
+            if ((bump.ConcreteAction is ActionBreak || bump.ConcreteAction is ActionBashDoor) && !m_Player.Model.Abilities.IsUndead)
             {
                 string doWhat = bump.ConcreteAction is ActionBreak ? ("break " + (bump.ConcreteAction as ActionBreak).MapObject.TheName) : "tear down the barricade";
-
-                if (m_Rules.IsActorTired(player))
+                if (m_Rules.IsActorTired(m_Player))
                 {
                     AddMessage(MakeErrorMessage("Too tired to " + doWhat + "."));
-                    //RedrawPlayScreen();
-                    return false;
+                    return;
                 }
                 else
                 {
                     // ask for confirmation.
                     AddMessage(MakeYesNoMessage("Really " + doWhat));
-                    //RedrawPlayScreen();
-                    bool confirm = WaitYesOrNo();
 
-                    if (confirm)
+                    wait = WaitFor.YesNo;
+                    waitForYesNo = yes =>
                     {
-                        //DoBreak(player, door);
-                        bump.ConcreteAction.Perform();
-                        return true;
-                    }
-                    else
-                    {
-                        AddMessage(new Message("Good, keep everything secure.", m_Session.WorldTime.TurnCounter, Color.Yellow));
-                        return false;
-                    }
+                        if (yes)
+                            bump.ConcreteAction.Perform();
+                        else
+                            AddMessage(new Message("Good, keep everything secure.", m_Session.WorldTime.TurnCounter, Color.Yellow));
+                    };
+                    return;
                 }
-                //DoorWindow door = player.Location.Map.GetMapObjectAt(player.Location.Position + direction) as DoorWindow;
-                //if (door != null && door.IsBarricaded && !player.Model.Abilities.IsUndead)
-                //{
-                //    if (!m_Rules.IsActorTired(player))
-                //    {
-                //        // ask for confirmation.
-                //        AddMessage(MakeYesNoMessage("Really tear down the barricade"));
-                //        //RedrawPlayScreen();
-                //        bool confirm = WaitYesOrNo();
-
-                //        if (confirm)
-                //        {
-                //            DoBreak(player, door);
-                //            return true;
-                //        }
-                //        else
-                //        {
-                //            AddMessage(new Message("Good, keep everything secure.", m_Session.WorldTime.TurnCounter, Color.Yellow));
-                //            return false;
-                //        }
-                //    }
-                //    else
-                //    {
-                //        AddMessage(MakeErrorMessage("Too tired to tear down the barricade."));
-                //        //RedrawPlayScreen();
-                //        return false;
-                //    }
-                //}
             }
 
             if (bump.IsLegal())
-            {
                 bump.Perform();
-                return true;
-            }
-
-            AddMessage(MakeErrorMessage(string.Format("Cannot do that : {0}.", bump.FailReason)));
-            return false;
+            else
+                AddMessage(MakeErrorMessage(string.Format("Cannot do that : {0}.", bump.FailReason)));
         }
 
         public void DoMakeAggression(Actor aggressor, Actor target)
@@ -10496,7 +10189,7 @@ namespace RogueSurvivor.Engine
             Defence defence = m_Rules.ActorDefence(defender, defender.CurrentDefence);
 
             // spend APs & STA.
-            SpendActorActionPoints(attacker, Rules.BASE_ACTION_COST);
+            attacker.SpendActionPoints();
             SpendActorStaminaPoints(attacker, Rules.STAMINA_COST_MELEE_ATTACK + attack.StaminaPenalty);
 
             // resolve attack.
@@ -10712,7 +10405,7 @@ namespace RogueSurvivor.Engine
             {
                 case FireMode.DEFAULT:
                     // spend AP.
-                    SpendActorActionPoints(attacker, Rules.BASE_ACTION_COST);
+                    attacker.SpendActionPoints();
 
                     // do attack.
                     DoSingleRangedAttack(attacker, defender, LoF, 0);
@@ -10720,7 +10413,7 @@ namespace RogueSurvivor.Engine
 
                 case FireMode.RAPID:
                     // spend AP.
-                    SpendActorActionPoints(attacker, Rules.BASE_ACTION_COST);
+                    attacker.SpendActionPoints();
 
                     // 1st attack
                     DoSingleRangedAttack(attacker, defender, LoF, 1);
@@ -10946,7 +10639,7 @@ namespace RogueSurvivor.Engine
                 throw new InvalidOperationException("throwing grenade but no grenade equiped ");
 
             // spend AP.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // consume grenade.
             actor.Inventory.Consume(grenade);
@@ -10978,7 +10671,7 @@ namespace RogueSurvivor.Engine
                 throw new InvalidOperationException("throwing primed grenade but no primed grenade equiped ");
 
             // spend AP.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // remove grenade from inventory.
             actor.Inventory.RemoveAllQuantity(primedGrenade);
@@ -11320,7 +11013,7 @@ namespace RogueSurvivor.Engine
         public void DoChat(Actor speaker, Actor target)
         {
             // spend APs.
-            SpendActorActionPoints(speaker, Rules.BASE_ACTION_COST);
+            speaker.SpendActionPoints();
 
             // message
             bool isSpeakerVisible = IsVisibleToPlayer(speaker);
@@ -11601,7 +11294,7 @@ namespace RogueSurvivor.Engine
 
             // spend APS?
             if ((flags & Sayflags.IS_FREE_ACTION) == 0)
-                SpendActorActionPoints(speaker, Rules.BASE_ACTION_COST);
+                speaker.SpendActionPoints();
 
             // message.
             if (IsVisibleToPlayer(speaker) || (IsVisibleToPlayer(target) && !(m_Player.IsSleeping && target == m_Player)))
@@ -11632,7 +11325,7 @@ namespace RogueSurvivor.Engine
         public void DoShout(Actor speaker, string text)
         {
             // spend APs.
-            SpendActorActionPoints(speaker, Rules.BASE_ACTION_COST);
+            speaker.SpendActionPoints();
 
             // loud noise.
             OnLoudNoise(speaker.Location.Map, speaker.Location.Position, "A SHOUT");
@@ -11684,14 +11377,14 @@ namespace RogueSurvivor.Engine
             Map map = actor.Location.Map;
 
             // spend APs.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // special case for traps
             if (it is ItemTrap)
             {
                 ItemTrap trap = it as ItemTrap;
                 // taking a trap desactivates it.
-                trap.Desactivate(); // alpha10 // trap.IsActivated = false;
+                trap.Desactivate();
             }
 
             // add to inventory.
@@ -11720,7 +11413,7 @@ namespace RogueSurvivor.Engine
         public void DoGiveItemTo(Actor actor, Actor target, Item gift)
         {
             // spend APs.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // if leader give to follower, improve trust.
             if (target.Leader == actor)
@@ -11867,7 +11560,7 @@ namespace RogueSurvivor.Engine
         public void DoDropItem(Actor actor, Item it)
         {
             // spend APs.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // which item to drop (original or a clone)
             Item dropIt = it;
@@ -11996,7 +11689,7 @@ namespace RogueSurvivor.Engine
             ItemFood food = it as ItemFood;
 
             // spend APs.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // recover food points.
             int baseNutrition = m_Rules.FoodItemNutrition(food, actor.Location.Map.LocalTime.TurnCounter);
@@ -12039,7 +11732,7 @@ namespace RogueSurvivor.Engine
             }
 
             // spend APs.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // recover food points.
             int baseNutrition = m_Rules.FoodItemNutrition(food, actor.Location.Map.LocalTime.TurnCounter);
@@ -12117,7 +11810,7 @@ namespace RogueSurvivor.Engine
             }
 
             // spend APs.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // recover HPs, STA, SLP, INF, SAN.
             actor.HitPoints = Math.Min(actor.HitPoints + m_Rules.ActorMedicineEffect(actor, med.Healing), m_Rules.ActorMaxHPs(actor));
@@ -12137,7 +11830,7 @@ namespace RogueSurvivor.Engine
         void DoUseAmmoItem(Actor actor, ItemAmmo ammoItem)
         {
             // spend APs.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // get weapon.
             ItemRangedWeapon ranged = actor.GetEquippedWeapon() as ItemRangedWeapon;
@@ -12158,18 +11851,15 @@ namespace RogueSurvivor.Engine
 
             // message.
             if (IsVisibleToPlayer(actor))
-            {
                 AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RELOAD), ranged));
-            }
         }
 
         void DoUseTrapItem(Actor actor, ItemTrap trap)
         {
             // spend APs.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // toggle activation.
-            // alpha10 //trap.IsActivated = !trap.IsActivated;
             if (trap.IsActivated)
                 trap.Desactivate();
             else
@@ -12185,7 +11875,7 @@ namespace RogueSurvivor.Engine
             bool visible = IsVisibleToPlayer(actor);
 
             // spend APs.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // recover san.
             RegenActorSanity(actor, ent.EntertainmentModel.Value);
@@ -12210,7 +11900,7 @@ namespace RogueSurvivor.Engine
                     bored = true;
             }
             if (bored)
-                ent.AddBoringFor(actor); // alpha10 boring items item centric
+                ent.AddBoringFor(actor);
 
             // message.
             if (visible)
@@ -12225,7 +11915,7 @@ namespace RogueSurvivor.Engine
         public void DoRechargeItemBattery(Actor actor, Item it)
         {
             // spend APs.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // recharge.
             if (it is ItemLight)
@@ -12241,9 +11931,7 @@ namespace RogueSurvivor.Engine
 
             // message.
             if (IsVisibleToPlayer(actor))
-            {
                 AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RECHARGE), it, " batteries."));
-            }
         }
 
         public void DoOpenDoor(Actor actor, DoorWindow door)
@@ -12253,14 +11941,10 @@ namespace RogueSurvivor.Engine
 
             // Message.
             if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(door))
-            {
                 AddMessage(MakeMessage(actor, Conjugate(actor, VERB_OPEN), door));
-                //RedrawPlayScreen();
-            }
 
             // Spend APs.
-            int openCost = Rules.BASE_ACTION_COST;
-            SpendActorActionPoints(actor, openCost);
+            actor.SpendActionPoints();
         }
 
         public void DoCloseDoor(Actor actor, DoorWindow door)
@@ -12270,14 +11954,10 @@ namespace RogueSurvivor.Engine
 
             // Message.
             if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(door))
-            {
                 AddMessage(MakeMessage(actor, Conjugate(actor, VERB_CLOSE), door));
-                //RedrawPlayScreen();
-            }
 
             // Spend APs.
-            int closeCost = Rules.BASE_ACTION_COST;
-            SpendActorActionPoints(actor, closeCost);
+            actor.SpendActionPoints();
         }
 
         public void DoBarricadeDoor(Actor actor, DoorWindow door)
@@ -12293,26 +11973,22 @@ namespace RogueSurvivor.Engine
             // message.
             bool isVisible = IsVisibleToPlayer(actor) || IsVisibleToPlayer(door);
             if (isVisible)
-            {
                 AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BARRICADE), door));
-            }
 
             // spend AP.
-            int barricadingCost = Rules.BASE_ACTION_COST;
-            SpendActorActionPoints(actor, barricadingCost);
+            actor.SpendActionPoints();
         }
 
         public void DoBuildFortification(Actor actor, Point buildPos, bool isLarge)
         {
             // spend AP.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // consume material.
             int need = m_Rules.ActorBarricadingMaterialNeedForFortification(actor, isLarge);
             for (int i = 0; i < need; i++)
             {
-                Item it = actor.Inventory.GetSmallestStackByType(typeof(ItemBarricadeMaterial)); // alpha10
-                                                                                                 //actor.Inventory.GetFirstByType(typeof(ItemBarricadeMaterial));
+                Item it = actor.Inventory.GetSmallestStackByType(typeof(ItemBarricadeMaterial));
                 actor.Inventory.Consume(it);
             }
 
@@ -12322,9 +11998,7 @@ namespace RogueSurvivor.Engine
 
             // message.
             if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(new Location(actor.Location.Map, buildPos)))
-            {
                 AddMessage(MakeMessage(actor, string.Format("{0} a {1} fortification.", Conjugate(actor, VERB_BUILD), isLarge ? "large" : "small")));
-            }
 
             // check traps.
             CheckMapObjectTriggersTraps(actor.Location.Map, buildPos);
@@ -12333,11 +12007,10 @@ namespace RogueSurvivor.Engine
         public void DoRepairFortification(Actor actor, Fortification fort)
         {
             // spend AP.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // spend material.
-            ItemBarricadeMaterial material = actor.Inventory.GetSmallestStackByType(typeof(ItemBarricadeMaterial)) as ItemBarricadeMaterial; // alpha10
-                                                                                                                                             //actor.Inventory.GetFirstByType(typeof(ItemBarricadeMaterial)) as ItemBarricadeMaterial;
+            ItemBarricadeMaterial material = actor.Inventory.GetSmallestStackByType(typeof(ItemBarricadeMaterial)) as ItemBarricadeMaterial;
             if (material == null)
                 throw new InvalidOperationException("no material");
             actor.Inventory.Consume(material);
@@ -12348,29 +12021,23 @@ namespace RogueSurvivor.Engine
 
             // message.
             if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(fort))
-            {
                 AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REPAIR), fort));
-            }
         }
 
         public void DoSwitchPowerGenerator(Actor actor, PowerGenerator powGen)
         {
             // spend AP.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // switch it.
             powGen.TogglePower();
 
             // message.
             if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(powGen))
-            {
                 AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH), powGen, powGen.IsOn ? " on." : " off."));
-            }
 
             // check for special effects.
             OnMapPowerGeneratorSwitch(actor.Location, powGen);
-
-            // done.
         }
 
         void DoDestroyObject(MapObject mapObj)
@@ -12431,8 +12098,7 @@ namespace RogueSurvivor.Engine
             if (door != null && door.IsBarricaded)
             {
                 // Spend APs & STA.
-                int bashCost = Rules.BASE_ACTION_COST;
-                SpendActorActionPoints(actor, bashCost);
+                actor.SpendActionPoints();
                 SpendActorStaminaPoints(actor, Rules.STAMINA_COST_MELEE_ATTACK);
 
                 // Bash.
@@ -12476,8 +12142,7 @@ namespace RogueSurvivor.Engine
                 mapObj.HitPoints -= bashAttack.DamageValue;
 
                 // Spend APs & STA.
-                int bashCost = Rules.BASE_ACTION_COST;
-                SpendActorActionPoints(actor, bashCost);
+                actor.SpendActionPoints();
                 SpendActorStaminaPoints(actor, Rules.STAMINA_COST_MELEE_ATTACK);
 
                 // Broken?
@@ -12511,7 +12176,6 @@ namespace RogueSurvivor.Engine
                             AddOverlay(new OverlayImage(MapToScreen(actor.Location.Position), GameImages.ICON_MELEE_ATTACK));
                         if (isDoorVisible)
                             AddOverlay(new OverlayImage(MapToScreen(mapObj.Location.Position), GameImages.ICON_KILLED));
-                        //RedrawPlayScreen();
                         AnimDelay(DELAY_LONG);
                     }
                     else
@@ -12530,7 +12194,6 @@ namespace RogueSurvivor.Engine
                         if (isActorVisible)
                             AddOverlay(new OverlayImage(MapToScreen(actor.Location.Position), GameImages.ICON_MELEE_ATTACK));
 
-                        //RedrawPlayScreen();
                         AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
                     }
 
@@ -12572,14 +12235,14 @@ namespace RogueSurvivor.Engine
             {
                 // share the sta cost.
                 staCost = mapObj.Weight / (1 + helpers.Count);
-                foreach (Actor h in helpers)
+                foreach (Actor helper in helpers)
                 {
                     // spend fo AP & STA.
-                    SpendActorActionPoints(h, Rules.BASE_ACTION_COST);
-                    SpendActorStaminaPoints(h, staCost);
+                    helper.SpendActionPoints();
+                    SpendActorStaminaPoints(helper, staCost);
                     // message.
-                    if (isVisibleMobj || IsVisibleToPlayer(h))
-                        AddMessage(MakeMessage(h, string.Format("{0} {1} {2} {3}.", Conjugate(h, VERB_HELP), actor.Name, (isPulling ? "pulling" : "pushing"), mapObj.TheName)));
+                    if (isVisibleMobj || IsVisibleToPlayer(helper))
+                        AddMessage(MakeMessage(helper, string.Format("{0} {1} {2} {3}.", Conjugate(helper, VERB_HELP), actor.Name, (isPulling ? "pulling" : "pushing"), mapObj.TheName)));
                 }
             }
         }
@@ -12594,7 +12257,7 @@ namespace RogueSurvivor.Engine
                 DoPushPullFollowersHelp(actor, mapObj, false, ref staCost); // alpha10
 
             // spend AP & STA.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
             SpendActorStaminaPoints(actor, staCost);
 
             // do it : move object, then move actor if he is pushing it away and can enter the tile.
@@ -12641,12 +12304,12 @@ namespace RogueSurvivor.Engine
             if (!TryActorLeaveTile(target))
             {
                 // waste ap.
-                SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+                actor.SpendActionPoints();
                 return;
             }
 
             // spend AP & STA.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
             SpendActorStaminaPoints(actor, Rules.DEFAULT_ACTOR_WEIGHT);
 
             // force target to stop dragging corpses.
@@ -12695,7 +12358,7 @@ namespace RogueSurvivor.Engine
             if (!TryActorLeaveTile(actor))
             {
                 // waste ap.
-                SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+                actor.SpendActionPoints();
                 return;
             }
 
@@ -12704,7 +12367,7 @@ namespace RogueSurvivor.Engine
                 DoPushPullFollowersHelp(actor, mapObj, true, ref staCost);
 
             // spend AP & STA.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
             SpendActorStaminaPoints(actor, staCost);
 
             // do it : move actor then move object
@@ -12749,18 +12412,18 @@ namespace RogueSurvivor.Engine
             if (!TryActorLeaveTile(actor))
             {
                 // waste ap.
-                SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+                actor.SpendActionPoints();
                 return;
             }
             if (!TryActorLeaveTile(target))
             {
                 // waste ap.
-                SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+                actor.SpendActionPoints();
                 return;
             }
 
             // spend AP & STA.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
             SpendActorStaminaPoints(actor, Rules.DEFAULT_ACTOR_WEIGHT);
 
             // force target to stop dragging corpses.
@@ -12795,7 +12458,7 @@ namespace RogueSurvivor.Engine
         public void DoStartSleeping(Actor actor)
         {
             // spend AP.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // force actor to stop dragging corpses.
             DoStopDraggingCorpses(actor);
@@ -12825,7 +12488,7 @@ namespace RogueSurvivor.Engine
         void DoTag(Actor actor, ItemSprayPaint spray, Point pos)
         {
             // spend AP.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // spend paint.
             --spray.PaintQuantity;
@@ -12844,7 +12507,7 @@ namespace RogueSurvivor.Engine
         public void DoSprayOdorSuppressor(Actor actor, ItemSprayScent suppressor, Actor sprayOn)
         {
             // spend AP.
-            SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+            actor.SpendActionPoints();
 
             // spend spray.
             --suppressor.SprayQuantity;
@@ -12863,7 +12526,7 @@ namespace RogueSurvivor.Engine
         void DoGiveOrderTo(Actor master, Actor slave, ActorOrder order)
         {
             // master spend AP.
-            SpendActorActionPoints(master, Rules.BASE_ACTION_COST);
+            master.SpendActionPoints();
 
             // refuse if :
             // - master is not slave leader.
@@ -12897,7 +12560,7 @@ namespace RogueSurvivor.Engine
         void DoCancelOrder(Actor master, Actor slave)
         {
             // master spend AP.
-            SpendActorActionPoints(master, Rules.BASE_ACTION_COST);
+            master.SpendActionPoints();
 
             // get AI.
             AIController ai = slave.Controller as AIController;

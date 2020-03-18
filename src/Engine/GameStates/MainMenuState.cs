@@ -16,7 +16,7 @@ namespace RogueSurvivor.Engine.GameStates
     {
         int selected;
         bool isLoadEnabled;
-        List<Point> christmasSpecial;
+        List<Point> santas;
 
         string[] menuEntries => new string[] {
                 "New Game",                                     // 0 
@@ -40,11 +40,19 @@ namespace RogueSurvivor.Engine.GameStates
             DateTime dateNow = DateTime.Now;
             if (dateNow.Month == 12 && dateNow.Day >= 24 && dateNow.Day <= 26)
             {
-                christmasSpecial = new List<Point>();
+                santas = new List<Point>();
+                UpdateSantas();
+            }
+        }
+
+        void UpdateSantas()
+        {
+            if (santas != null)
+            {
                 const int NB_SANTAS = 10;
-                //for (int i = 0; i < NB_SANTAS; i++)
-                //    christmasSpecial.Add(new Point(m_Rules.Roll(0, 1024), m_Rules.Roll(0, 768)));
-                // !FIXME
+                santas.Clear();
+                for (int i = 0; i < NB_SANTAS; i++)
+                    santas.Add(new Point(game.Rules.Roll(0, Ui.CANVAS_WIDTH), game.Rules.Roll(0, Ui.CANVAS_HEIGHT)));
             }
         }
 
@@ -62,12 +70,14 @@ namespace RogueSurvivor.Engine.GameStates
             ui.DrawFootnote(Color.White, "cursor to move, ENTER to select");
 
             // christmas special.
-            /*foreach (Point pt in christmasSpecial)
+            if (santas != null)
             {
-                ui.DrawImage(GameImages.ACTOR_SANTAMAN, pt.X, pt.Y);
-                ui.DrawStringBold(Color.Snow, "* Merry Christmas *", pt.X - 60, pt.Y - 10);
-            }*/
-            // !FIXME
+                foreach (Point pt in santas)
+                {
+                    ui.DrawImage(GameImages.ACTOR_SANTAMAN, pt.X, pt.Y);
+                    ui.DrawStringBold(Color.Snow, "* Merry Christmas *", pt.X - 60, pt.Y - 10);
+                }
+            }
         }
 
         public override void Update(double dt)
@@ -80,10 +90,12 @@ namespace RogueSurvivor.Engine.GameStates
                         --selected;
                     else
                         selected = menuEntries.Length - 1;
+                    UpdateSantas();
                     break;
 
                 case Key.Down:
                     selected = (selected + 1) % menuEntries.Length;
+                    UpdateSantas();
                     break;
 
                 case Key.Enter:
@@ -94,6 +106,7 @@ namespace RogueSurvivor.Engine.GameStates
                             break;
 
                         case 1:
+                            // !FIXME
                             /*if (!isLoadEnabled)
                                 break;
                             gy += 2 * Ui.BOLD_LINE_SPACING;
