@@ -271,12 +271,12 @@ namespace RogueSurvivor
                     Session.DistrictStat.Record? r = m_Game.Session.GetStatRecord(d, turn);
                     if (r == null) break;
                     int L = r.Value.livings;
-                    UI_DrawLine(Color.Green, 
-                        (turn - 1)/XSCALE, RogueGame.CANVAS_HEIGHT - YSCALE * prevL, 
+                    UI_DrawLine(Color.Green,
+                        (turn - 1)/XSCALE, RogueGame.CANVAS_HEIGHT - YSCALE * prevL,
                         turn/XSCALE, RogueGame.CANVAS_HEIGHT - YSCALE * L);
                     int U = r.Value.undeads;
-                    UI_DrawLine(Color.Red, 
-                        (turn - 1)/XSCALE, RogueGame.CANVAS_HEIGHT - YSCALE * prevU, 
+                    UI_DrawLine(Color.Red,
+                        (turn - 1)/XSCALE, RogueGame.CANVAS_HEIGHT - YSCALE * prevU,
                         turn/XSCALE, RogueGame.CANVAS_HEIGHT - YSCALE * U);
                     prevL = L;
                     prevU = U;
@@ -298,18 +298,7 @@ namespace RogueSurvivor
             {
                 m_Game.DEV_MaxTrust();
                 UI_Repaint();
-            }
-
-            // alpha10.1
-#if DEBUG
-            // INSERT - DEV - Toggle bot mode
-            if (key == Key.Insert)
-            {
-                m_Game.BotToggleControl();
-                UI_Repaint();
-            }
-#endif
-*/
+            }*/
             // !FIXME
         }
 
@@ -558,7 +547,7 @@ namespace RogueSurvivor
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="entries">choices text</param>
         /// <param name="values">(options values) can be null, array must be same length as choices</param>

@@ -155,25 +155,12 @@ namespace RogueSurvivor.Gameplay.AI
         {
             List<Percept> mapPercepts = FilterSameMap(game, percepts);
 
-            // DEBUG BOT
-#if DEBUG
-            bool botBreakpoint = false;
-            bool verboseBotExploreWander = false;
-            if (m_Actor.IsBotPlayer)
-            {
-                botBreakpoint = false; // true;
-                verboseBotExploreWander = false; // true;
-            }
-#endif
-            // END DEBUG BOT
-
             ///////////////////////
-            // 0. Equip best item.  // alpha10
+            // 0. Equip best item.
             // 1. Follow order
             // 2. Normal behavior.
             ///////////////////////
 
-            // alpha10
             // don't run by default.
             m_Actor.IsRunning = false;
 
@@ -806,34 +793,14 @@ namespace RogueSurvivor.Gameplay.AI
 
             // 30 explore
 
-            // DEBUG BOT
-#if DEBUG
-            if (botBreakpoint)
-                Console.Out.WriteLine("test bot exploration breakpoint");
-#endif
-            // END DEBUG BOT
-
             ActorAction exploreAction = BehaviorExplore(game, m_Exploration);
             if (exploreAction != null)
             {
-                // VERBOSE BOT
-#if DEBUG
-                if (verboseBotExploreWander)
-                    game.AddMessage(new Message(">> Bot is Exploring", m_Actor.Location.Map.LocalTime.TurnCounter));
-#endif
-                // END VERBOSE BOT
-
                 m_Actor.Activity = Activity.IDLE;
                 return exploreAction;
             }
 
             // 31 wander.
-            // VERBOSE BOT
-#if DEBUG
-            if (verboseBotExploreWander)
-                game.AddMessage(new Message(">> Bot is Wandering", m_Actor.Location.Map.LocalTime.TurnCounter));
-#endif
-            // END VERBOSE BOT
 
             m_Actor.Activity = Activity.IDLE;
             return BehaviorWander(game, m_Exploration);

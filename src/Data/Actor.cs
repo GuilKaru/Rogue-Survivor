@@ -34,7 +34,6 @@ namespace RogueSurvivor.Data
         int m_GangID;
         string m_Name;
         ActorController m_Controller;
-        bool m_isBotPlayer;  // alpha10.1
         ActorSheet m_Sheet;
         int m_SpawnTime;
         Inventory m_Inventory = null;
@@ -156,24 +155,11 @@ namespace RogueSurvivor.Data
         }
 
         /// <summary>
-        /// Gets if this actor is controlled by the player or bot.
+        /// Gets if this actor is controlled by the player.
         /// </summary>
         public bool IsPlayer
         {
             get { return m_Controller != null && m_Controller is PlayerController; }
-        }
-
-        // alpha10.1 bot
-        /// <summary>
-        /// Gets or set if this actor is declared as controlled by a bot.
-        /// The controller is STILL PlayerController and IsPlayer will still return true.
-        /// We need this because in some rare parts of the code outside of RogueGame we need to know if the player is a bot or not.
-        /// See RogueGame.
-        /// </summary>
-        public bool IsBotPlayer
-        {
-            get { return m_isBotPlayer; }
-            set { m_isBotPlayer = value; }
         }
 
         public int SpawnTime

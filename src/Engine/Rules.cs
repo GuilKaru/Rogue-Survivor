@@ -413,7 +413,7 @@ namespace RogueSurvivor.Engine
         }
 
         /// <summary>
-        /// [damageValue/2, damageValue] 
+        /// [damageValue/2, damageValue]
         /// </summary>
         /// <param name="damageValue"></param>
         /// <returns></returns>
@@ -890,7 +890,7 @@ namespace RogueSurvivor.Engine
                 return false;
             }
 
-            // 2. Item not equipped.            
+            // 2. Item not equipped.
             if (!it.IsEquipped || !actor.Inventory.Contains(it))
             {
                 reason = "item not equipped";
@@ -1322,9 +1322,9 @@ namespace RogueSurvivor.Engine
                         return null;
                 }
 
-                // AI: switching place  // alpha10.1 handle bot like it was an AI
-                if ((!actor.IsPlayer || actor.IsBotPlayer) &&
-                    !targetActor.IsPlayer
+                // AI: switching place
+                if (!actor.IsPlayer
+                    && !targetActor.IsPlayer
                     && CanActorSwitchPlaceWith(actor, targetActor, out reason))
                     return new ActionSwitchPlace(actor, game, targetActor);
 
@@ -1459,9 +1459,9 @@ namespace RogueSurvivor.Engine
 
             /////////////////////////////////
             // Only if :
-            // 1. Player and not bot // alpha10.1
+            // 1. Player
             /////////////////////////////////
-            if (!actor.IsPlayer || actor.IsBotPlayer)
+            if (!actor.IsPlayer)
             {
                 reason = "can't leave maps";
                 return false;
@@ -1497,8 +1497,7 @@ namespace RogueSurvivor.Engine
             }
 
             // 2. AI: can't use AI exits.
-            // alpha10.1 handle bots
-            if ((!actor.IsPlayer || actor.IsBotPlayer) && !actor.Model.Abilities.AI_CanUseAIExits)
+            if (!actor.IsPlayer && !actor.Model.Abilities.AI_CanUseAIExits)
             {
                 reason = "this AI can't use exits";
                 return false;
@@ -2992,7 +2991,7 @@ namespace RogueSurvivor.Engine
                 throw new ArgumentNullException("corpse");
 
             ///////////////////////////
-            // Can't if 
+            // Can't if
             // 1. No medic skill.
             // 2. Not on same tile.
             // 3. Corpse not fresh.
@@ -3200,7 +3199,7 @@ namespace RogueSurvivor.Engine
             if (actorA.Faction == actorB.Faction && actorA.IsInAGang && actorB.IsInAGang && actorA.GangID != actorB.GangID)
                 return true;
 
-            // alpha10 
+            // alpha10
             // Personal enemies? (symetrical)
             if (ArePersonalEnemies(actorA, actorB))
                 return true;
@@ -3241,7 +3240,7 @@ namespace RogueSurvivor.Engine
 
         // alpha10
         /// <summary>
-        /// Check if they are enmemies through group relations : 
+        /// Check if they are enmemies through group relations :
         /// - my leader enemies are my enemies
         /// - my mates enemies are my enemies.
         /// - my follower enemies are my enemies.
@@ -3820,7 +3819,7 @@ namespace RogueSurvivor.Engine
             return MURDERER_SPOTTING_BASE_CHANCE + spotterBonus - distancePenalty;
         }
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="time"></param>
@@ -3852,7 +3851,7 @@ namespace RogueSurvivor.Engine
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="actor"></param>
         /// <param name="weather"></param>
@@ -4041,7 +4040,7 @@ namespace RogueSurvivor.Engine
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="c"></param>
         /// <returns>[0..5]</returns>
@@ -4145,7 +4144,7 @@ namespace RogueSurvivor.Engine
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="trap"></param>
         /// <param name="a"></param>
@@ -4163,7 +4162,7 @@ namespace RogueSurvivor.Engine
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="trap"></param>
         /// <param name="mobj">can be null</param>
