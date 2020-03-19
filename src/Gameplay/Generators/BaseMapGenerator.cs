@@ -148,7 +148,6 @@ namespace RogueSurvivor.Gameplay.Generators
             return skins[roller.Roll(0, skins.Length)];
         }
 
-        // alpha10.1 added new male first names
         static readonly string[] MALE_FIRST_NAMES =
         {
             "Aaron", "Adam", "Adrian", "Alan", "Albert", "Alberto", "Alex", "Alexander", "Alfred", "Alfredo", "Allan", "Allen", "Alvin", "Andre", "Andrew", "Andy", "Angel", "Anton", "Antonio", "Anthony", "Armando", "Arnold", "Arthur", "Ashley", "Axel",
@@ -179,7 +178,6 @@ namespace RogueSurvivor.Gameplay.Generators
             "Zachary"
         };
 
-        // alpha10.1 added new female first names
         static readonly string[] FEMALE_FIRST_NAMES =
         {
             "Abigail", "Agnes", "Ali", "Alice", "Alicia", "Allison", "Alma", "Amanda", "Amber", "Amy", "Andrea", "Angela", "Anita", "Ana", "Ann", "Anna", "Anne", "Annette", "Annie", "April", "Arlene", "Ashley", "Audrey",
@@ -210,7 +208,6 @@ namespace RogueSurvivor.Gameplay.Generators
             "Zora"
         };
 
-        // alpha10.1 added new names
         static readonly string[] LAST_NAMES =
         {
             "Adams", "Alexander", "Allen", "Anderson", "Austin",
@@ -355,7 +352,6 @@ namespace RogueSurvivor.Gameplay.Generators
             };
         }
 
-        // alpha10
         protected MapObject MakeObjWireFence(string fenceImageID, MapObject.Fire burnable = MapObject.Fire.UNINFLAMMABLE, int hitPoints = DoorWindow.BASE_HITPOINTS)
         {
             return new MapObject("fence", fenceImageID, MapObject.Break.BREAKABLE, burnable, hitPoints)
@@ -375,7 +371,7 @@ namespace RogueSurvivor.Gameplay.Generators
             };
         }
 
-        protected MapObject MakeObjIronGate(string gateImageID, bool isBreakable = true)  // alpha10.1 added param isBreakable
+        protected MapObject MakeObjIronGate(string gateImageID, bool isBreakable = true)
         {
             return new MapObject("iron gate", gateImageID,
                 isBreakable ? MapObject.Break.BREAKABLE : MapObject.Break.UNBREAKABLE,

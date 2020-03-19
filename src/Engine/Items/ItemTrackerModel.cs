@@ -31,7 +31,7 @@ namespace RogueSurvivor.Engine.Items
 
         TrackingFlags m_Tracking;
         int m_MaxBatteries;
-        bool m_HasClock;  // alpha10
+        bool m_HasClock;
 
         public TrackingFlags Tracking
         {
@@ -53,7 +53,7 @@ namespace RogueSurvivor.Engine.Items
         {
             m_Tracking = tracking;
             m_MaxBatteries = maxBatteries;
-            m_HasClock = hasClock;  // alpha10
+            m_HasClock = hasClock;
             this.DontAutoEquip = true;
         }
     }

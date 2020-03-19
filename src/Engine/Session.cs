@@ -93,7 +93,7 @@ namespace RogueSurvivor.Engine
             return new UniqueActor[] {
                 BigBear, Duckman, FamuFataru, HansVonHanz, Roguedjack, Santaman,
                 PoliceStationPrisoner,  TheSewersThing,
-                JasonMyers  // alpha10
+                JasonMyers
             };
         }
     }
@@ -153,7 +153,6 @@ namespace RogueSurvivor.Engine
         /// </summary>
         int[,,] m_Event_Raids;
 
-        // alpha10.1
         int m_NextAutoSaveTime;
 
         [NonSerialized]
@@ -199,7 +198,6 @@ namespace RogueSurvivor.Engine
             get { return m_Scoring; }
         }
 
-        // alpha10.01
         public int NextAutoSaveTime
         {
             get { return m_NextAutoSaveTime; }
@@ -234,7 +232,6 @@ namespace RogueSurvivor.Engine
             set;
         }
 
-        // alpha10
         public FireMode Player_CurrentFireMode { get; set; }
 
         public int Player_TurnCharismaRoll { get; set; }
@@ -273,10 +270,8 @@ namespace RogueSurvivor.Engine
             this.UniqueActors = new UniqueActors();
             this.UniqueItems = new UniqueItems();
             this.UniqueMaps = new UniqueMaps();
-            // alpha10
             this.Player_CurrentFireMode = FireMode.DEFAULT;
             this.Player_TurnCharismaRoll = 0;
-            // alpha10.1
             m_NextAutoSaveTime = 0;
         }
 
@@ -450,7 +445,6 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        // alpha10
         public UniqueActor ActorToUniqueActor(Actor a)
         {
             if (!a.IsUnique)

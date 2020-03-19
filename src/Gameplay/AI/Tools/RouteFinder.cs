@@ -7,7 +7,6 @@ using System.Drawing;
 
 namespace RogueSurvivor.Gameplay.AI.Tools
 {
-    // alpha10 new ai helper tool
     /// <summary>
     /// A very simple and restricted pathfinder that just checks if an actor ai can reach a tile.
     /// Only explore tiles that are closer to the goal (mimicking baseai move routine BehaviorBumpToward) 

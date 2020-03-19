@@ -65,7 +65,7 @@ namespace RogueSurvivor.Engine
             Set(PlayerCommand.MOVE_W, Key.NumPad4);
             Set(PlayerCommand.OPTIONS_MODE, Key.O | Key.Shift);
             Set(PlayerCommand.ORDER_MODE, Key.O);
-            Set(PlayerCommand.PULL_MODE, Key.P | Key.Control); // alpha10
+            Set(PlayerCommand.PULL_MODE, Key.P | Key.Control);
             Set(PlayerCommand.PUSH_MODE, Key.P);
             Set(PlayerCommand.QUIT_GAME, Key.Q | Key.Shift);
             Set(PlayerCommand.REVIVE_CORPSE, Key.R | Key.Shift);

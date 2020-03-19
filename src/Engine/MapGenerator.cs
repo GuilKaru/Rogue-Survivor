@@ -326,7 +326,7 @@ namespace RogueSurvivor.Engine
         /// Remove all Actors, MapOjects, Items, Decorations and Zones in a rect.
         /// </summary>
         /// <param name="rect"></param>
-        /// <param name="clearZones"></param>  // alpha10
+        /// <param name="clearZones"></param>
         protected void ClearRectangle(Map map, Rectangle rect, bool clearZones = true)
         {
             for (int x = rect.Left; x < rect.Right; x++)

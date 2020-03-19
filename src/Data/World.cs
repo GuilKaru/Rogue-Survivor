@@ -8,7 +8,7 @@ namespace RogueSurvivor.Data
         District[,] m_DistrictsGrid;
         int m_Size;
         Weather m_Weather;
-        int m_NextWeatherCheckTurn;  // alpha10
+        int m_NextWeatherCheckTurn;
 
         public int Size
         {

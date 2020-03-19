@@ -4,7 +4,6 @@ using System;
 
 namespace RogueSurvivor.Engine.Actions
 {
-    // alpha10
     class ActionSprayOdorSuppressor : ActorAction
     {
         readonly ItemSprayScent m_Spray;

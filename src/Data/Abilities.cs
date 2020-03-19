@@ -124,7 +124,6 @@ namespace RogueSurvivor.Data
         /// </summary>
         public bool IsRotting { get; set; }
 
-        // alpha10
         public bool CanDisarm { get; set; }
 
         /// <summary>
@@ -142,7 +141,6 @@ namespace RogueSurvivor.Data
         /// </summary>
         public bool ZombieAI_Explore { get; set; }
 
-        // alpha10
         // CanDisarm by default.
         public Abilities()
         {

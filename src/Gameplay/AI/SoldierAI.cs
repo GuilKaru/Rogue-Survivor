@@ -63,7 +63,6 @@ namespace RogueSurvivor.Gameplay.AI
         {
             List<Percept> mapPercepts = FilterSameMap(game, percepts);
 
-            // alpha10
             // don't run by default.
             m_Actor.IsRunning = false;
 
@@ -73,7 +72,6 @@ namespace RogueSurvivor.Gameplay.AI
             {
                 return bestEquip;
             }
-            // end alpha10
 
             // 1. Follow order
             if (this.Order != null)
@@ -91,18 +89,16 @@ namespace RogueSurvivor.Gameplay.AI
             /////////////////////////////////////
             // 0 run away from primed explosives.
             // 1 throw grenades at enemies.
-            // alpha10 OBSOLETE 2 equip weapon/armor.
-            // 3 shout, fire/hit at nearest enemy.
-            // 4 rest if tired
-            // alpha10 obsolete and redundant with rule 3! 5 charge enemy.
-            // 6 use med.
-            // 7 sleep.
-            // 8 chase old enemy.
-            // 9 build fortification.
-            // 10 hang around leader.            
-            // 11 (leader) don't leave followers behind.
-            // 12 explore.
-            // 13 wander.
+            // 2 shout, fire/hit at nearest enemy.
+            // 3 rest if tired
+            // 4 use med.
+            // 5 sleep.
+            // 6 chase old enemy.
+            // 7 build fortification.
+            // 8 hang around leader.            
+            // 9 (leader) don't leave followers behind.
+            // 10 explore.
+            // 11 wander.
             ////////////////////////////////////
 
             // get data.
@@ -133,7 +129,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 3 shout, fire/hit at nearest enemy.
+            // 2 shout, fire/hit at nearest enemy.
             if (hasCurrentEnemies)
             {
                 // shout?
@@ -174,7 +170,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 4 rest if tired
+            // 3 rest if tired
             ActorAction restAction = BehaviorRestIfTired(game);
             if (restAction != null)
             {
@@ -182,7 +178,7 @@ namespace RogueSurvivor.Gameplay.AI
                 return restAction;
             }
 
-            // 6 use medicine
+            // 4 use medicine
             ActorAction useMedAction = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
             if (useMedAction != null)
             {
@@ -190,7 +186,7 @@ namespace RogueSurvivor.Gameplay.AI
                 return useMedAction;
             }
 
-            // 7 sleep.
+            // 5 sleep.
             if (!hasAnyEnemies && WouldLikeToSleep(game, m_Actor) && IsInside(m_Actor) && game.Rules.CanActorSleep(m_Actor))
             {
                 // secure sleep?
@@ -211,7 +207,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 8 chase old enemy
+            // 6 chase old enemy
             List<Percept> oldEnemies = Filter(game, allEnemies, (p) => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter);
             if (oldEnemies != null)
             {
@@ -235,7 +231,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 9 build fortification
+            // 7 build fortification
             // large fortification.
             if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE))
             {
@@ -257,7 +253,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 10 hang around leader.
+            // 8 hang around leader.
             if (checkOurLeader)
             {
                 Point lastKnownLeaderPosition = m_Actor.Leader.Location.Position;
@@ -270,7 +266,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 11 (leader) don't leave followers behind.
+            // 9 (leader) don't leave followers behind.
             if (m_Actor.CountFollowers > 0)
             {
                 Actor target;
@@ -297,7 +293,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 12 explore
+            // 10 explore
             ActorAction exploreAction = BehaviorExplore(game, m_Exploration);
             if (exploreAction != null)
             {
@@ -305,7 +301,7 @@ namespace RogueSurvivor.Gameplay.AI
                 return exploreAction;
             }
 
-            // 13 wander
+            // 11 wander
             m_Actor.Activity = Activity.IDLE;
             return BehaviorWander(game, m_Exploration);
         }

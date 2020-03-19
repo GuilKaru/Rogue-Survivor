@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 namespace RogueSurvivor.Gameplay.AI
 {
-    // alpha10.1 added Age concept, changed implementation from Queue to List (LinkedList is probably not worth it)
     [Serializable]
     class ExplorationData
     {
@@ -44,7 +43,6 @@ namespace RogueSurvivor.Gameplay.AI
             m_LocationsQueue.Add(loc);
         }
 
-        // alpha10.1
         /// <summary>
         /// 
         /// </summary>
@@ -88,7 +86,6 @@ namespace RogueSurvivor.Gameplay.AI
             m_ZonesQueue.Add(zone);
         }
 
-        // alpha10.1
         /// <summary>
         /// 
         /// </summary>
@@ -130,8 +127,7 @@ namespace RogueSurvivor.Gameplay.AI
         public void Update(Location location)
         {
             // location.
-            //**disabled** if (!HasExplored(location))
-            if (!HasExplored(location))  // alpha10.1
+            if (!HasExplored(location))
                 AddExplored(location);
 
             // zones.

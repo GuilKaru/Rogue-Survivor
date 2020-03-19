@@ -220,7 +220,6 @@ namespace RogueSurvivor.Engine
         /// </summary>
         CITY_INFORMATION,
 
-        // alpha10 merge corpse hints
         /// <summary>
         /// Corpse actions.
         /// </summary>
@@ -230,8 +229,6 @@ namespace RogueSurvivor.Engine
         /// Eating corpses (undead).
         /// </summary>
         CORPSE_EAT,
-
-        // alpha10 new hints
 
         /// <summary>
         /// Sanity.

@@ -15,7 +15,7 @@ namespace RogueSurvivor
 
         static List<string> s_Lines = new List<string>();
 
-        static readonly Object s_Mutex = new Object();  // alpha10 use lock() {} instead of Monitor
+        static readonly Object s_Mutex = new Object();
 
         public static IEnumerable<string> Lines
         {

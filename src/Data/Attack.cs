@@ -93,8 +93,6 @@ namespace RogueSurvivor.Data
         {
         }
 
-        // alpha10 removed other constructors to avoid confusion and replaced with static methods
-
         public static Attack MeleeAttack(Verb verb, int hitValue, int damageValue, int staminaPenalty, int disarmChance)
         {
             return new Attack(AttackKind.PHYSICAL, verb, hitValue, hitValue, hitValue, damageValue, staminaPenalty, disarmChance, 0);

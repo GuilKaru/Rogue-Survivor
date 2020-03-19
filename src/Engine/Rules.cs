@@ -83,12 +83,11 @@ namespace RogueSurvivor.Engine
 
         public const int MELEE_WEAPON_BREAK_CHANCE = 1;
         public const int MELEE_WEAPON_FRAGILE_BREAK_CHANCE = 3;
-        public const int MELEE_DISARM_BASE_CHANCE = 5;  // alpha10
+        public const int MELEE_DISARM_BASE_CHANCE = 5;
         public const int FIREARM_JAM_CHANCE_NO_RAIN = 1;
         public const int FIREARM_JAM_CHANCE_RAIN = 3;
         const float FIRING_WHEN_STA_TIRED = 0.75f;     // -25%
         const float FIRING_WHEN_STA_NOT_FULL = 0.90f;  // -10%
-        // alpha10 made into constants
         const float FIRING_WHEN_SLP_EXHAUSTED = 0.50f; // -50%
         const float FIRING_WHEN_SLP_SLEEPY = 0.75f; // -25%
 
@@ -108,7 +107,7 @@ namespace RogueSurvivor.Engine
         public const int SANITY_NIGHTMARE_CHANCE = 2;
         public const int SANITY_NIGHTMARE_SLP_LOSS = 2 * WorldTime.TURNS_PER_HOUR;
         public const int SANITY_NIGHTMARE_SAN_LOSS = WorldTime.TURNS_PER_HOUR;
-        public const int SANITY_NIGHTMARE_STA_LOSS = 10 * STAMINA_COST_RUNNING;  // alpha10 -- worth running for 10 turns
+        public const int SANITY_NIGHTMARE_STA_LOSS = 10 * STAMINA_COST_RUNNING;
         public const int SANITY_INSANE_ACTION_CHANCE = 5;
 
         public const int SANITY_HIT_BUTCHERING_CORPSE = WorldTime.TURNS_PER_HOUR;
@@ -118,10 +117,9 @@ namespace RogueSurvivor.Engine
         public const int SANITY_HIT_ZOMBIFY = 2 * WorldTime.TURNS_PER_HOUR;
         public const int SANITY_HIT_BOND_DEATH = 8 * WorldTime.TURNS_PER_HOUR;
 
-        // alpha10 increased san recovery; chating & trading also recover san
-        public const int SANITY_RECOVER_KILL_UNDEAD = 3 * WorldTime.TURNS_PER_HOUR;  // was 2h
+        public const int SANITY_RECOVER_KILL_UNDEAD = 3 * WorldTime.TURNS_PER_HOUR;
         public const int SANITY_RECOVER_BOND_CHANCE = 5;
-        public const int SANITY_RECOVER_BOND = 4 * WorldTime.TURNS_PER_HOUR;  // was 1h
+        public const int SANITY_RECOVER_BOND = 4 * WorldTime.TURNS_PER_HOUR;
         public const int SANITY_RECOVER_CHAT_OR_TRADE = 3 * WorldTime.TURNS_PER_HOUR;
 
         /// <summary>
@@ -244,7 +242,7 @@ namespace RogueSurvivor.Engine
 
         public const int TRAP_UNDEAD_ACTOR_TRIGGER_PENALTY = 30;
         public const int TRAP_SMALL_ACTOR_AVOID_BONUS = 90;
-        public const int CRUSHING_GATES_DAMAGE = 60;  // alpha10.1
+        public const int CRUSHING_GATES_DAMAGE = 60;
 
         public const int UPGRADE_SKILLS_TO_CHOOSE_FROM = 5;
         public const int UNDEAD_UPGRADE_SKILLS_TO_CHOOSE_FROM = 2;
@@ -252,7 +250,6 @@ namespace RogueSurvivor.Engine
         /**
          * Actual skill values will be read from Skills.csv so they are not const.
          */
-        // alpha10 updated default values to their currnt values in Skills.csv, was confusing.
 
         public static int SKILL_AGILE_ATK_BONUS = 2;
         public static int SKILL_AGILE_DEF_BONUS = 4;
@@ -283,13 +280,13 @@ namespace RogueSurvivor.Engine
         public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.10f;
         public static float SKILL_LIGHT_EATER_FOOD_BONUS = 0.15f;
 
-        public static int SKILL_LIGHT_FEET_TRAP_BONUS = 15; // alpha10 prev value was 5
+        public static int SKILL_LIGHT_FEET_TRAP_BONUS = 15;
 
-        public static int SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = 20;  // alpha10 prev value was 10
+        public static int SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = 20;
 
         public static int SKILL_MARTIAL_ARTS_ATK_BONUS = 6;
         public static int SKILL_MARTIAL_ARTS_DMG_BONUS = 2;
-        public static int SKILL_MARTIAL_ARTS_DISARM_BONUS = 10;  // alpha10
+        public static int SKILL_MARTIAL_ARTS_DISARM_BONUS = 10;
 
         public static float SKILL_MEDIC_BONUS = 0.15f;
         public static int SKILL_MEDIC_REVIVE_BONUS = 10;
@@ -304,14 +301,14 @@ namespace RogueSurvivor.Engine
 
         public static int SKILL_STRONG_DMG_BONUS = 2;
         public static int SKILL_STRONG_THROW_BONUS = 1;
-        public static int SKILL_STRONG_RESIST_DISARM_BONUS = 5;  // alpha10
+        public static int SKILL_STRONG_RESIST_DISARM_BONUS = 5;
 
         public static int SKILL_TOUGH_HP_BONUS = 6;
 
-        public static int SKILL_UNSUSPICIOUS_BONUS = 20;  // alpha10
+        public static int SKILL_UNSUSPICIOUS_BONUS = 20;
 
-        public static int UNSUSPICIOUS_BAD_OUTFIT_PENALTY = 75;  // alpha10 ; prev was 50
-        public static int UNSUSPICIOUS_GOOD_OUTFIT_BONUS = 75; // alpha10 ; prev was 50
+        public static int UNSUSPICIOUS_BAD_OUTFIT_PENALTY = 75;
+        public static int UNSUSPICIOUS_GOOD_OUTFIT_BONUS = 75;
 
         public static int SKILL_ZAGILE_ATK_BONUS = 1;
         public static int SKILL_ZAGILE_DEF_BONUS = 2;
@@ -326,7 +323,7 @@ namespace RogueSurvivor.Engine
 
         public static int SKILL_ZLIGHT_FEET_TRAP_BONUS = 3;
 
-        public static int SKILL_ZGRAB_CHANCE = 4;  // alpha10 prev was 2
+        public static int SKILL_ZGRAB_CHANCE = 4;
 
         public static float SKILL_ZINFECTOR_BONUS = 0.15f;
 
@@ -784,18 +781,6 @@ namespace RogueSurvivor.Engine
                 }
                 // fine!
             }
-            // alpha10 new way to use spray scent
-            //else if (it is ItemSprayScent)
-            //{
-            //    ItemSprayScent spray = it as ItemSprayScent;
-            //    // can't if empty.
-            //    if (spray.SprayQuantity <= 0)
-            //    {
-            //        reason = "no spray left.";
-            //        return false;
-            //    }
-            //    // fine!
-            //}
             else if (it is ItemTrap)
             {
                 ItemTrap trap = it as ItemTrap;
@@ -812,7 +797,7 @@ namespace RogueSurvivor.Engine
                     reason = "not intelligent";
                     return false;
                 }
-                if ((it as ItemEntertainment).IsBoringFor(actor)) // alpha10 boring items item centric
+                if ((it as ItemEntertainment).IsBoringFor(actor))
                 {
                     reason = "bored by this";
                     return false;
@@ -973,14 +958,12 @@ namespace RogueSurvivor.Engine
             return true;
         }
 
-        // alpha10
         public bool CanActorSprayOdorSuppressor(Actor actor, ItemSprayScent suppressor, Actor sprayOn)
         {
             string reason;
             return CanActorSprayOdorSuppressor(actor, suppressor, sprayOn, out reason);
         }
 
-        // alpha10
         public bool CanActorSprayOdorSuppressor(Actor actor, ItemSprayScent suppressor, Actor sprayOn, out string reason)
         {
             if (actor == null)
@@ -1369,7 +1352,6 @@ namespace RogueSurvivor.Engine
                 if (CanActorGetItemFromContainer(actor, to, out reason))
                     return new ActionGetFromContainer(actor, game, to);
 
-                // alpha10.1 removed break restriction, made civs ai get stuck in some rare cases but we punish break actions in baseai wander.
                 //// 3.3 Break?
                 if (IsBreakableFor(actor, mapObj, out reason))
                     return new ActionBreak(actor, game, mapObj);
@@ -1779,7 +1761,7 @@ namespace RogueSurvivor.Engine
             // 2. Door is not closed or broken.
             if (door.State != DoorWindow.STATE_CLOSED && door.State != DoorWindow.STATE_BROKEN)
             {
-                reason = "not closed or broken"; // alpha10 typo fix
+                reason = "not closed or broken";
                 return false;
             }
 
@@ -1943,7 +1925,7 @@ namespace RogueSurvivor.Engine
             // 3. Map obj is not movable.
             // 4. Another actor there.
             // 5. Map obj is on fire.
-            // 6. Actor is dragging a corpse.  // alpha10
+            // 6. Actor is dragging a corpse.
             /////////////////////////////////
 
             // 1. Actor cannot push/pull.
@@ -1981,7 +1963,7 @@ namespace RogueSurvivor.Engine
                 return false;
             }
 
-            // 6. Actor is dragging a corpse.  // alpha10
+            // 6. Actor is dragging a corpse.
             if (actor.DraggedCorpse != null)
             {
                 reason = "dragging a corpse";
@@ -2045,14 +2027,12 @@ namespace RogueSurvivor.Engine
             return true;
         }
 
-        // alpha10
         public bool CanPullObject(Actor actor, MapObject mapObj, Point toPos)
         {
             string reason;
             return CanPullObject(actor, mapObj, toPos, out reason);
         }
 
-        // alpha10
         public bool CanPullObject(Actor actor, MapObject mapObj, Point moveToPos, out string reason)
         {
             /////////////////////////////////////////////
@@ -2083,7 +2063,6 @@ namespace RogueSurvivor.Engine
             return true;
         }
 
-        // alpha10
         public bool CanPullActor(Actor actor, Actor other, Point moveToPos, out string reason)
         {
             /////////////////////////////////////////////
@@ -2116,7 +2095,7 @@ namespace RogueSurvivor.Engine
             // Not "shovable"
             // 1. Actor cannot push/pull.
             // 2. Actor is tired.
-            // 3. Actor is dragging corpse  // alpha10
+            // 3. Actor is dragging corpse
             ///////////////////////////////
 
             // 1. Actor cannot push/pull.
@@ -2133,7 +2112,7 @@ namespace RogueSurvivor.Engine
                 return false;
             }
 
-            // 3. Actor is dragging corpse  // alpha10
+            // 3. Actor is dragging corpse
             if (actor.DraggedCorpse != null)
             {
                 reason = "dragging a corpse";
@@ -2159,7 +2138,7 @@ namespace RogueSurvivor.Engine
             // 2. Not walkable.
             // 3. Unwalkable object.
             // 4. An actor there.
-            // 5. Actor is dragging corpse  // alpha10
+            // 5. Actor is dragging corpse
             ///////////////////////////
 
             Map map = actor.Location.Map;
@@ -2193,7 +2172,7 @@ namespace RogueSurvivor.Engine
                 return false;
             }
 
-            // 5. Actor is dragging corpse  // alpha10
+            // 5. Actor is dragging corpse
             if (actor.DraggedCorpse != null)
             {
                 reason = "dragging a corpse";
@@ -2546,7 +2525,7 @@ namespace RogueSurvivor.Engine
             // Can't if any is true:
             // 1. Target is undead or an enemy.
             // 2. Target is sleeping.
-            // 3. Target has already a leader and can't steal the follower.  alpha10.1
+            // 3. Target has already a leader and can't steal the follower.
             // 4. Target is a leader.
             // 5. Actor has reached max followers.
             // 6. Target is player!
@@ -2572,10 +2551,9 @@ namespace RogueSurvivor.Engine
                 return false;
             }
 
-            // 3. Target has already a leader and can't steal the follower.  alpha10.1
+            // 3. Target has already a leader and can't steal the follower.
             if (target.HasLeader)
             {
-                // alpha10.1
                 // can "steal" followers only if actor has better charismatic skill than current leader
                 int actorCharism = actor.Sheet.SkillTable.GetSkillLevel((int)Skills.IDs.CHARISMATIC);
                 int leaderCharism = target.Leader.Sheet.SkillTable.GetSkillLevel((int)Skills.IDs.CHARISMATIC);
@@ -3188,7 +3166,7 @@ namespace RogueSurvivor.Engine
         {
             if (actorA == null || actorB == null)
                 return false;
-            if (actorA == actorB)  // alpha10 silly fix
+            if (actorA == actorB) 
                 return false;
 
             // Enemy factions? (symetrical)
@@ -3199,12 +3177,10 @@ namespace RogueSurvivor.Engine
             if (actorA.Faction == actorB.Faction && actorA.IsInAGang && actorB.IsInAGang && actorA.GangID != actorB.GangID)
                 return true;
 
-            // alpha10
             // Personal enemies? (symetrical)
             if (ArePersonalEnemies(actorA, actorB))
                 return true;
 
-            // alpha10
             // Enemy of groups (symetrical)
             if (checkGroups && AreGroupEnemies(actorA, actorB))
                 return true;
@@ -3213,7 +3189,6 @@ namespace RogueSurvivor.Engine
             return false;
         }
 
-        // alpha10
         /// <summary>
         /// Check if they are in an agressor-selfdefence reliation.
         /// Symetrical, don't need to call for actorB,actorA.
@@ -3238,7 +3213,6 @@ namespace RogueSurvivor.Engine
             return false;
         }
 
-        // alpha10
         /// <summary>
         /// Check if they are enmemies through group relations :
         /// - my leader enemies are my enemies
@@ -3423,12 +3397,11 @@ namespace RogueSurvivor.Engine
             return SKILL_NECROLOGY_UNDEAD_BONUS * actor.Sheet.SkillTable.GetSkillLevel((int)Skills.IDs.NECROLOGY);
         }
 
-        // alpha10 added mapobject param
         public Attack ActorMeleeAttack(Actor actor, Attack baseAttack, Actor target, MapObject objToBreak = null)
         {
             float hit = baseAttack.HitValue;
             float dmg = baseAttack.DamageValue;
-            int disarmBonus = 0;  // alpha10
+            int disarmBonus = 0;
 
             // skills bonuses.
             int hitBonus = SKILL_AGILE_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel((int)Skills.IDs.AGILE) +
@@ -3451,7 +3424,6 @@ namespace RogueSurvivor.Engine
             if (target != null && target.Model.Abilities.IsUndead)
                 dmgBonus += ActorDamageBonusVsUndeads(actor);
 
-            // alpha10
             // add tool damage bonus vs map objects
             if (objToBreak != null)
             {
@@ -3465,7 +3437,6 @@ namespace RogueSurvivor.Engine
             hit += hitBonus;
             dmg += dmgBonus;
 
-            // alpha10
             // disarm chance.
             float disarmChance = MELEE_DISARM_BASE_CHANCE;
             disarmChance += disarmBonus;
@@ -3512,7 +3483,6 @@ namespace RogueSurvivor.Engine
 
             // distance vs range penalties/bonus.
             int efficientRange = baseAttack.EfficientRange;
-            // alpha10 distance as % modifier instead of flat bonus
             float distanceMod = 1;
             if (distance != efficientRange)
             {
@@ -3561,7 +3531,6 @@ namespace RogueSurvivor.Engine
             return Attack.RangedAttack(baseAttack.Kind, baseAttack.Verb, (int)hit, (int)rapidHit1, (int)rapidHit2, (int)dmg, baseAttack.Range);
         }
 
-        // alpha10
         /// <summary>
         /// Estimate chances to hit with a ranged attack. <br></br>
         /// Simulate a large number of rolls attack vs defence and returns % of hits.
@@ -3639,7 +3608,6 @@ namespace RogueSurvivor.Engine
             // carpentry skill
             barBonus += (int)(baseBarricadingPoints * SKILL_CARPENTRY_BARRICADING_BONUS * actor.Sheet.SkillTable.GetSkillLevel((int)Skills.IDs.CARPENTRY));
 
-            // alpha10
             // tool build bonus
             ItemMeleeWeapon eqMw = actor.GetEquippedMeleeWeapon();
             if (eqMw != null && eqMw.ToolBuildBonus != 0)
@@ -3893,7 +3861,6 @@ namespace RogueSurvivor.Engine
                 return MINIMAL_FOV;
         }
 
-        // alpha10
         public int OdorsDecay(Map map, Point pos, Weather weather)
         {
             int decay;
@@ -3907,7 +3874,7 @@ namespace RogueSurvivor.Engine
                 decay += 2;
             }
             // outside? = weather affected.
-            else if (!map.GetTileAt(pos).IsInside)  // alpha10 weather affect only outside tiles
+            else if (!map.GetTileAt(pos).IsInside)
             {
                 switch (weather)
                 {
@@ -3929,7 +3896,6 @@ namespace RogueSurvivor.Engine
             return decay;
         }
 
-        // alpha10
         public bool CanActorSeeSky(Actor actor)
         {
             if (actor.IsDead)
@@ -4123,7 +4089,6 @@ namespace RogueSurvivor.Engine
 
         public int GetTrapTriggerChance(ItemTrap trap, Actor a)
         {
-            // alpha10.1 bugfix - correctly has 0 chance to trigger safe traps (eg: followers traps etc...)
             if (IsSafeFromTrap(trap, a))
                 return 0;
 
@@ -4151,7 +4116,6 @@ namespace RogueSurvivor.Engine
         /// <returns>true if trap triggers</returns>
         public bool CheckTrapTriggers(ItemTrap trap, Actor a)
         {
-            // alpha10 extracted and modified trigger chance formula
             int chance = GetTrapTriggerChance(trap, a);
             return chance > 0 ? RollChance(chance) : false;
         }
@@ -4179,7 +4143,6 @@ namespace RogueSurvivor.Engine
             return RollChance(trap.TrapModel.BreakChanceWhenEscape);
         }
 
-        // alpha10
         public bool IsSafeFromTrap(ItemTrap trap, Actor a)
         {
             if (trap.Owner == null)
@@ -4191,7 +4154,6 @@ namespace RogueSurvivor.Engine
 
         public bool CheckTrapEscape(ItemTrap trap, Actor a)
         {
-            // alpha10
             if (IsSafeFromTrap(trap, a))
                 return true;
 

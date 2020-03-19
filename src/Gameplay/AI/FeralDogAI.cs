@@ -11,7 +11,7 @@ using System.Drawing;
 namespace RogueSurvivor.Gameplay.AI
 {
     /// <summary>
-    /// alpha10 this unused for now
+    /// this unused for now
     /// </summary>
     [Serializable]
     class FeralDogAI : BaseAI
@@ -85,7 +85,7 @@ namespace RogueSurvivor.Gameplay.AI
             // 2 attack or flee enemies.
             if (enemies != null)
             {
-                RouteFinder.SpecialActions allowedChargeActions = RouteFinder.SpecialActions.JUMP; // alpha10
+                RouteFinder.SpecialActions allowedChargeActions = RouteFinder.SpecialActions.JUMP;
                 ActorAction ff = BehaviorFightOrFlee(game, enemies, isLeaderVisible, isLeaderFighting, Directives.Courage, FIGHT_EMOTES, allowedChargeActions);
                 if (ff != null)
                 {

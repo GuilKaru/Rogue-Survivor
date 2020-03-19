@@ -952,7 +952,6 @@ namespace RogueSurvivor.Engine
                 // timer.
                 DateTime timeBefore = DateTime.Now;
 
-                // alpha10
                 // roll player charisma for this turn
                 m_Session.Player_TurnCharismaRoll = m_Rules.Roll(0, 100);
 
@@ -968,7 +967,6 @@ namespace RogueSurvivor.Engine
                 DateTime timeAfter = DateTime.Now;
                 m_Session.Scoring.RealLifePlayingTime = m_Session.Scoring.RealLifePlayingTime.Add(timeAfter - timeBefore);
 
-                // alpha10
                 // check background music every N game hours
                 if (m_Session.WorldTime.TurnCounter % BGMUSIC_UPDATE_TURNS == 0)
                     UpdateBgMusic();
@@ -1135,7 +1133,7 @@ namespace RogueSurvivor.Engine
 
                 // 2. Advance district.
                 // 2.1. Advance world time if current district.
-                // alpha10 also check weather change
+                // also check weather change
                 if (district == m_Session.CurrentMap.District)
                 {
                     ++m_Session.WorldTime.TurnCounter;
@@ -1151,7 +1149,7 @@ namespace RogueSurvivor.Engine
         /// <param name="sim"></param>
         void AdvancePlay(District district, SimFlags sim)
         {
-            lock (district)  // alpha10 lock district
+            lock (district)
             {
 #if DEBUG_STATS
                 Session.UpdateStats(district);
@@ -1182,7 +1180,7 @@ namespace RogueSurvivor.Engine
 
                 // 2. Advance district.
                 // 2.1. Advance world time if current district.
-                // alpha10 also check weather change
+                // also check weather change
                 if (district == m_Session.CurrentMap.District)
                 {
                     ++m_Session.WorldTime.TurnCounter;
@@ -1306,7 +1304,7 @@ namespace RogueSurvivor.Engine
             // 1. Get next actor to Act.
             Actor actor = m_Rules.GetNextActorToAct(map, map.LocalTime.TurnCounter);
 
-            // alpha10 ai loop bug detection
+            // ai loop bug detection
             if (actor != null && !actor.IsPlayer)
             {
                 if (actor == m_DEBUG_prevAiActor)
@@ -1318,7 +1316,7 @@ namespace RogueSurvivor.Engine
 #if DEBUG
                         // in debug keep going to let us debug the ai
 #else
-                        // alpha10.1 in release, instead of "crashing" the game by throwing an exception force the AI to do
+                        // in release, instead of "crashing" the game by throwing an exception force the AI to do
                         // spend a turn and emote. its better than crashing the game!
                         DoWait(actor);
                         DoEmote(actor, "My AI is looping, I'll  wait instead of crashing your game :)", true);
@@ -1421,21 +1419,20 @@ namespace RogueSurvivor.Engine
 
             ////////////////////////////////////////
             // (the following are skipped in lodetail turns)
-            // 0. Raise the deads; Check infections (non STD)
-            // 1. Update odors.
-            //      alpha10 obsolete 1.1 Odor suppression/generation.
-            //      1.2 Odors decay.
-            //      1.3 Actors scents.  // alpha10
-            // 2. Regen actors AP & STA
-            // 3. Stop tired actors from running.
-            // 4. Actor gauges & states :
+            // 1. Raise the deads; Check infections (non STD)
+            // 2. Update odors.
+            //      2.1 Odors decay.
+            //      2.2 Actors scents.
+            // 3. Regen actors AP & STA
+            // 4. Stop tired actors from running.
+            // 5. Actor gauges & states :
             //    Hunger, Sleep, Sanity, Leader Trust.
-            //      4.1 May kill starved actors.
-            //      4.2 Handle sleeping actors.
-            //      4.3 Exhausted actors might collapse.
-            // 5. Check batteries : lights, trackers.
-            // 6. Check explosives.
-            // 7. Check fires.
+            //      5.1 May kill starved actors.
+            //      5.2 Handle sleeping actors.
+            //      5.3 Exhausted actors might collapse.
+            // 6. Check batteries : lights, trackers.
+            // 7. Check explosives.
+            // 8. Check fires.
             // (the following are always performed)
             // - Check timers.
             // - Advance local time.
@@ -1444,7 +1441,7 @@ namespace RogueSurvivor.Engine
 
             if (!isLoDetail)
             {
-                // 0. Raise the deads; Check infections (non STD)
+                // 1. Raise the deads; Check infections (non STD)
                 bool hasCorpses = Rules.HasCorpses(m_Session.GameMode);
                 bool hasInfection = Rules.HasInfection(m_Session.GameMode);
                 if (hasCorpses || hasInfection)
@@ -1489,8 +1486,7 @@ namespace RogueSurvivor.Engine
                                     if (IsVisibleToPlayer(map, c.Position))
                                     {
                                         AddMessage(new Message(string.Format("The corpse of {0} rise again!!", c.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Red));
-                                        // FIXME --
-                                        // alpha10 this will be a sfx not music
+                                        // FIXME -- use sfx not music
                                         m_MusicManager.Play(GameSounds.UNDEAD_RISE, MusicPriority.PRIORITY_EVENT);
                                     }
                                 }
@@ -1634,14 +1630,13 @@ namespace RogueSurvivor.Engine
                     }
                 }  // non STD game.
 
-                // 1. Update odors.
-                //      1.2 Odors decay.
+                // 2. Update odors.
+                //      1.1 Odors decay.
                 List<OdorScent> scentGarbage = null;
 
                 // decay map scents
                 foreach (OdorScent scent in map.Scents)
                 {
-                    // alpha10
                     int decay = m_Rules.OdorsDecay(map, scent.Position, m_Session.World.Weather);
 
                     // decay.
@@ -1661,15 +1656,14 @@ namespace RogueSurvivor.Engine
                     scentGarbage = null;
                 }
 
-                //      1.3 Actors scents.
+                // 2.2 Actors scents.
                 foreach (Actor actor in map.Actors)
                 {
-                    // alpha10
                     DropActorScents(actor);
                     DecayActorScents(actor);
                 }
 
-                // 2. Regen actors AP & STA
+                // 3. Regen actors AP & STA
                 // regen.
                 foreach (Actor actor in map.Actors)
                 {
@@ -1682,7 +1676,7 @@ namespace RogueSurvivor.Engine
                 // reset actor index.
                 map.CheckNextActorIndex = 0;
 
-                // 3. Stop tired actors from running.
+                // 4. Stop tired actors from running.
                 foreach (Actor actor in map.Actors)
                 {
                     if (actor.IsRunning)
@@ -1691,15 +1685,12 @@ namespace RogueSurvivor.Engine
                         {
                             actor.IsRunning = false;
                             if (actor == m_Player)
-                            {
                                 AddMessage(MakeMessage(actor, string.Format("{0} too tired to continue running!", Conjugate(actor, VERB_BE))));
-                                ////RedrawPlayScreen();
-                            }
                         }
                     }
                 }
 
-                // 4. Actor gauges & states
+                // 5. Actor gauges & states
                 List<Actor> actorsStarvedToDeath = null;
                 foreach (Actor actor in map.Actors)
                 {
@@ -1781,7 +1772,6 @@ namespace RogueSurvivor.Engine
                                 if (actor.IsPlayer)
                                 {
                                     // FIXME replace with sfx
-                                    // alpha10
                                     m_MusicManager.Play(GameSounds.NIGHTMARE, MusicPriority.PRIORITY_EVENT);
                                 }
                             }
@@ -1906,10 +1896,7 @@ namespace RogueSurvivor.Engine
                     {
                         // message.
                         if (IsVisibleToPlayer(actor))
-                        {
                             AddMessage(MakeMessage(actor, string.Format("{0} !!", Conjugate(actor, VERB_DIE_FROM_STARVATION))));
-                            ////RedrawPlayScreen();
-                        }
 
                         // kill.
                         KillActor(null, actor, "starvation");
@@ -1925,14 +1912,13 @@ namespace RogueSurvivor.Engine
                             if (IsVisibleToPlayer(actor))
                             {
                                 AddMessage(MakeMessage(actor, string.Format("{0} into a Zombie!", Conjugate(actor, "turn"))));
-                                ////RedrawPlayScreen();
                                 AnimDelay(DELAY_LONG);
                             }
                         }
                     }
                 }
 
-                // 5. Check batteries : lights, trackers.
+                // 6. Check batteries : lights, trackers.
                 foreach (Actor actor in map.Actors)
                 {
                     Item leftItem = actor.GetEquippedItem(DollPart.LEFT_HAND);
@@ -1946,13 +1932,8 @@ namespace RogueSurvivor.Engine
                         if (light.Batteries > 0)
                         {
                             --light.Batteries;
-                            if (light.Batteries <= 0)
-                            {
-                                if (IsVisibleToPlayer(actor))
-                                {
-                                    AddMessage(MakeMessage(actor, string.Format(": {0} light goes off.", light.TheName)));
-                                }
-                            }
+                            if (light.Batteries <= 0 && IsVisibleToPlayer(actor))
+                                AddMessage(MakeMessage(actor, string.Format(": {0} light goes off.", light.TheName)));
                         }
                         continue;
                     }
@@ -1964,20 +1945,15 @@ namespace RogueSurvivor.Engine
                         if (tracker.Batteries > 0)
                         {
                             --tracker.Batteries;
-                            if (tracker.Batteries <= 0)
-                            {
-                                if (IsVisibleToPlayer(actor))
-                                {
-                                    AddMessage(MakeMessage(actor, string.Format(": {0} goes off.", tracker.TheName)));
-                                }
-                            }
+                            if (tracker.Batteries <= 0 && IsVisibleToPlayer(actor))
+                                AddMessage(MakeMessage(actor, string.Format(": {0} goes off.", tracker.TheName)));
                         }
                         continue;
                     }
                 }
 
-                // 6. Check explosives.
-                // 6.1 Update fuses.
+                // 7. Check explosives.
+                // 7.1 Update fuses.
                 bool hasExplosivesToExplode = false;
                 // on ground.
                 foreach (Inventory groundInv in map.GroundInventories)
@@ -2019,7 +1995,7 @@ namespace RogueSurvivor.Engine
                     }
                 }
 
-                // 6.2 Explode.
+                // 7.2 Explode.
                 if (hasExplosivesToExplode)
                 {
                     bool hasExplodedSomething = false;
@@ -2085,12 +2061,11 @@ namespace RogueSurvivor.Engine
                             }
                         }
                     }
-
                     while (hasExplodedSomething);
                 }
 
-                // 7. Check fires.
-                // 7.1 Rain has a chance to put out fires.
+                // 8. Check fires.
+                // 8.1 Rain has a chance to put out fires.
                 // FIXME there still the weather bug when simulating = weather used is current world weather, not map weather.
                 // Check?
                 if (m_Rules.IsWeatherRain(m_Session.World.Weather) && m_Rules.RollChance(Rules.FIRE_RAIN_TEST_CHANCE))
@@ -2150,7 +2125,7 @@ namespace RogueSurvivor.Engine
 
         void DropActorScents(Actor actor)
         {
-            // alpha10 dont drop if odor suppressed
+            // dont drop if odor suppressed
             if (actor.OdorSuppressorCounter > 0)
                 return;
 
@@ -2167,7 +2142,6 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        // alpha10
         void DecayActorScents(Actor actor)
         {
             // decay suppressor
@@ -2451,28 +2425,13 @@ namespace RogueSurvivor.Engine
             // announce.
             if (map == m_Player.Location.Map && !m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
             {
-                // alpha factorized to PlayUniqueActorMusicAndMessage
-                //// message and music.
-                //if (unique.EventMessage != null)
-                //{
-                //    if (unique.EventThemeMusic != null)
-                //    {
-                //        m_MusicManager.Play(unique.EventThemeMusic, MusicPriority.PRIORITY_EVENT);
-                //    }
-                //    // message.
-                //    ClearMessages();
-                //    AddMessage(new Message(unique.EventMessage, m_Session.WorldTime.TurnCounter, Color.Pink));
-                //    AddMessage(MakePlayerCentricMessage("Seems to come from", unique.TheActor.Location.Position));
-                //    AddMessagePressEnter();
-                //    ClearMessages();
-                //}
+                // message and music.
                 PlayUniqueActorMusicAndMessage(unique, true);
                 // scoring event.
                 m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, unique.TheActor.Name + " arrived.");
             }
         }
 
-        // alpha10
         void PlayUniqueActorMusicAndMessage(UniqueActor unique, bool hasArrived)
         {
             if (unique.EventMessage != null)
@@ -4140,7 +4099,7 @@ namespace RogueSurvivor.Engine
             if (isVisible)
             {
                 AddMessage(MakeMessage(actor, string.Format("{0} {1} corpse.", Conjugate(actor, VERB_FEAST_ON), corpse.DeadGuy.Name, dmg)));
-                // alpha10 replace with sfx
+                // FIXME replace with sfx
                 m_MusicManager.Play(GameSounds.UNDEAD_EAT, MusicPriority.PRIORITY_EVENT);
             }
 
@@ -4199,8 +4158,7 @@ namespace RogueSurvivor.Engine
             Point revivePt = revivePoints[m_Rules.Roll(0, revivePoints.Count)];
 
             // spend medikit.
-            Item medikit = actor.Inventory.GetSmallestStackByModel(Items.MEDIKIT);  // alpha10
-                                                                                    //actor.Inventory.GetFirstMatching((it) => it.Model == GameItems.MEDIKIT);
+            Item medikit = actor.Inventory.GetSmallestStackByModel(Items.MEDIKIT);
             actor.Inventory.Consume(medikit);
 
             // try.
@@ -4395,7 +4353,6 @@ namespace RogueSurvivor.Engine
             };
         }
 
-        // alpha10 new trade window dialog
         bool HandlePlayerTradeNegociation(Actor player, Actor npc)
         {
             BaseAI npcAI = npc.Controller as BaseAI;
@@ -4674,7 +4631,6 @@ namespace RogueSurvivor.Engine
             if (actionDone)
                 player.SpendActionPoints();
 
-            // alpha10.1
             // cleanup
             ClearOverlays();
 
@@ -5837,7 +5793,7 @@ namespace RogueSurvivor.Engine
 
         void StartPlayerWaitLong(Actor player)
         {
-            // alpha10.1 check autosave before player starts long wait
+            // check autosave before player starts long wait
             CheckAutoSaveTime();
 
             // start waiting.
@@ -5847,7 +5803,6 @@ namespace RogueSurvivor.Engine
 
             // message.
             AddMessage(MakeMessage(player, string.Format("{0} waiting.", Conjugate(player, VERB_START))));
-            //RedrawPlayScreen();
         }
 
         bool CheckPlayerWaitLong(Actor player)
@@ -6841,7 +6796,6 @@ namespace RogueSurvivor.Engine
                     // AI attempted illegal action.
                     aiActor.SpendActionPoints();
 
-                    // alpha10.1
                     // in debug build, throw exception.
                     // in release build just complain and do a wait action instead.
 #if DEBUG
@@ -6904,21 +6858,6 @@ namespace RogueSurvivor.Engine
                 });
         }
 
-        // alpha10 obsolete
-        //bool HasAdvisorAnyHintToGive()
-        //{
-        //    for (int i = (int)AdvisorHint._FIRST; i < (int)AdvisorHint._COUNT; i++)
-        //    {
-        //        if (s_Hints.IsAdvisorHintGiven((AdvisorHint)i))
-        //            continue;
-        //        if (IsAdvisorHintAppliable((AdvisorHint)i))
-        //            return true;
-        //    }
-
-        //    return false;
-        //}
-
-        // alpha10
         /// <summary>
         ///
         /// </summary>
@@ -7250,9 +7189,7 @@ namespace RogueSurvivor.Engine
                         return false;
                     }
 
-                // alpha10 new hints
-
-                case AdvisorHint.SANITY:  // sanity
+                case AdvisorHint.SANITY:
                     return m_Player.Sanity < 0.80f * m_Rules.ActorMaxSanity(m_Player);
 
                 case AdvisorHint.INFECTION:
@@ -7315,7 +7252,6 @@ namespace RogueSurvivor.Engine
                         };
                     break;
 
-                // alpha10 merged corpses hints
                 case AdvisorHint.CORPSE:
                     title = "CORPSES";
                     body = new string[] {
@@ -7626,7 +7562,7 @@ namespace RogueSurvivor.Engine
                         };
                     break;
 
-                case AdvisorHint.OBJECT_PUSH:  // alpha10 also pulling and mention shoving actors
+                case AdvisorHint.OBJECT_PUSH:
                     title = "PUSHING/PULLING OBJECTS";
                     body = new string[] {
                             "You can PUSH/PULL an OBJECT around you.",
@@ -7715,9 +7651,7 @@ namespace RogueSurvivor.Engine
                         };
                     break;
 
-                // alpha10 new hints
-
-                case AdvisorHint.SANITY:  // sanity
+                case AdvisorHint.SANITY:
                     title = "SANITY";
                     body = new string[] {
                         "You should care about your SANITY.",
@@ -7943,7 +7877,7 @@ namespace RogueSurvivor.Engine
                 lines.Add(string.Format("You aggressed {0}.", actor.HimOrHer));
             if (actor.IsSelfDefenceFrom(m_Player))
                 lines.Add("Killing you would be self-defence.");
-            if (!m_Player.Faction.IsEnemyOf(actor.Faction) && m_Rules.AreGroupEnemies(m_Player, actor)) // alpha10
+            if (!m_Player.Faction.IsEnemyOf(actor.Faction) && m_Rules.AreGroupEnemies(m_Player, actor))
                 lines.Add("You are enemies through groups.");
 
             lines.Add("");
@@ -8023,7 +7957,6 @@ namespace RogueSurvivor.Engine
                 lines.Add(" ");
             }
 
-            // alpha10
             // 8. Unusual abilities
             // unusual abilities for undeads
             if (actor.Model.Abilities.IsUndead)
@@ -8113,7 +8046,6 @@ namespace RogueSurvivor.Engine
                         return "Following.";
                     else
                     {
-                        // alpha10
                         if (actor.Leader == actor.TargetActor)
                             return string.Format("Following {0} leader.", actor.HisOrHer);
                         return string.Format("Following {0}.", actor.TargetActor.Name);
@@ -8368,9 +8300,12 @@ namespace RogueSurvivor.Engine
             else if (it is ItemTrap)
             {
                 ItemTrap trap = it as ItemTrap;
-                if (trap.IsActivated) name += "(activated)";
-                if (trap.IsTriggered) name += "(triggered)";
-                if (trap.Owner == m_Player) name += "(yours)";  // alpha10
+                if (trap.IsActivated)
+                    name += "(activated)";
+                if (trap.IsTriggered)
+                    name += "(triggered)";
+                if (trap.Owner == m_Player)
+                    name += "(yours)";
             }
 
             if (it.Quantity > 1)
@@ -8382,7 +8317,7 @@ namespace RogueSurvivor.Engine
         string[] DescribeItemLong(Item it, bool isPlayerInventory, int iSlot)
         {
             List<string> lines = new List<string>();
-            bool isDefaultUse = true; // alpha10
+            bool isDefaultUse = true;
 
             // 1. Name & stacking.
             if (it.Model.IsStackable)
@@ -8464,23 +8399,19 @@ namespace RogueSurvivor.Engine
             else if (it is ItemTrap)
             {
                 lines.AddRange(DescribeItemTrap(it as ItemTrap));
-                // alpha10
                 if ((it as ItemTrap).TrapModel.ActivatesWhenDropped)
                     inInvAdditionalDesc = "to activate trap : drop it";
                 else
                     inInvAdditionalDesc = "to activate trap : use it";
             }
             else if (it is ItemEntertainment)
-            {
                 lines.AddRange(DescribeItemEntertainment(it as ItemEntertainment));
-            }
 
             // 3. Flavor description
             lines.Add(" ");
             lines.Add(it.Model.FlavorDescription);
 
             // 4. Special keys.
-            // alpha10 added more special keys very few players know about!
             if (isPlayerInventory)
             {
                 lines.Add(" ");
@@ -8570,7 +8501,6 @@ namespace RogueSurvivor.Engine
             // 1. Attack
             lines.Add(string.Format("Atk : +{0}", m.Attack.HitValue));
             lines.Add(string.Format("Dmg : +{0}", m.Attack.DamageValue));
-            // alpha10
             if (m.Attack.StaminaPenalty != 0)
                 lines.Add(string.Format("Sta : -{0}", m.Attack.StaminaPenalty));
             if (m.Attack.DisarmChance != 0)
@@ -8582,7 +8512,6 @@ namespace RogueSurvivor.Engine
             {
                 if (mw.IsFragile)
                     lines.Add("Breaks easily.");
-                // alpha10 tool
                 if (mw.IsTool)
                 {
                     lines.Add("Is a tool.");
@@ -8607,7 +8536,6 @@ namespace RogueSurvivor.Engine
                     else
                         lines.Add("> ranged weapon");
 
-                    // alpha10
                     lines.Add(string.Format("Rapid Fire Atk: {0} {1}", rm.RapidFireHit1Value, rm.RapidFireHit2Value));
 
                     lines.Add(string.Format("Rng  : {0}-{1}", rm.Attack.Range, rm.Attack.EfficientRange));
@@ -8691,8 +8619,6 @@ namespace RogueSurvivor.Engine
             ItemMedicineModel m = med.Model as ItemMedicineModel;
 
             lines.Add("> medicine");
-
-            // alpha10 dont add lines for zero values
 
             int healingForPlayer = (m_Player == null ? m.Healing : m_Rules.ActorMedicineEffect(m_Player, m.Healing));
             if (m.Healing != 0)
@@ -8785,12 +8711,6 @@ namespace RogueSurvivor.Engine
                 if (b.IsHostileForBiker(gang)) suspicious.Add(GameGangs.NAMES[(int)gang]);
                 if (b.IsFriendlyForBiker(gang)) unsuspicious.Add(GameGangs.NAMES[(int)gang]);
             }
-            // alpha10 fixed rule & desc mismatch
-            //foreach (GameGangs.IDs gang in GameGangs.GANGSTAS)
-            //{
-            //    if (b.IsHostileForBiker(gang)) suspicious.Add(GameGangs.NAMES[(int)gang]);
-            //    if (b.IsFriendlyForBiker(gang)) unsuspicious.Add(GameGangs.NAMES[(int)gang]);
-            //}
             if (unsuspicious.Count > 0)
             {
                 lines.Add("Unsuspicious to:");
@@ -8838,7 +8758,6 @@ namespace RogueSurvivor.Engine
             else
                 lines.Add(string.Format("Spray    : {0} MAX", sp.SprayQuantity));
 
-            // alpha10
             // 2. Odor & Strength
             lines.Add(string.Format("Odor     : {0}", sp.Odor.ToString().ToLower().Capitalize()));
             lines.Add(string.Format("Strength : {0}h", sp.Strength / WorldTime.TURNS_PER_HOUR));
@@ -8874,14 +8793,13 @@ namespace RogueSurvivor.Engine
 
             // 1. Batteries
             lines.Add(DescribeBatteries(tr.Batteries, m.MaxBatteries));
-            // alpha10 range if applicable
+            // range if applicable
             // TODO -- should be an tracker item property, hardcoding is baaaad -_-
             if (tr.CanTrackUndeads)
                 lines.Add(string.Format("Range: {0}", Rules.ZTRACKINGRADIUS));
             else
                 lines.Add("Range: whole map");
 
-            // alpha10
             // 2. Clock
             if (tr.HasClock)
             {
@@ -8909,7 +8827,6 @@ namespace RogueSurvivor.Engine
             if (tr.IsActivated)
             {
                 lines.Add("** Activated! **");
-                // alpha10
                 if (m_Rules.IsSafeFromTrap(tr, m_Player))
                 {
                     lines.Add("You will safely avoid this trap.");
@@ -8919,7 +8836,6 @@ namespace RogueSurvivor.Engine
             }
             else if (tr.IsTriggered)
             {
-                // alpha10
                 lines.Add("** Triggered! **");
                 if (m_Rules.IsSafeFromTrap(tr, m_Player))
                 {
@@ -8928,7 +8844,6 @@ namespace RogueSurvivor.Engine
                         lines.Add(string.Format("Trap setup by {0}.", tr.Owner.Name));
                 }
             }
-            // alpha10
             lines.Add(string.Format("Trigger chance for you : {0}%.", m_Rules.GetTrapTriggerChance(tr, m_Player)));
 
             // 2. Flags
@@ -8938,8 +8853,8 @@ namespace RogueSurvivor.Engine
             // if (m.IsFlammable) lines.Add("Can be put on fire.");
 
             // 3. Stats
-            lines.Add(string.Format("Damage  : {0} x{1} = {2}", m.Damage, tr.Quantity, tr.Quantity * m.Damage));  // alpha10
-            lines.Add(string.Format("Trigger : {0}% x{1} = {2}%", m.TriggerChance, tr.Quantity, tr.Quantity * m.TriggerChance));  // alpha10
+            lines.Add(string.Format("Damage  : {0} x{1} = {2}", m.Damage, tr.Quantity, tr.Quantity * m.Damage));
+            lines.Add(string.Format("Trigger : {0}% x{1} = {2}%", m.TriggerChance, tr.Quantity, tr.Quantity * m.TriggerChance));
             lines.Add(string.Format("Break   : {0}%", m.BreakChance));
             if (m.BlockChance > 0) lines.Add(string.Format("Block   : {0}%", m.BlockChance));
             if (m.BreakChanceWhenEscape > 0) lines.Add(string.Format("{0}% to break on escape", m.BreakChanceWhenEscape));
@@ -8956,7 +8871,7 @@ namespace RogueSurvivor.Engine
             lines.Add("> entertainment");
 
             // player bored?
-            if (m_Player != null && ent.IsBoringFor(m_Player)) // alpha10 boring items item centric
+            if (m_Player != null && ent.IsBoringFor(m_Player))
                 lines.Add("* BORED OF IT! *");
 
             // San & Bore chance.
@@ -9118,7 +9033,7 @@ namespace RogueSurvivor.Engine
             // If we don't do this, since scents are dropped only in new turns,
             // there will be "holes" in the scent paths, and this is not fair
             // for zombies who will loose track of running livings easily.
-            if (actor.ActionPoints > 0) // alpha10 fix; was Rules.BASE_ACTION_COST
+            if (actor.ActionPoints > 0)
                 DropActorScents(actor);
 
             // Screams of terror?
@@ -9415,7 +9330,7 @@ namespace RogueSurvivor.Engine
 
             // if one time trigger = desactivate.
             if (model.IsOneTimeUse)
-                trap.Desactivate();  //alpha10 //trap.IsActivated = false;
+                trap.Desactivate();
 
             // then check break chance (actor, mobj)
             if (m_Rules.CheckTrapStepOnBreaks(trap, mobj))
@@ -9949,7 +9864,6 @@ namespace RogueSurvivor.Engine
             // Hit vs Missed
             if (hitRoll > defRoll)
             {
-                // alpha10
                 // roll for attacker disarming defender
                 if (attacker.Model.Abilities.CanDisarm && m_Rules.RollChance(attack.DisarmChance))
                 {
@@ -10103,13 +10017,12 @@ namespace RogueSurvivor.Engine
                     if (isAttVisible)
                     {
                         AddMessage(MakeMessage(attacker, string.Format(": {0} breaks and is now useless!", meleeWeapon.TheName)));
-                        //RedrawPlayScreen();
                         AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
                     }
                 }
             }
 
-            // alpha10 bug fix; clear overlays only if action is visible
+            // clear overlays only if action is visible
             if (isAttVisible || isDefVisible)
                 ClearOverlays();
         }
@@ -10301,12 +10214,11 @@ namespace RogueSurvivor.Engine
                 {
                     AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender));
                     AddOverlay(new OverlayImage(MapToScreen(defender.Location.Position), GameImages.ICON_RANGED_MISS));
-                    //RedrawPlayScreen();
                     AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
                 }
             }
 
-            // alpha10 bug fix; clear overlays only if action is visible
+            // clear overlays only if action is visible
             if (isAttVisible || isDefVisible)
                 ClearOverlays();
         }
@@ -10406,17 +10318,16 @@ namespace RogueSurvivor.Engine
                 AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), new Size(TILE_SIZE, TILE_SIZE))));
                 AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(targetPos), new Size(TILE_SIZE, TILE_SIZE))));
                 AddMessage(MakeMessage(actor, string.Format("{0} back a {1}!", Conjugate(actor, VERB_THROW), primedGrenade.Model.SingleName)));
-                //RedrawPlayScreen();
                 AnimDelay(DELAY_LONG);
                 ClearOverlays();
-                //RedrawPlayScreen();
             }
         }
 
         void ShowBlastImage(Point screenPos, BlastAttack attack, int damage)
         {
             float alpha = 0.1f + (float)damage / (float)attack.Damage[0];
-            if (alpha > 1) alpha = 1;
+            if (alpha > 1)
+                alpha = 1;
             AddOverlay(new OverlayTransparentImage(alpha, screenPos, GameImages.ICON_BLAST));
             AddOverlay(new OverlayText(screenPos, Color.Red, damage.ToString(), Color.Black));
         }
@@ -10452,13 +10363,12 @@ namespace RogueSurvivor.Engine
                 // show.
                 if (anyVisible)
                 {
-                    isVisible = true; // alpha10
-                    //RedrawPlayScreen();
+                    isVisible = true;
                     AnimDelay(DELAY_NORMAL);
                 }
             }
 
-            // alpha10 bug fix; clear overlays only if action is visible
+            // clear overlays only if action is visible
             if (isVisible)
                 ClearOverlays();
         }
@@ -10745,7 +10655,7 @@ namespace RogueSurvivor.Engine
             if (m_Rules.CanActorInitiateTradeWith(speaker, target))
                 DoTrade(speaker, target);
 
-            // alpha10 recover san after "normal" chat or fast trade
+            // recover san after "normal" chat or fast trade
             if (speaker.Model.Abilities.HasSanity)
             {
                 RegenActorSanity(speaker, Rules.SANITY_RECOVER_CHAT_OR_TRADE);
@@ -10761,7 +10671,7 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        // alpha10 "fast" trade uses new trade mechanic of rating items and trades.
+        // "fast" trade uses new trade mechanic of rating items and trades.
         // npcs will mostly only make mutually beneficial deals.
         // speaker and target are also somehow reversed from how they were in rs9(!?)
         // for the player should try to mimick most of trade results obtained by player negociating trade but not mandatory.
@@ -10990,7 +10900,6 @@ namespace RogueSurvivor.Engine
             /// </summary>
             IS_FREE_ACTION = (1 << 1),
 
-            // alpha10
             /// <summary>
             /// A warning or menace, should be highlighted.
             /// </summary>
@@ -11281,17 +11190,16 @@ namespace RogueSurvivor.Engine
 
                 // drop one at a time.
                 ItemTrap clone = trap.Clone();
-                //alpha10 clone.IsActivated = trap.IsActivated;
-                if (trap.IsActivated) // alpha10
+                if (trap.IsActivated)
                     clone.Activate(actor);
                 dropIt = clone;
 
                 // trap activates when dropped?
                 if (clone.TrapModel.ActivatesWhenDropped)
-                    clone.Activate(actor); // alpha10 //clone.IsActivated = true;
+                    clone.Activate(actor);
 
                 // make sure source stack is desactivated (activate only activate the stack top item).
-                trap.Desactivate();  // alpha10  //trap.IsActivated = false;
+                trap.Desactivate();
             }
             else
             {
@@ -11369,7 +11277,7 @@ namespace RogueSurvivor.Engine
 
         public void DoUseItem(Actor actor, Item it)
         {
-            // alpha10 defrag ai inventories
+            // defrag ai inventories
             bool defragInventory = !actor.IsPlayer && it.Model.IsStackable;
 
             // concrete use.
@@ -11379,14 +11287,12 @@ namespace RogueSurvivor.Engine
                 DoUseMedicineItem(actor, it as ItemMedicine);
             else if (it is ItemAmmo)
                 DoUseAmmoItem(actor, it as ItemAmmo);
-            //else if (it is ItemSprayScent)  // alpha10 new way to use spray scent
-            //    DoUseSprayScentItem(actor, it as ItemSprayScent);
             else if (it is ItemTrap)
                 DoUseTrapItem(actor, it as ItemTrap);
             else if (it is ItemEntertainment)
                 DoUseEntertainmentItem(actor, it as ItemEntertainment);
 
-            // alpha10 defrag ai inventories
+            // defrag ai inventories
             if (defragInventory)
                 actor.Inventory.Defrag();
         }
@@ -11451,8 +11357,8 @@ namespace RogueSurvivor.Engine
             // canned food drops empty cans.
             if (food.Model == Items.CANNED_FOOD)
             {
-                ItemTrap emptyCan = new ItemTrap(Items.EMPTY_CAN);// alpha10 { IsActivated = true };
-                emptyCan.Activate(actor);  // alpha10
+                ItemTrap emptyCan = new ItemTrap(Items.EMPTY_CAN);
+                emptyCan.Activate(actor);
                 actor.Location.Map.DropItemAt(emptyCan, actor.Location.Position);
             }
 
@@ -11670,7 +11576,7 @@ namespace RogueSurvivor.Engine
         public void DoBarricadeDoor(Actor actor, DoorWindow door)
         {
             // get barricading item.
-            ItemBarricadeMaterial it = actor.Inventory.GetSmallestStackByType(typeof(ItemBarricadeMaterial)) as ItemBarricadeMaterial; // alpha10
+            ItemBarricadeMaterial it = actor.Inventory.GetSmallestStackByType(typeof(ItemBarricadeMaterial)) as ItemBarricadeMaterial;
             ItemBarricadeMaterialModel m = it.Model as ItemBarricadeMaterialModel;
 
             // do it.
@@ -11819,18 +11725,17 @@ namespace RogueSurvivor.Engine
                 {
                     if (IsVisibleToPlayer(door))
                     {
-                        // alpha10 tell & show damage
+                        // tell & show damage
                         Point screenPos = MapToScreen(mapObj.Location.Position);
                         AddOverlay(new OverlayImage(screenPos, GameImages.ICON_MELEE_DAMAGE));
-                        AddOverlay(new OverlayText(screenPos.Add(DAMAGE_DX, DAMAGE_DY), Color.White, bashAttack.DamageValue.ToString(), Color.Black)); // alpha10
-                        AddMessage(MakeMessage(actor, string.Format("{0} the barricade for {1} damage.", Conjugate(actor, VERB_BASH), bashAttack.DamageValue))); // alpha10
-                        //RedrawPlayScreen();
+                        AddOverlay(new OverlayText(screenPos.Add(DAMAGE_DX, DAMAGE_DY), Color.White, bashAttack.DamageValue.ToString(), Color.Black));
+                        AddMessage(MakeMessage(actor, string.Format("{0} the barricade for {1} damage.", Conjugate(actor, VERB_BASH), bashAttack.DamageValue)));
                         AnimDelay(actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
                         ClearOverlays();
                     }
                     else
                     {
-                        AddMessage(MakeMessage(actor, string.Format("{0} the barricade.", Conjugate(actor, VERB_BASH)))); // alpha10
+                        AddMessage(MakeMessage(actor, string.Format("{0} the barricade.", Conjugate(actor, VERB_BASH))));
                     }
                 }
                 else
@@ -11889,14 +11794,12 @@ namespace RogueSurvivor.Engine
                     {
                         if (isDoorVisible)
                         {
-                            AddMessage(MakeMessage(actor, string.Format("{0} {1} for {2} damage.", Conjugate(actor, VERB_BASH), mapObj.TheName, bashAttack.DamageValue))); // alpha10
+                            AddMessage(MakeMessage(actor, string.Format("{0} {1} for {2} damage.", Conjugate(actor, VERB_BASH), mapObj.TheName, bashAttack.DamageValue)));
                             AddOverlay(new OverlayImage(MapToScreen(mapObj.Location.Position), GameImages.ICON_MELEE_DAMAGE));
-                            AddOverlay(new OverlayText(MapToScreen(mapObj.Location.Position).Add(DAMAGE_DX, DAMAGE_DY), Color.White, bashAttack.DamageValue.ToString(), Color.Black)); // alpha10
+                            AddOverlay(new OverlayText(MapToScreen(mapObj.Location.Position).Add(DAMAGE_DX, DAMAGE_DY), Color.White, bashAttack.DamageValue.ToString(), Color.Black));
                         }
                         else if (isActorVisible)
-                        {
-                            AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_BASH), mapObj.TheName))); // alpha10
-                        }
+                            AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_BASH), mapObj.TheName)));
 
                         if (isActorVisible)
                             AddOverlay(new OverlayImage(MapToScreen(actor.Location.Position), GameImages.ICON_MELEE_ATTACK));
@@ -11904,8 +11807,8 @@ namespace RogueSurvivor.Engine
                         AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
                     }
 
-                    // alpha10 bug fix; clear overlays only if action is visible
-                    ClearOverlays(); // was in the wrong place!
+                    // clear overlays only if action is visible
+                    ClearOverlays();
                 }  // any is visible
                 else
                 {
@@ -11961,7 +11864,7 @@ namespace RogueSurvivor.Engine
 
             // followers help?
             if (actor.CountFollowers > 0)
-                DoPushPullFollowersHelp(actor, mapObj, false, ref staCost); // alpha10
+                DoPushPullFollowersHelp(actor, mapObj, false, ref staCost);
 
             // spend AP & STA.
             actor.SpendActionPoints();
@@ -11975,11 +11878,11 @@ namespace RogueSurvivor.Engine
             if (!m_Rules.IsAdjacent(toPos, actor.Location.Position) && m_Rules.IsWalkableFor(actor, map, prevObjPos.X, prevObjPos.Y))
             {
                 // pushing away, need to follow.
-                if (TryActorLeaveTile(actor))  // alpha10
+                if (TryActorLeaveTile(actor))
                 {
                     map.RemoveActor(actor);
                     map.PlaceActorAt(actor, prevObjPos);
-                    OnActorEnterTile(actor);  // alpha10
+                    OnActorEnterTile(actor);
                 }
             }
 
@@ -12030,7 +11933,7 @@ namespace RogueSurvivor.Engine
             {
                 // shoving away, need to follow.
                 // Try to leave tile.
-                if (TryActorLeaveTile(actor))  // alpha10
+                if (TryActorLeaveTile(actor))
                 {
                     map.RemoveActor(actor);
                     map.PlaceActorAt(actor, prevTargetPos);
@@ -12055,7 +11958,6 @@ namespace RogueSurvivor.Engine
             OnActorEnterTile(target);
         }
 
-        // alpha10
         public void DoPull(Actor actor, MapObject mapObj, Point moveActorToPos)
         {
             bool isVisible = IsVisibleToPlayer(actor) || IsVisibleToPlayer(mapObj);
@@ -12110,7 +12012,6 @@ namespace RogueSurvivor.Engine
             CheckMapObjectTriggersTraps(map, mapObj.Location.Position);
         }
 
-        // alpha10
         public void DoPullActor(Actor actor, Actor target, Point moveActorToPos)
         {
             bool isVisible = IsVisibleToPlayer(actor) || IsVisibleToPlayer(target);
@@ -12372,7 +12273,7 @@ namespace RogueSurvivor.Engine
                 DoWakeUp(actor);
         }
 
-        // alpha10 drop corpse optional
+        // drop corpse optional
         public void KillActor(Actor killer, Actor deadGuy, string reason, bool canDropCorpse = true)
         {
             // Sanity check.
@@ -12649,7 +12550,6 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        // alpha10
         /// <summary>
         ///
         /// </summary>
@@ -12869,7 +12769,7 @@ namespace RogueSurvivor.Engine
         void PlayerDied(Actor killer, string reason)
         {
             // stop sim thread.
-            StopSimThread(true);   // alpha10 abort allowed when dying
+            StopSimThread(true);
 
             // music.
             m_MusicManager.Play(GameMusics.PLAYER_DEATH, MusicPriority.PRIORITY_EVENT);
@@ -13002,15 +12902,10 @@ namespace RogueSurvivor.Engine
                 ClearMessages();
                 AddMessage(new Message("Welcome to tomorrow.", m_Session.WorldTime.TurnCounter, Color.White));
                 ClearOverlays();
-                //RedrawPlayScreen();
 
                 // music
                 m_MusicManager.Stop();
             }
-
-            // alpha10 obsolete
-            //// Check weather change.
-            //CheckWeatherChange();
 
             //////////////////////////////
             // New day achievements.
@@ -13377,7 +13272,7 @@ namespace RogueSurvivor.Engine
                         return HI_UTIL;
 
                     case Skills.IDs.HIGH_STAMINA:
-                        return HI_UTIL;  // alpha10; was previously rated as avg
+                        return HI_UTIL;
 
                     case Skills.IDs.LEADERSHIP:
                         // useful only if not follower.
@@ -13412,7 +13307,7 @@ namespace RogueSurvivor.Engine
                         return LOW_UTIL;
 
                     case Skills.IDs.NECROLOGY:
-                        return LOW_UTIL; // alpha10 ; was previously rated as useless
+                        return LOW_UTIL;
 
                     case Skills.IDs.STRONG:
                         return AVG_UTIL;
@@ -13496,7 +13391,7 @@ namespace RogueSurvivor.Engine
 
         void ChangeWeather()
         {
-            bool canSeeWeather = m_Rules.CanActorSeeSky(m_Player); // alpha10
+            bool canSeeWeather = m_Rules.CanActorSeeSky(m_Player);
 
             // roll & annouce new weather.
             string desc;
@@ -13673,7 +13568,7 @@ namespace RogueSurvivor.Engine
 
         public void RedrawPlayScreen()
         {
-            // alpha10 dont display some infos
+            // dont display some infos
             bool canSeeSky = m_Rules.CanActorSeeSky(m_Player);
             bool canKnowTime = m_Rules.CanActorKnowTime(m_Player);
 
@@ -13722,7 +13617,7 @@ namespace RogueSurvivor.Engine
                 else
                     ui.DrawString(Color.White, "Hour ??", X0, Y3);
 
-                // alpha10 desc day fov effect, not if cant know time
+                // desc day fov effect, not if cant know time
                 string dayPhaseString;
                 if (canKnowTime)
                 {
@@ -13744,11 +13639,11 @@ namespace RogueSurvivor.Engine
                 {
                     case Lighting.OUTSIDE:
                         weatherOrLightingColor = m_Session.World.Weather.ToColor();
-                        // alpha10 only show weather if can see it
+                        // only show weather if can see it
                         if (m_Rules.CanActorSeeSky(m_Player))
                         {
                             weatherOrLightingString = m_Session.World.Weather.AsString();
-                            // alpha10 desc weather fov effect
+                            // desc weather fov effect
                             int fovPenalty = m_Rules.WeatherFovPenalty(m_Player, m_Session.World.Weather);
                             if (fovPenalty != 0)
                                 weatherOrLightingString += "  fov -" + fovPenalty;
@@ -13759,7 +13654,7 @@ namespace RogueSurvivor.Engine
                     case Lighting.DARKNESS:
                         weatherOrLightingColor = Color.Blue;
                         weatherOrLightingString = "Darkness";
-                        // alpha10 desc darkness fov effect
+                        // desc darkness fov effect
                         int darknessFov = m_Rules.DarknessFov(m_Player);
                         if (darknessFov != m_Player.Sheet.BaseViewRange)
                             weatherOrLightingString += "  fov " + darknessFov;
@@ -13921,41 +13816,26 @@ namespace RogueSurvivor.Engine
                         // scents alpha is low to be able to see objects behind them (eg: scent on a door)
                         // squaring alpha helps increase discrimination for player.
 
-                        if (isUndead)
+                        // Undead can see living & zm scents.
+                        if (isUndead && hasSmell)
                         {
-                            // Undead can see living & zm scents.
-                            if (hasSmell)
+                            // living scent?
+                            int livingScent = map.GetScentByOdorAt(Odor.LIVING, position);
+                            if (livingScent >= playerSmellTheshold)
                             {
-                                // living scent?
-                                int livingScent = map.GetScentByOdorAt(Odor.LIVING, position);
-                                if (livingScent >= playerSmellTheshold)
-                                {
-                                    float alpha = 0.90f * (float)livingScent / (float)OdorScent.MAX_STRENGTH;
-                                    alpha *= alpha;
-                                    ui.DrawTransparentImage(alpha, GameImages.ICON_SCENT_LIVING, toScreen.X, toScreen.Y);
-                                }
-
-                                // zombie master scent?
-                                int masterScent = map.GetScentByOdorAt(Odor.UNDEAD_MASTER, position);
-                                if (masterScent >= playerSmellTheshold)
-                                {
-                                    float alpha = 0.90f * (float)masterScent / (float)OdorScent.MAX_STRENGTH;
-                                    alpha *= alpha;
-                                    ui.DrawTransparentImage(alpha, GameImages.ICON_SCENT_ZOMBIEMASTER, toScreen.X, toScreen.Y);
-                                }
+                                float alpha = 0.90f * (float)livingScent / (float)OdorScent.MAX_STRENGTH;
+                                alpha *= alpha;
+                                ui.DrawTransparentImage(alpha, GameImages.ICON_SCENT_LIVING, toScreen.X, toScreen.Y);
                             }
-                        }
-                        else
-                        {
-                            // Living can see some perfumes.
-                            // alpha10 obsolete // perfume: living suppressor?
-                            //int livingSupr = map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, position);
-                            //if (livingSupr > 0)
-                            //{
-                            //    float alpha = 0.90f * (float)livingSupr / (float)OdorScent.MAX_STRENGTH;
-                            //    //alpha *= alpha;
-                            //    ui.UI_DrawTransparentImage(alpha, GameImages.ICON_SCENT_LIVING_SUPRESSOR, toScreen.X, toScreen.Y);
-                            //}
+
+                            // zombie master scent?
+                            int masterScent = map.GetScentByOdorAt(Odor.UNDEAD_MASTER, position);
+                            if (masterScent >= playerSmellTheshold)
+                            {
+                                float alpha = 0.90f * (float)masterScent / (float)OdorScent.MAX_STRENGTH;
+                                alpha *= alpha;
+                                ui.DrawTransparentImage(alpha, GameImages.ICON_SCENT_ZOMBIEMASTER, toScreen.X, toScreen.Y);
+                            }
                         }
                     }
 
@@ -14167,7 +14047,7 @@ namespace RogueSurvivor.Engine
             {
                 bool imSelfDefence = m_Player.IsSelfDefenceFrom(actor);
                 bool imTheAggressor = m_Player.IsAggressorOf(actor);
-                bool groupEnemies = !m_Player.Faction.IsEnemyOf(actor.Faction) && m_Rules.AreGroupEnemies(m_Player, actor); // alpha10
+                bool groupEnemies = !m_Player.Faction.IsEnemyOf(actor.Faction) && m_Rules.AreGroupEnemies(m_Player, actor);
                 if (imSelfDefence)
                     ui.DrawImage(GameImages.ICON_SELF_DEFENCE, gx, gy, tint);
                 else if (imTheAggressor)
@@ -14224,7 +14104,7 @@ namespace RogueSurvivor.Engine
 
                     if (actor.TargetActor.IsPlayer)
                         ui.DrawImage(GameImages.ACTIVITY_FOLLOWING_PLAYER, gx, gy);
-                    else if (actor.TargetActor == actor.Leader) // alpha10
+                    else if (actor.TargetActor == actor.Leader)
                         ui.DrawImage(GameImages.ACTIVITY_FOLLOWING_LEADER, gx, gy);
                     else
                         ui.DrawImage(GameImages.ACTIVITY_FOLLOWING, gx, gy);
@@ -14294,7 +14174,7 @@ namespace RogueSurvivor.Engine
             }
 
             // can trade with player icon.
-            // alpha10.1 or has needed item (not for undead player duh)
+            // or has needed item (not for undead player duh)
             if (m_Player != null)
             {
                 if (actor != m_Player && !m_Player.Model.Abilities.IsUndead && ActorHasVitalItemForPlayer(actor))
@@ -14303,7 +14183,7 @@ namespace RogueSurvivor.Engine
                     ui.DrawImage(GameImages.ICON_CAN_TRADE, gx, gy, tint);
             }
 
-            // alpha10 odor suppressed icon (will overlap with sleep healing but its fine)
+            // odor suppressed icon (will overlap with sleep healing but its fine)
             if (actor.OdorSuppressorCounter > 0)
                 ui.DrawImage(GameImages.ICON_ODOR_SUPPRESSED, gx, gy, tint);
 
@@ -14315,7 +14195,6 @@ namespace RogueSurvivor.Engine
             if (actor.CountFollowers > 0)
                 ui.DrawImage(GameImages.ICON_LEADER, gx, gy, tint);
 
-            // alpha10
             // z-grab skill warning icon
             if (actor.Sheet.SkillTable.GetSkillLevel((int)Skills.IDs.Z_GRAB) > 0)
                 ui.DrawImage(GameImages.ICON_ZGRAB, gx, gy, tint);
@@ -14335,7 +14214,6 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        // alpha10.1
         /// <summary>
         /// Checks if npc has a vital item for the player :
         /// - Food if player is hungry
@@ -14493,7 +14371,6 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        // alpha10
         /// <summary>
         /// Highlight with overlays which visible actors are
         /// - are the target of this actor
@@ -14969,7 +14846,7 @@ namespace RogueSurvivor.Engine
                     gx, gy);
             }
 
-            // 5. Odor suppressor // alpha10
+            // 5. Odor suppressor
             gy += Ui.BOLD_LINE_SPACING;
             if (actor.OdorSuppressorCounter > 0)
                 ui.DrawStringBold(Color.LightBlue, string.Format("Odor suppr : {0} -{1}", actor.OdorSuppressorCounter, m_Rules.OdorsDecay(actor.Location.Map, actor.Location.Position, m_Session.World.Weather)), gx, gy);
@@ -15051,11 +14928,11 @@ namespace RogueSurvivor.Engine
                 else if (it is ItemTrap)
                 {
                     ItemTrap trap = it as ItemTrap;
-                    DrawTrapItem(trap, x, y);  // alpha10
+                    DrawTrapItem(trap, x, y);
                 }
                 else if (it is ItemEntertainment)
                 {
-                    if (m_Player != null && ((it as ItemEntertainment).IsBoringFor(m_Player))) // alpha10 boring items item centric
+                    if (m_Player != null && ((it as ItemEntertainment).IsBoringFor(m_Player)))
                         ui.DrawImage(GameImages.ICON_BORING_ITEM, x, y);
                 }
                 DrawItem(it, x, y);
@@ -15105,16 +14982,14 @@ namespace RogueSurvivor.Engine
             }
             if (it is ItemTrap)
             {
-                DrawTrapItem(it as ItemTrap, gx, gy);  // alpha10
+                DrawTrapItem(it as ItemTrap, gx, gy);
             }
         }
 
-        // alpha10 factorized code
         void DrawTrapItem(ItemTrap trap, int gx, int gy)
         {
             if (trap.IsTriggered)
             {
-                // alpha10
                 if (trap.Owner == m_Player)
                     ui.DrawImage(GameImages.ICON_TRAP_TRIGGERED_SAFE_PLAYER, gx, gy);
                 else if (m_Rules.IsSafeFromTrap(trap, m_Player))
@@ -15124,7 +14999,6 @@ namespace RogueSurvivor.Engine
             }
             else if (trap.IsActivated)
             {
-                // alpha10
                 if (trap.Owner == m_Player)
                     ui.DrawImage(GameImages.ICON_TRAP_ACTIVATED_SAFE_PLAYER, gx, gy);
                 else if (m_Rules.IsSafeFromTrap(trap, m_Player))
@@ -15151,7 +15025,7 @@ namespace RogueSurvivor.Engine
             {
                 Color skColor = Color.White;
 
-                // alpha10 highlight if active skills are active or not
+                // highlight if active skills are active or not
                 switch (sk.ID)
                 {
                     case (int)Skills.IDs.MARTIAL_ARTS:
@@ -15180,7 +15054,7 @@ namespace RogueSurvivor.Engine
 
         void AddOverlay(Overlay o)
         {
-            lock (m_Overlays)  // alpha10
+            lock (m_Overlays)
             {
                 m_Overlays.Add(o);
             }
@@ -15188,7 +15062,7 @@ namespace RogueSurvivor.Engine
 
         void ClearOverlays()
         {
-            lock (m_Overlays)  // alpha10
+            lock (m_Overlays)
             {
                 m_Overlays.Clear();
             }
@@ -15196,13 +15070,12 @@ namespace RogueSurvivor.Engine
 
         void RemoveOverlay(Overlay o)
         {
-            lock (m_Overlays)  // alpha10
+            lock (m_Overlays)
             {
                 m_Overlays.Remove(o);
             }
         }
 
-        // alpha10
         bool HasOverlay(Overlay o)
         {
             bool hasIt = false;
@@ -15316,14 +15189,12 @@ namespace RogueSurvivor.Engine
 
         void HandleSaveGame()
         {
-            // alpha10.1
             // manually saving the game delays (reschedule) the next autosave
             ScheduleNextAutoSave();
 
             DoSaveGame(SaveFile);
         }
 
-        // alpha10.1
         void CheckAutoSaveTime()
         {
             // sanity checks
@@ -15347,7 +15218,6 @@ namespace RogueSurvivor.Engine
             //RedrawPlayScreen();
         }
 
-        // alpha10.1
         void ScheduleNextAutoSave()
         {
             m_Session.NextAutoSaveTime = m_Session.WorldTime.TurnCounter + WorldTime.TURNS_PER_HOUR * s_Options.AutoSavePeriodInHours;
@@ -15358,11 +15228,9 @@ namespace RogueSurvivor.Engine
             DoLoadGame(SaveFile);
         }
 
-        // alpha10.1 messages modified for autosave
-        // alpha10.1 start & stop sim thread here instead of caller
         void DoSaveGame(string saveName, bool isAutoSave = false)
         {
-            StopSimThread(false);  // alpha10.1
+            StopSimThread(false);
 
             string savingOrAutosaving = isAutoSave ? "AUTOSAVING" : "SAVING";
 
@@ -15378,13 +15246,12 @@ namespace RogueSurvivor.Engine
             //RedrawPlayScreen();
             //ui.UI_Repaint();
 
-            StartSimThread();  // alpha10.1
+            StartSimThread();
         }
 
-        // alpha10.1 start & stop sim thread here instead of caller
         void DoLoadGame(string saveName)
         {
-            StopSimThread(false); // alpha10.1
+            StopSimThread(false);
 
             ClearMessages();
             AddMessage(new Message("LOADING GAME, PLEASE WAIT...", m_Session.WorldTime.TurnCounter, Color.Yellow));
@@ -15396,7 +15263,7 @@ namespace RogueSurvivor.Engine
                 AddMessage(new Message("LOADING FAILED, NO GAME SAVED OR VERSION NOT COMPATIBLE.", m_Session.WorldTime.TurnCounter, Color.Red));
             }
 
-            StartSimThread();  // alpha10.1
+            StartSimThread();
         }
 
         void DeleteSavedGame(string saveName)
@@ -15576,7 +15443,7 @@ namespace RogueSurvivor.Engine
             // set session field.
             m_Session.CurrentMap = map;
 
-            // alpha10 update background music
+            // update background music
             UpdateBgMusic();
         }
 
@@ -15598,10 +15465,10 @@ namespace RogueSurvivor.Engine
             // otherwise just jump int time.
             if (s_Options.IsSimON)
             {
-                int catchupTo = m_Session.WorldTime.TurnCounter;  // alpha10
-                int turnsToCatchup = catchupTo - entryMap.LocalTime.TurnCounter; // alpha10
+                int catchupTo = m_Session.WorldTime.TurnCounter;
+                int turnsToCatchup = catchupTo - entryMap.LocalTime.TurnCounter;
 
-                StopSimThread(false);  // alpha10
+                StopSimThread(false);
 
                 if (turnsToCatchup > 0)
                 {
@@ -15615,16 +15482,11 @@ namespace RogueSurvivor.Engine
                         entryMap.ClearView();
                     }
 
-                    // alpha10 nope not here
-                    // stop simulation thread & get mutex.
-                    //StopSimThread();
-                    ////Monitor.Enter(m_SimMutex);  // alpha10 obsolete
-
                     // simulate loop.
                     double timerStart = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
                     double lastRedraw = 0;
                     bool aborted = false;
-                    while (entryMap.LocalTime.TurnCounter < catchupTo) // alpha10 changed from <= to <
+                    while (entryMap.LocalTime.TurnCounter < catchupTo)
                     {
                         double timerNow = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
 
@@ -15689,11 +15551,6 @@ namespace RogueSurvivor.Engine
                         }
                     }
 
-                    // alpha10 obsolete and fix
-                    //// release mutex and restart sim thread.
-                    //Monitor.Exit(m_SimMutex); // alpha10 obsolete
-                    //RestartSimThread();  // alpha10 no no no! restart AFTER chaging the player district duh!
-
                     // Sim ends - either aborted or normal end.
                     // remove "ESC" message.
                     RemoveLastMessage();
@@ -15717,7 +15574,6 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        // alpha10
         void AfterPlayerEnterDistrict()
         {
             // restart sim thread if on
@@ -15828,12 +15684,12 @@ namespace RogueSurvivor.Engine
                 }
 
                 Logger.WriteLine(Logger.Stage.RUN, "...sim thread start.");
-                lock (m_SimStateLock) { m_SimThreadDoRun = true; }; // alpha10
+                lock (m_SimStateLock) { m_SimThreadDoRun = true; };
                 m_SimThread.Start();
             }
         }
 
-        // alpha10 StopSimThread is now blocking until the sim thread has actually stopped
+        // StopSimThread is now blocking until the sim thread has actually stopped
         // allowed to abort when ending a game or dying because of weird bug in release build where the sim thread
         // doesnt want to stop when dying as undead and we have to abort it(!)
         /// <summary>
@@ -15893,22 +15749,18 @@ namespace RogueSurvivor.Engine
         {
             Logger.WriteLine(Logger.Stage.RUN, "sim thread: starting loop");
 
-            District playerDistrict = m_Player.Location.Map.District;  // alpha10
+            District playerDistrict = m_Player.Location.Map.District; 
 
-            lock (m_SimStateLock) { m_SimThreadIsWorking = true; }  // alpha10
+            lock (m_SimStateLock) { m_SimThreadIsWorking = true; }
 
-            for (; ; )  // alpha10
-            //while (true)
+            for (; ; )
             {
-                //Console.Out.WriteLine("sim thread loop");
-                // alpha10
                 bool stop = false;
                 lock (m_SimStateLock) { stop = !m_SimThreadDoRun; }
                 if (stop)
                     break;
 
                 Thread.Sleep(10);
-                //Monitor.Enter(m_SimMutex); // alpha10 obsolete
                 try
                 {
                     if (m_Player != null)
@@ -15923,10 +15775,6 @@ namespace RogueSurvivor.Engine
                     // stop sim thread, better than crashing i guess...
                     break;
                 }
-                //finally
-                //{
-                //    Monitor.Exit(m_SimMutex); // alpha10 obsolete
-                //}
             }
 
             Logger.WriteLine(Logger.Stage.RUN, "sim thread: told to stop, stoping work");
@@ -15997,7 +15845,7 @@ namespace RogueSurvivor.Engine
             // 3. Sighting The Sewers Thing : !thesewersthing
             // 4. Police Station script.
             // 5. Sighting Jason Myers : !jasonmyers
-            // 6. Sighting Duckman // alpha10 disabled
+            // 6. Sighting Duckman
             //
             // Generic 1st Time flags :
             // 1. Visiting a new map.
@@ -16104,16 +15952,13 @@ namespace RogueSurvivor.Engine
                 Map map = player.Location.Map;
                 switch (m_Session.ScriptStage_PoliceStationPrisoner)
                 {
-                    case ScriptStage.STAGE_0:   // nothing happened yet, waiting to offer deal.
-                        // alpha10.1 check if near prisoner, not generator because prisoner can now spawn in any of the cells
-                        //           also slightly modified what he/she says.
+                    case ScriptStage.STAGE_0:// nothing happened yet, waiting to offer deal.
                         /////////////////////////////////////////////
                         // Player is near the prisoner : offer deal.
                         /////////////////////////////////////////////
-                        if (m_Rules.GridDistance(player.Location.Position, prisoner.Location.Position) <= 2 &&
-                            //map.HasAnyAdjacentInMap(player.Location.Position, (pt) => map.GetMapObjectAt(pt) is PowerGenerator) &&
-                            !prisoner.IsSleeping &&
-                            IsVisibleToPlayer(prisoner))  // alpha10 fix: and visible!
+                        if (m_Rules.GridDistance(player.Location.Position, prisoner.Location.Position) <= 2
+                            && !prisoner.IsSleeping
+                            && IsVisibleToPlayer(prisoner))
                         {
                             lock (m_Session) // thread safe
                             {
@@ -16181,7 +16026,7 @@ namespace RogueSurvivor.Engine
 
                                 // transformation.
                                 // - zombify.
-                                KillActor(null, prisoner, "transformation", false);  // alpha10 don't drop corpse!
+                                KillActor(null, prisoner, "transformation", false);
                                 Actor monster = Zombify(null, prisoner, false);
                                 // - turn into a ZP.
                                 monster.Model = m_GameActors.ZombiePrince;
@@ -16276,14 +16121,11 @@ namespace RogueSurvivor.Engine
                 if (other == null || other == player)
                     continue;
                 m_Session.Scoring.AddSighting(other.Model.ID, m_Session.WorldTime.TurnCounter);
-                // alpha10 unique npcs lose their invincibility when sighted and highlight them.
-                if (other.IsUnique)
+                // unique npcs lose their invincibility when sighted and highlight them.
+                if (other.IsUnique && other.IsInvincible)  // 1st sighting
                 {
-                    if (other.IsInvincible)  // 1st sighting
-                    {
-                        PlayUniqueActorMusicAndMessage(m_Session.ActorToUniqueActor(other), false);
-                        other.IsInvincible = false;
-                    }
+                    PlayUniqueActorMusicAndMessage(m_Session.ActorToUniqueActor(other), false);
+                    other.IsInvincible = false;
                 }
             }
         }
@@ -16349,7 +16191,7 @@ namespace RogueSurvivor.Engine
             m_MusicManager.Play(music, MusicPriority.PRIORITY_EVENT);
 
             // restart sim thread.
-            StopSimThread(false);  // alpha10 stop-start
+            StopSimThread(false);
             StartSimThread();
         }
 
@@ -16784,8 +16626,6 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        // alpha10.1 common code for checking crushing closing gates.
-        // they do not insta-kill the actor anymore but inflict (large) damage and can't close if the actor is still there.
         /// <summary>
         ///
         /// </summary>
@@ -16840,26 +16680,11 @@ namespace RogueSurvivor.Engine
             {
                 if (obj.ImageID == GameImages.OBJ_GATE_OPEN)
                 {
-                    // alpha10.1
                     if (CheckForGateClosingCrush(obj, Rules.CRUSHING_GATES_DAMAGE))
                     {
                         obj.IsWalkable = false;
                         obj.ImageID = GameImages.OBJ_GATE_CLOSED;
                     }
-                    /* obsolete
-                    obj.IsWalkable = false;
-                    obj.ImageID = GameImages.OBJ_GATE_CLOSED;
-                    Actor crushedActor = map.GetActorAt(obj.Location.Position);
-                    if (crushedActor != null && !crushedActor.IsInvincible) // alpha10
-                    {
-                        KillActor(null, crushedActor, "crushed");
-                        if (m_Player.Location.Map == map)
-                        {
-                            AddMessage(new Message("Someone got crushed between the closing gates!", map.LocalTime.TurnCounter, Color.Red));
-                            //RedrawPlayScreen();
-                        }
-                    }
-                    */
                 }
             }
         }
@@ -16882,26 +16707,11 @@ namespace RogueSurvivor.Engine
             {
                 if (obj.ImageID == GameImages.OBJ_GATE_OPEN)
                 {
-                    // alpha10.1
                     if (CheckForGateClosingCrush(obj, Rules.CRUSHING_GATES_DAMAGE))
                     {
                         obj.IsWalkable = false;
                         obj.ImageID = GameImages.OBJ_GATE_CLOSED;
                     }
-                    /* obsolete
-                    obj.IsWalkable = false;
-                    obj.ImageID = GameImages.OBJ_GATE_CLOSED;
-                    Actor crushedActor = map.GetActorAt(obj.Location.Position);
-                    if (crushedActor != null && !crushedActor.IsInvincible) // alpha10
-                    {
-                        KillActor(null, crushedActor, "crushed");
-                        if (m_Player.Location.Map == map)
-                        {
-                            AddMessage(new Message("Someone got crushed between the closing cells!", map.LocalTime.TurnCounter, Color.Red));
-                            //RedrawPlayScreen();
-                        }
-                    }
-                    */
                 }
             }
         }
@@ -16941,26 +16751,11 @@ namespace RogueSurvivor.Engine
             {
                 if (obj.ImageID == GameImages.OBJ_GATE_OPEN)
                 {
-                    // alpha10.1
                     if (CheckForGateClosingCrush(obj, Rules.CRUSHING_GATES_DAMAGE))
                     {
                         obj.IsWalkable = false;
                         obj.ImageID = GameImages.OBJ_GATE_CLOSED;
                     }
-                    /* obsolete
-                    obj.IsWalkable = false;
-                    obj.ImageID = GameImages.OBJ_GATE_CLOSED;
-                    Actor crushedActor = map.GetActorAt(obj.Location.Position);
-                    if (crushedActor != null)
-                    {
-                        KillActor(null, crushedActor, "crushed");
-                        if (m_Player.Location.Map == map)
-                        {
-                            AddMessage(new Message("Someone got crushed between the closing gate!", map.LocalTime.TurnCounter, Color.Red));
-                            //RedrawPlayScreen();
-                        }
-                    }
-                    */
                 }
             }
         }
@@ -17160,7 +16955,6 @@ namespace RogueSurvivor.Engine
             s_Options.DEV_ShowActorsStats = !s_Options.DEV_ShowActorsStats;
         }
 
-        // alpha10
         public void DEV_TogglePlayerInvincibility()
         {
             if (m_Session == null || m_Player == null)
@@ -17170,12 +16964,11 @@ namespace RogueSurvivor.Engine
             AddMessage(new Message("DEAR DEV, YOU ARE NOW " + (m_Player.IsInvincible ? "INVINCIBLE" : "NOT INVINCIBLE"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
         }
 
-        // alpha10.1
         public void DEV_MaxTrust()
         {
             if (m_Session == null || m_Player == null)
                 return;
-            if (m_Player.Followers == null)  // alpha10.1 fix
+            if (m_Player.Followers == null)
                 return;
 
             foreach (Actor f in m_Player.Followers)

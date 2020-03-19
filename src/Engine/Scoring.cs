@@ -470,11 +470,11 @@ namespace RogueSurvivor.Engine
             //////////////////
             // Dynamic factors:
             // !reversed for undeads!
-            // - Density            : f(mapsize, civs+undeads), +/- 99%   // alpha10.1 removed citysize from difficulty formula
+            // - Density            : f(mapsize, civs+undeads), +/- 99% 
             // - Undeads            : f(undeads/civs, day0, invasion%), +/- 50%
             // - Civilians          : f(zombification%, canstarve&starvedzomb%), +/- 50%
             ////////////////////
-            // - Density            : f(mapsize, civs+undeads), +/- 99%   // alpha10.1 removed citysize from difficulty formula
+            // - Density            : f(mapsize, civs+undeads), +/- 99%
             float kDefaultDensity = (float)(Math.Sqrt(GameOptions.DEFAULT_MAX_CIVILIANS + GameOptions.DEFAULT_MAX_UNDEADS)) / (float)(GameOptions.DEFAULT_DISTRICT_SIZE * GameOptions.DEFAULT_DISTRICT_SIZE);
             float kDensity = (float)(Math.Sqrt(options.MaxCivilians + options.MaxUndeads)) / (float)(options.DistrictSize * options.DistrictSize);
             float rDensity = (kDensity - kDefaultDensity) / kDefaultDensity;

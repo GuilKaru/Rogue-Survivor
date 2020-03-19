@@ -8,11 +8,7 @@ namespace RogueSurvivor.Data
     {
         LIVING,
         UNDEAD_MASTER,
-
-        // alpha 10
         SUPPRESSOR
-        //PERFUME_LIVING_SUPRESSOR,
-        //PERFUME_LIVING_GENERATOR
     }
 
     [Serializable]

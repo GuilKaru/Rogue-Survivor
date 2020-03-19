@@ -1,8 +1,5 @@
 ﻿namespace RogueSurvivor.Engine.Interfaces
 {
-    // alpha10 Added concept of music priority, can play only one music at a time, renamed to MusicManager and
-    // some cleanup. Concrete classes updated.
-
     static class MusicPriority
     {
         /// <summary>
@@ -25,7 +22,6 @@
     {
         bool IsMusicEnabled { get; set; }
         int Volume { get; set; }
-        // alpha10
         int Priority { get; }
         string Music { get; }
         bool IsPlaying { get; }
@@ -45,7 +41,6 @@
         /// <param name="musicname"></param>
         void PlayLooping(string musicname, int priority);
 
-        // alpha10
         void Stop();
     }
 }

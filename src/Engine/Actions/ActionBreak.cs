@@ -7,7 +7,7 @@ namespace RogueSurvivor.Engine.Actions
     {
         MapObject m_Obj;
 
-        // alpha10.1 needed by RogueGame to ask player if he really wants to break
+        // needed by RogueGame to ask player if he really wants to break
         public MapObject MapObject { get { return m_Obj; } }
 
         public ActionBreak(Actor actor, RogueGame game, MapObject obj)

@@ -32,7 +32,7 @@ namespace RogueSurvivor.Gameplay.AI
             }
         }
 
-        const int FLEE_THROUGH_EXIT_CHANCE = 90;  // alpha10 increased from 50%
+        const int FLEE_THROUGH_EXIT_CHANCE = 90;
 
         const int EMOTE_GRAB_ITEM_CHANCE = 30;
         const int EMOTE_FLEE_CHANCE = 30;
@@ -40,9 +40,9 @@ namespace RogueSurvivor.Gameplay.AI
         const int EMOTE_CHARGE_CHANCE = 30;
 
         const float MOVE_DISTANCE_PENALTY = 0.42f;  // slightly > to diagonal distance (sqrt(2))
-        const float MOVE_INTO_TRAPS_PENALTY = 1;  // alpha10
+        const float MOVE_INTO_TRAPS_PENALTY = 1;
 
-        const int IN_LEADER_LOF_SAFETY_PENALTY = 1;  // alpha10 int
+        const int IN_LEADER_LOF_SAFETY_PENALTY = 1;
 
         ActorOrder m_Order;
         ActorDirective m_Directive;
@@ -50,7 +50,6 @@ namespace RogueSurvivor.Gameplay.AI
         List<Item> m_TabooItems;    // list is better than dictionary since we expect it to be very small.
         List<Point> m_TabooTiles;
         List<Actor> m_TabooTrades;
-        // alpha10
         [NonSerialized] RouteFinder m_RouteFinder;
         int m_ReservedEquipmentSlots;
 
@@ -467,7 +466,6 @@ namespace RogueSurvivor.Gameplay.AI
 
                     int score = 0;
 
-                    // alpha10.1
                     const int BREAKING_OBJ = -50000;
                     const int BACKTRACKING = -10000;
                     const int BREAKING_BARRICADES = -1000;
@@ -476,7 +474,7 @@ namespace RogueSurvivor.Gameplay.AI
                     const int DOORWINDOWS = 100;
                     const int EXITS = 50;
                     const int INSIDE_WHEN_ALMOST_SLEEPY = 100;
-                    const int WANDER_RANDOM = 10;  // alpha10.1 much smaller random factor
+                    const int WANDER_RANDOM = 10;
 
                     if (next == m_prevLocation)
                         score += BACKTRACKING;
@@ -487,7 +485,7 @@ namespace RogueSurvivor.Gameplay.AI
                             score += AVOID_TRAPS;
                     }
 
-                    // alpha10.1 allowing break action prevent rare cases of getting stuck or going back and forth but we penalize it
+                    // allowing break action prevent rare cases of getting stuck or going back and forth but we penalize it
                     if (next.Map.GetMapObjectAt(next.Position) != null)
                     {
                         ActorAction bumpObjAction = game.Rules.IsBumpableFor(m_Actor, game, next);
@@ -502,7 +500,6 @@ namespace RogueSurvivor.Gameplay.AI
                         }
                     }
 
-                    // alpha10.1 prefer unexplored/oldest
                     // unexplored should not happen because exploration rule is tested before wander rule but just to be more robust...
                     if (exploration != null)
                     {
@@ -513,7 +510,7 @@ namespace RogueSurvivor.Gameplay.AI
                             score += locAge;
                     }
 
-                    // alpha10.1 prefer wandering to doorwindows and exits. 
+                    // prefer wandering to doorwindows and exits. 
                     // helps civs ai getting stuck in semi-infinite loop when running out of new exploration to do.
                     // as a side effect, make ais with no exploration data (eg zombies) more eager to visit door/windows and exits.
                     DoorWindow doorWindow = next.Map.GetMapObjectAt(next.Position) as DoorWindow;
@@ -522,11 +519,11 @@ namespace RogueSurvivor.Gameplay.AI
                     if (next.Map.GetExitAt(next.Position) != null)
                         score += EXITS;
 
-                    // alpha10.1 prefer inside when almost sleepy
+                    // prefer inside when almost sleepy
                     if (game.Rules.IsAlmostSleepy(m_Actor) && next.Map.GetTileAt(next.Position).IsInside)
                         score += INSIDE_WHEN_ALMOST_SLEEPY;
 
-                    // alpha10.1 add random factor
+                    // add random factor
                     score += game.Rules.Roll(0, WANDER_RANDOM);
 
                     // done
@@ -545,7 +542,6 @@ namespace RogueSurvivor.Gameplay.AI
             return BehaviorWander(game, null, exploration);
         }
 
-        // alpha10 added break & push
         /// <summary>
         /// 
         /// </summary>
@@ -580,7 +576,7 @@ namespace RogueSurvivor.Gameplay.AI
                             }
                         }
 
-                        // alpha10 check special actions
+                        // check special actions
                         if (canCheckBreak)
                         {
                             MapObject obj = m_Actor.Location.Map.GetMapObjectAt(next.Position);
@@ -625,7 +621,7 @@ namespace RogueSurvivor.Gameplay.AI
                     Location next = m_Actor.Location + dir;
                     float cost = (distanceFn != null ? distanceFn(next.Position, goal) : game.Rules.StdDistance(next.Position, goal));
 
-                    // alpha10 add action cost heuristic if npc is intelligent
+                    // add action cost heuristic if npc is intelligent
                     if (!float.IsNaN(cost))
                     {
                         if (m_Actor.Model.Abilities.IsIntelligent)
@@ -642,7 +638,6 @@ namespace RogueSurvivor.Gameplay.AI
                 return null;
         }
 
-        // alpha10
         /// <summary>
         /// For intelligent npcs, additional cost to distance cost when chosing which adj tile to bump to.
         /// </summary>
@@ -679,7 +674,6 @@ namespace RogueSurvivor.Gameplay.AI
             return cost;
         }
 
-        // alpha10 can check break and push
         protected ActorAction BehaviorStupidBumpToward(RogueGame game, Point goal, bool canCheckBreak, bool canCheckPush)
         {
             return BehaviorBumpToward(game, goal,
@@ -698,7 +692,6 @@ namespace RogueSurvivor.Gameplay.AI
                 });
         }
 
-        // alpha10 added break & push
         protected ActorAction BehaviorIntelligentBumpToward(RogueGame game, Point goal,
             bool canCheckBreak, bool canCheckPush)
         {
@@ -818,7 +811,6 @@ namespace RogueSurvivor.Gameplay.AI
             if (!game.Rules.CanActorFireAt(m_Actor, targetActor))
                 return null;
 
-            // alpha10
             // select rapid fire if one shot is not enough to kill target, has more than one ammo loaded and chances to hit good enough.
             FireMode fireMode = FireMode.DEFAULT;
             if ((GetEquippedWeapon() as ItemRangedWeapon).Ammo >= 2)
@@ -922,7 +914,6 @@ namespace RogueSurvivor.Gameplay.AI
 
         protected ActorAction BehaviorUnequipCellPhoneIfLeaderHasNot(RogueGame game)
         {
-            // alpha10
             // if we are leader, dont unequip.
             if (m_Actor.CountFollowers > 0)
                 return null;
@@ -963,7 +954,6 @@ namespace RogueSurvivor.Gameplay.AI
             return null;
         }
 
-        // alpha10
         /// <summary>
         /// Get action to perform to manage the best ranged weapon we have.
         /// - equip a new best ranged weapon
@@ -1318,7 +1308,6 @@ namespace RogueSurvivor.Gameplay.AI
                 return BehaviorIntelligentBumpToward(game, position, canBreak, canPush);
         }
 
-        // alpha10 made improved get item rule into a new behaviour; need taboo tile upkeep by caller though!
         protected ActorAction BehaviorGoGetInterestingItems(RogueGame game, List<Percept> mapPercepts, bool canBreak, bool canPush, string cantGetItemEmote, bool setLastItemsSaw, ref Percept lastItemsSaw)
         {
             RouteFinder.SpecialActions allowedActions = RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS;
@@ -1336,7 +1325,7 @@ namespace RogueSurvivor.Gameplay.AI
                         return true;
                     if (!HasAnyInterestingItem(game, p.Percepted as Inventory, ItemSource.GROUND_STACK))
                         return true;
-                    // alpha10 check reachability
+                    // check reachability
                     RouteFinder.SpecialActions a = allowedActions;
                     if (IsContainerAt(p.Location))
                         a |= RouteFinder.SpecialActions.ADJ_TO_DEST_IS_GOAL;
@@ -1413,9 +1402,9 @@ namespace RogueSurvivor.Gameplay.AI
                 return null;
 
             // unequip/drop first light/tracker/spray out of batteries/quantity.
-            // alpha10 ammo with no compatible ranged weapon and inventory full
-            // alpha10 duplicate ranged weapon with no ammo if inventory 50% full
-            // alpha10 empty cans!
+            // ammo with no compatible ranged weapon and inventory full
+            // duplicate ranged weapon with no ammo if inventory 50% full
+            // empty cans!
             bool isInvFull = m_Actor.Inventory.IsFull;
             bool isInv50Full = m_Actor.Inventory.CountItems >= (m_Actor.Inventory.MaxCapacity / 2);
             foreach (Item it in m_Actor.Inventory.Items)
@@ -1430,13 +1419,13 @@ namespace RogueSurvivor.Gameplay.AI
                     dropIt = (it as ItemSprayPaint).PaintQuantity <= 0;
                 else if (it is ItemSprayScent)
                     dropIt = (it as ItemSprayScent).SprayQuantity <= 0;
-                // alpha10 ammo with no compatible ranged weapon and inventory full
+                // ammo with no compatible ranged weapon and inventory full
                 else if (isInvFull && it is ItemAmmo)
                 {
                     if (GetCompatibleRangedWeapon(game, it as ItemAmmo) == null)
                         dropIt = true;
                 }
-                // alpha10 duplicate ranged weapon with no ammo if inventory 50% full
+                // duplicate ranged weapon with no ammo if inventory 50% full
                 else if (isInv50Full && it is ItemRangedWeapon)
                 {
                     ItemRangedWeapon rw = it as ItemRangedWeapon;
@@ -1459,7 +1448,7 @@ namespace RogueSurvivor.Gameplay.AI
                         }
                     }
                 }
-                // alpha10 empty cans!
+                // empty cans!
                 else if (it.Model == game.Items.EMPTY_CAN) // comparing model instead of attributes is bad but makes sense in this case
                 {
                     dropIt = true;
@@ -1563,7 +1552,7 @@ namespace RogueSurvivor.Gameplay.AI
             {
                 trp = it as ItemTrap;
                 if (trp == null) continue;
-                if (!game.Rules.IsSafeFromTrap(trp, m_Actor))  // alpha10 ignore safe traps we can't trigger them
+                if (!game.Rules.IsSafeFromTrap(trp, m_Actor))
                     sum += trp.TrapModel.Damage;
             }
             return sum;
@@ -1952,7 +1941,7 @@ namespace RogueSurvivor.Gameplay.AI
             foreach (Item it in inv.Items)
             {
                 ItemEntertainment ent = it as ItemEntertainment;
-                if (ent != null && ent.IsBoringFor(m_Actor))  // alpha10 boring items item centric
+                if (ent != null && ent.IsBoringFor(m_Actor))
                     return new ActionDropItem(m_Actor, game, it);
             }
 
@@ -2067,7 +2056,6 @@ namespace RogueSurvivor.Gameplay.AI
             return null;
         }
 
-        // alpha10 added break and push
         protected ActorAction BehaviorChargeEnemy(RogueGame game, Percept target, bool canCheckBreak, bool canCheckPush)
         {
             // try melee attack first.
@@ -2134,7 +2122,7 @@ namespace RogueSurvivor.Gameplay.AI
         {
             target = null;
 
-            // alpha10.1 dont always check for lagging followers, prevent leader from getting stuck waiting too much.
+            // dont always check for lagging followers, prevent leader from getting stuck waiting too much.
             // side effect is more occurence of followers lagging behind.
             if (game.Rules.RollChance(25))
                 return null;
@@ -2190,7 +2178,7 @@ namespace RogueSurvivor.Gameplay.AI
             string[] emotes,
             RouteFinder.SpecialActions allowedChargeActions)
         {
-            // alpha10 filter out unreachables if no ranged weapon equipped
+            // filter out unreachables if no ranged weapon equipped
             // (we shouldnt be here anyway if we have a ranged weapon)
             if (m_Actor.GetEquippedRangedWeapon() == null)
             {
@@ -2206,7 +2194,6 @@ namespace RogueSurvivor.Gameplay.AI
 
             Actor enemy = nearestEnemy.Percepted as Actor;
 
-            // alpha10
             // get enemy attack
             Attack enemyAttack = GetActorAttack(game, enemy);
 
@@ -2307,7 +2294,6 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // alpha10
             // Improve STA management a bit.
             // Cancel running if this would make us tired and we don't have equipped a ranged weapon so keeping
             // TODO -- consider other cases were running would be a waste of STA.
@@ -2317,7 +2303,6 @@ namespace RogueSurvivor.Gameplay.AI
                     doRun = false;
             }
 
-            // alpha10 
             // If we have no ranged weapon and target is unreachable, no point charging him as we can't get into
             // melee contact. Flee if enemy has equipped a ranged weapon and do nothing if not.
             if (!decideToFlee)
@@ -2352,7 +2337,7 @@ namespace RogueSurvivor.Gameplay.AI
                 // 2. Barricade door between me and the enemy.
                 // 3. Use exit?
                 // 4. Use medecine?
-                // 5. Rest if tired and at safe distance  // alpha10
+                // 5. Rest if tired and at safe distance
                 // 6. Walk/run away.
                 // 7. Blocked, turn to fight.
                 ////////////////////////////////////////////////////////////////////////////////////////
@@ -2456,7 +2441,6 @@ namespace RogueSurvivor.Gameplay.AI
                     }
                 }
 
-                // alpha10
                 // 5. Rest if tired and at safe distance
                 if (game.Rules.IsActorTired(m_Actor))
                 {
@@ -2657,30 +2641,30 @@ namespace RogueSurvivor.Gameplay.AI
                     }
 
                     // Heuristic scoring:
-                    // 0st Punish backtracking // alpha10.1
+                    // 0st Punish backtracking
                     // 1st Prefer unexplored zones.
                     // 2nd Prefer unexplored locs.
                     // 3rd Prefer doors and barricades (doors/windows, pushables)
-                    // 4th If intelligent punish stepping on unsafe traps. // alpha10
-                    // 5th Prefer inside during the night vs outside during the day, and inside if sleepy // alpha10.1
+                    // 4th If intelligent punish stepping on unsafe traps.
+                    // 5th Prefer inside during the night vs outside during the day, and inside if sleepy
                     // 6th Prefer continue in same direction.
                     // 7th Small randomness.
-                    const int BACKTRACKING = -10000;  // alpha10.1
+                    const int BACKTRACKING = -10000;
                     const int EXPLORE_ZONES = 1000;
                     const int EXPLORE_LOCS = 500;
                     const int EXPLORE_BARRICADES = 100;
-                    const int AVOID_TRAPS = -1000; // alpha10 greatly increase penalty and x by potential damage; was -50
+                    const int AVOID_TRAPS = -1000;
                     const int EXPLORE_INOUT = 50;
-                    const int EXPLORE_IN_ALMOST_SLEEPY = 100; // alpha10.1
+                    const int EXPLORE_IN_ALMOST_SLEEPY = 100;
                     const int EXPLORE_DIRECTION = 25;
                     const int EXPLORE_RANDOM = 10;
 
                     int score = 0;
-                    // 0st Punish backtracking // alpha10.1
+                    // 0st Punish backtracking
                     if (next.Map == m_prevLocation.Map && pos == m_prevLocation.Position)
                         score += BACKTRACKING;
                     // 1st Prefer unexplored zones.
-                    // alpha10.1 use age to prefer older zones
+                    // use age to prefer older zones
                     int zoneAge = exploration.GetExploredAge(map.GetZonesAt(pos.X, pos.Y));
                     if (zoneAge == 0)  // unexplored (or expired)
                         score += EXPLORE_ZONES;
@@ -2689,7 +2673,7 @@ namespace RogueSurvivor.Gameplay.AI
                     //if (!exploration.HasExplored(map.GetZonesAt(pos.X, pos.Y)))
                     //    score += EXPLORE_ZONES;
                     // 2nd Prefer unexplored locs.
-                    // alpha10.1 use age to prefer older locs
+                    // use age to prefer older locs
                     int locAge = exploration.GetExploredAge(next);
                     if (locAge == 0)  // unexplored (or expired)
                         score += EXPLORE_LOCS;
@@ -2701,14 +2685,14 @@ namespace RogueSurvivor.Gameplay.AI
                     MapObject mapObj = map.GetMapObjectAt(pos);
                     if (mapObj != null && (mapObj.IsMovable || mapObj is DoorWindow))
                         score += EXPLORE_BARRICADES;
-                    // 4th If intelligent punish stepping on unsafe traps. // alpha10
+                    // 4th If intelligent punish stepping on unsafe traps.
                     if (isIntelligent)
                     {
                         int trapsDmg = ComputeTrapsMaxDamageForMe(game, map, pos);
                         if (trapsDmg > 0)
                             score += trapsDmg * AVOID_TRAPS;
                     }
-                    // 5th Prefer inside during the night vs outside during the day, and inside if sleepy // alpha10.1
+                    // 5th Prefer inside during the night vs outside during the day, and inside if sleepy
                     bool isInside = map.GetTileAt(pos.X, pos.Y).IsInside;
                     if (isInside)
                     {
@@ -2990,7 +2974,7 @@ namespace RogueSurvivor.Gameplay.AI
             // equip then throw.
             if (!grenade.IsEquipped)
             {
-                // alpha10 mark right hand as taboo so behavior BehaviorEquipBestItems will not undo us and loop forever
+                // mark right hand as taboo so behavior BehaviorEquipBestItems will not undo us and loop forever
                 MarkEquipmentSlotAsTaboo(DollPart.RIGHT_HAND);
 
                 Item otherEquipped = m_Actor.GetEquippedWeapon();
@@ -3001,7 +2985,7 @@ namespace RogueSurvivor.Gameplay.AI
             }
             else
             {
-                // alpha10 release right hand from taboo so behavior BehaviorEquipBestItems can use right hand
+                // release right hand from taboo so behavior BehaviorEquipBestItems can use right hand
                 UnmarkEquipmentSlotAsTaboo(DollPart.RIGHT_HAND);
 
                 ActorAction throwAction = new ActionThrowGrenade(m_Actor, game, bestSpot.Value);
@@ -3049,7 +3033,7 @@ namespace RogueSurvivor.Gameplay.AI
             // 2. get rid of barricading material.
             // 3. get rid of light & sprays.
             // 4. get rid of ammo.
-            // 5. get rid of entertainment  // alpha10
+            // 5. get rid of entertainment
             // 6. get rid of medecine.
             // 7. last resort, get rid of random item.
             Inventory myInv = m_Actor.Inventory;
@@ -3080,7 +3064,7 @@ namespace RogueSurvivor.Gameplay.AI
             if (ammo != null)
                 return BehaviorDropItem(game, ammo);
 
-            // 5. get rid of entertainment  // alpha10
+            // 5. get rid of entertainment
             Item ent = myInv.GetFirstMatching((it) => it is ItemEntertainment);
             if (ent != null)
                 return BehaviorDropItem(game, ent);
@@ -3106,10 +3090,9 @@ namespace RogueSurvivor.Gameplay.AI
                 return null;
             // if not proper odor, nope.
             ItemSprayScentModel model = spray.Model as ItemSprayScentModel;
-            if (model.Odor != Odor.SUPPRESSOR)  // alpha10
+            if (model.Odor != Odor.SUPPRESSOR)
                 return null;
 
-            // alpha10
             // first check if wants to use it on self, then check on adj leader/follower
             Actor sprayOn = null;
 
@@ -3175,28 +3158,17 @@ namespace RogueSurvivor.Gameplay.AI
 
         protected bool IsGoodStenchKillerSpot(RogueGame game, Map map, Point pos)
         {
-            // alpha10 obsolete 1. Don't spray at an already sprayed spot.
-            // 2. Spray in a good position:
-            //    2.1 entering or leaving a building.
-            //    2.2 a door/window.
-            //    2.3 an exit.
-
-            // alpha10 obsolete 1. Don't spray at an already sprayed spot.
-            //if (map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, pos) > 0)
-            //    return false;
-
-            // 2. Spray in a good position:
-
-            //    2.1 entering or leaving a building.
+            // 1. Spray in a good position:
+            //    1.1 entering or leaving a building.
             bool wasInside = m_prevLocation.Map.GetTileAt(m_prevLocation.Position).IsInside;
             bool isInside = map.GetTileAt(pos).IsInside;
             if (wasInside != isInside)
                 return true;
-            //    2.2 a door/window.
+            //    1.2 a door/window.
             MapObject objThere = map.GetMapObjectAt(pos);
             if (objThere != null && objThere is DoorWindow)
                 return true;
-            //    2.3 an exit.
+            //    1.3 an exit.
             if (map.GetExitAt(pos) != null)
                 return true;
 
@@ -3596,7 +3568,7 @@ namespace RogueSurvivor.Gameplay.AI
                 if (it.IsEquipped && it is ItemSprayScent)
                 {
                     ItemSprayScentModel m = (it as ItemSprayScent).Model as ItemSprayScentModel;
-                    if (m.Odor == Odor.SUPPRESSOR)  // alpha10
+                    if (m.Odor == Odor.SUPPRESSOR)
                         return it as ItemSprayScent;
                 }
 
@@ -3676,7 +3648,6 @@ namespace RogueSurvivor.Gameplay.AI
             return bestFood;
         }
 
-        // alpha10.1 added item/inventory source
         public enum ItemSource
         {
             /// <summary>
@@ -3710,7 +3681,7 @@ namespace RogueSurvivor.Gameplay.AI
         /// <see cref="RateTradeOffer(RogueGame, Actor, Item, Item)"/>
         public bool IsInterestingItemToOwn(RogueGame game, Item it, ItemSource itemSrc)
         {
-            // alpha10 base idea is any non-junk non-taboo item is interesting.
+            // base idea is any non-junk non-taboo item is interesting.
             // using itemrating is consistent with new trade logic.
             // exception:
             // - reject anything new not food if no food and only one one slot left; needed to be consistent
@@ -3720,14 +3691,14 @@ namespace RogueSurvivor.Gameplay.AI
             if (IsItemTaboo(it))
                 return false;
 
-            // consistent with BehaviorMakeRoomForFood (was already in alpha9)
+            // consistent with BehaviorMakeRoomForFood
             if (itemSrc != ItemSource.OWNED && m_Actor.Inventory.CountItems >= m_Actor.Inventory.MaxCapacity - 1)
             {
                 if (!(it is ItemFood) && (CountItemQuantityOfType(typeof(ItemFood)) == 0))
                     return false;
             }
 
-            // alpha10.1 not interested in picking up safe traps from the ground : dont undo your or your friends traps!
+            // not interested in picking up safe traps from the ground : dont undo your or your friends traps!
             if (itemSrc == ItemSource.GROUND_STACK && it is ItemTrap)
             {
                 ItemTrap itTrap = it as ItemTrap;
@@ -3761,8 +3732,6 @@ namespace RogueSurvivor.Gameplay.AI
                     return it;
             return null;
         }
-
-        // alpha10 new helpers
 
         public bool IsContainerAt(Location loc)
         {
@@ -3922,7 +3891,7 @@ namespace RogueSurvivor.Gameplay.AI
             ItemSprayScentModel mSpray = spray.Model as ItemSprayScentModel;
 
             // must be stench killer
-            if (mSpray.Odor != Odor.SUPPRESSOR)  // alpha10
+            if (mSpray.Odor != Odor.SUPPRESSOR)
                 return -1;
 
             // prefer stronger strength then spray quantity
@@ -4001,8 +3970,6 @@ namespace RogueSurvivor.Gameplay.AI
 
             return count;
         }
-
-        // alpha10 new item rating and trading logic
 
         public enum ItemRating
         {
@@ -4390,7 +4357,7 @@ namespace RogueSurvivor.Gameplay.AI
                     return TradeRating.REFUSE;
             }
 
-            // alpha10.1 never trade away a unique item, unless for another unique item
+            // never trade away a unique item, unless for another unique item
             if (asked.IsUnique && !offered.IsUnique)
                 return TradeRating.REFUSE;
 
@@ -4712,7 +4679,6 @@ namespace RogueSurvivor.Gameplay.AI
             return count;
         }
 
-        // alpha10
         protected bool HasAnyRangedWeaponWithAmmo(Item excludingThisRangedWeapon = null)
         {
             foreach (Item it in m_Actor.Inventory.Items)
@@ -4738,7 +4704,7 @@ namespace RogueSurvivor.Gameplay.AI
 
         protected void RunIfPossible(Rules rules)
         {
-            m_Actor.IsRunning = rules.CanActorRun(m_Actor);  // alpha10 fix
+            m_Actor.IsRunning = rules.CanActorRun(m_Actor);
         }
 
         protected int GridDistancesSum(Rules rules, Point from, List<Percept> goals)
@@ -4749,7 +4715,6 @@ namespace RogueSurvivor.Gameplay.AI
             return sum;
         }
 
-        // alpha10 new safety scoring
         /// <summary>
         /// Compute safety from a list of dangers at a given position.
         /// </summary>
@@ -4946,7 +4911,7 @@ namespace RogueSurvivor.Gameplay.AI
             return candidates[iChoice];
         }
 
-        // alpha10 evalChoiceFn now also accepts data param from isChoiceValidFn; eg: an action
+        // evalChoiceFn now also accepts data param from isChoiceValidFn; eg: an action
         protected ChoiceEval<_DATA_> ChooseExtended<T, _DATA_>(RogueGame game,
             List<T> listOfChoices,
             Func<T, _DATA_> isChoiceValidFn,
@@ -5050,8 +5015,8 @@ namespace RogueSurvivor.Gameplay.AI
                 a is ActionOpenDoor ||
                 (a is ActionChat && (this.Directives.CanTrade || (a as ActionChat).Target == m_Actor.Leader)) ||
                 a is ActionBashDoor ||
-                a is ActionBreak ||  // alpha10.1 prevent rare cases of getting stuck or going back and forth but we rate it very very low
-                a is ActionBashDoor || // alpha10.1 prevent rare cases of getting stuck or going back and forth but we rate it very low
+                a is ActionBreak ||
+                a is ActionBashDoor ||
                 (a is ActionGetFromContainer && IsInterestingItemToOwn(game, (a as ActionGetFromContainer).Item, ItemSource.GROUND_STACK)) ||
                 a is ActionBarricadeDoor);
         }
@@ -5194,7 +5159,7 @@ namespace RogueSurvivor.Gameplay.AI
         {
             ///////////////////////////////////////////////////////
             // Targets to evade or not:
-            // 1. Yes : if fighting makes me tired vs a slower target (so i will lose my speed advantage by tiring) // alpha10 added slower target condition
+            // 1. Yes : if fighting makes me tired vs a slower target (so i will lose my speed advantage by tiring)
             // 2. Yes : slower targets that will act next turn (kiting) and are targetting us.
             // 3. No  : target is weaker.
             // 4. Yes : actor is weaker.
@@ -5203,7 +5168,7 @@ namespace RogueSurvivor.Gameplay.AI
 
             bool hasSpeedAdvantage = game.Rules.ActorSpeed(actor) > game.Rules.ActorSpeed(target);
 
-            // 1. Yes : if fighting makes me tired vs a slower target (so i will lose my speed advantage by tiring) // alpha10 added slower target condition
+            // 1. Yes : if fighting makes me tired vs a slower target (so i will lose my speed advantage by tiring)
             if (hasSpeedAdvantage && WillTireAfterAttack(game, actor))
                 return true;
 
@@ -5242,7 +5207,7 @@ namespace RogueSurvivor.Gameplay.AI
         /// <returns>weaker actor, null if they are equal.</returns>
         protected Actor FindWeakerInMelee(RogueGame game, Actor a, Actor b)
         {
-            // alpha10 count how many hits it would take to kill each other
+            // count how many hits it would take to kill each other
             // the actor that dies faster is the weaker one
 
             // silly cases of peope already dead, you never know -_-
@@ -5309,12 +5274,8 @@ namespace RogueSurvivor.Gameplay.AI
                 case Lighting.LIT:
                     return false;
                 case Lighting.OUTSIDE:
-                    // alpha10 outside, lights have an effect only during the night.
+                    // outside, lights have an effect only during the night.
                     return m_Actor.Location.Map.LocalTime.IsNight;
-                // pre alpha10 more conservative usage of lights
-                //// Needs only if At Night & (Outside or Heavy Rain).
-                //return m_Actor.Location.Map.LocalTime.IsNight &&
-                //    (game.Session.World.Weather == Weather.HEAVY_RAIN || !m_Actor.Location.Map.GetTileAt(m_Actor.Location.Position.X, m_Actor.Location.Position.Y).IsInside);
                 default:
                     throw new ArgumentOutOfRangeException("unhandled lighting");
             }
@@ -5416,7 +5377,6 @@ namespace RogueSurvivor.Gameplay.AI
             return nearest;
         }
 
-        // alpha10
         protected Attack GetActorAttack(RogueGame game, Actor actor)
         {
             return actor.GetEquippedRangedWeapon() != null ? actor.CurrentRangedAttack : actor.CurrentMeleeAttack;
@@ -5463,7 +5423,6 @@ namespace RogueSurvivor.Gameplay.AI
             }) != null;
         }
 
-        // alpha10
         public static bool IsAnyPrimedExplosiveThere(Map map, Point pos)
         {
             Inventory inv = map.GetItemsAt(pos);
@@ -5499,7 +5458,6 @@ namespace RogueSurvivor.Gameplay.AI
             return new Point(x, y);
         }
 
-        // alpha10.1
         /// <summary>
         /// 
         /// </summary>
@@ -5621,7 +5579,7 @@ namespace RogueSurvivor.Gameplay.AI
             m_TabooTrades = null;
         }
 
-        // alpha10 Taboo Equipment slots
+        // Taboo Equipment slots
         // Simple solution to cases of ai getting stuck in an infinite unequip-equip loop.
         // Typically caused by conflicting behaviors that will "compete" for an equipment slot and will keep doing
         // infinite cycle of equip-unequip, each behavior trying to get "his" item equiped on the same doll part.

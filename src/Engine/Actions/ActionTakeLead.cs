@@ -23,7 +23,7 @@ namespace RogueSurvivor.Engine.Actions
 
         public override void Perform()
         {
-            // alpha10.1 steal lead vs take lead
+            // steal lead vs take lead
             if (m_Target.HasLeader)
                 m_Game.DoStealLead(m_Actor, m_Target);
             else

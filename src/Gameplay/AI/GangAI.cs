@@ -32,7 +32,6 @@ namespace RogueSurvivor.Gameplay.AI
             "Come on"
         };
 
-        // alpha10
         const string CANT_GET_ITEM_EMOTE = "Fuck can't get that shit!";
 
         LOSSensor m_LOSSensor;
@@ -40,7 +39,7 @@ namespace RogueSurvivor.Gameplay.AI
 
         ExplorationData m_Exploration;
 
-        // alpha10 needed as ref param to a new behavior but unused
+        // needed as ref param to a new behavior but unused
         Percept m_DummyPerceptLastItemsSaw = null;
 
         public override void TakeControl(Actor actor)
@@ -66,7 +65,6 @@ namespace RogueSurvivor.Gameplay.AI
             HashSet<Point> FOV = m_LOSSensor.FOV;
             List<Percept> mapPercepts = FilterSameMap(game, percepts);
 
-            // alpha10
             // don't run by default.
             m_Actor.IsRunning = false;
 
@@ -76,7 +74,6 @@ namespace RogueSurvivor.Gameplay.AI
             {
                 return bestEquip;
             }
-            // end alpha10
 
             // 1. Follow order
             if (this.Order != null)
@@ -97,24 +94,21 @@ namespace RogueSurvivor.Gameplay.AI
             // - FLAGS
             // "courageous" : always if not tired.
             // - RULES
-            // alpha10 OBSOLETE 1 equip weapon/armor
-            // 2 fire at nearest.
-            // 3 shout, fight or flee.
-            // 4 use medecine
-            // 5 rest if tired
-            // // alpa10 obsolete and redundant with rule 3!! 6 charge enemy if courageous 
-            // 7 eat when hungry (also eat corpses)
-            // 8 sleep.
-            // 9 drop light/tracker with no batteries
-            // alpa10 OBSOLETE 10 equip light/tracker
-            // 11 get nearby item (not if seeing enemy)
-            // 12 steal item from someone.
-            // 13 tear down barricade
-            // 14 follow leader
-            // 15 take lead (if leadership)
-            // 16 (leader) don't leave follower behind.
-            // 17 explore
-            // 18 wander
+            // 1 fire at nearest.
+            // 2 shout, fight or flee.
+            // 3 use medecine
+            // 4 rest if tired
+            // 5 eat when hungry (also eat corpses)
+            // 6 sleep.
+            // 7 drop light/tracker with no batteries
+            // 8 get nearby item (not if seeing enemy)
+            // 9 steal item from someone.
+            // 10 tear down barricade
+            // 11 follow leader
+            // 12 take lead (if leadership)
+            // 13 (leader) don't leave follower behind.
+            // 14 explore
+            // 15 wander
             //////////////////////////////////////////////////////////////////////
 
             // get data.
@@ -130,7 +124,7 @@ namespace RogueSurvivor.Gameplay.AI
             // exploration.
             m_Exploration.Update(m_Actor.Location);
 
-            // alpha10 needed due to uggraded get item behavior
+            // needed due to uggraded get item behavior
             // clear taboo tiles : periodically or when changing maps.
             if (m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_HOUR == 0 ||
                 (PrevLocation != null && PrevLocation.Map != m_Actor.Location.Map))
@@ -138,7 +132,7 @@ namespace RogueSurvivor.Gameplay.AI
                 ClearTabooTiles();
             }
 
-            // 2 fire at nearest enemy (always if has leader, half of the time if not)
+            // 1 fire at nearest enemy (always if has leader, half of the time if not)
             if (hasCurrentEnemies && (checkOurLeader || game.Rules.RollChance(50)))
             {
                 List<Percept> fireTargets = FilterFireTargets(game, currentEnemies);
@@ -155,7 +149,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 3 shout, fight or flee
+            // 2 shout, fight or flee
             if (hasCurrentEnemies)
             {
                 // shout?
@@ -174,7 +168,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
 
                 // fight or flee.
-                RouteFinder.SpecialActions allowedChargeActions = RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS; // alpha10
+                RouteFinder.SpecialActions allowedChargeActions = RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS;
                 // gangs are allowed to make a mess :)
                 allowedChargeActions |= RouteFinder.SpecialActions.BREAK | RouteFinder.SpecialActions.PUSH;
                 ActorAction fightOrFlee = BehaviorFightOrFlee(game, currentEnemies, seeLeader, isLeaderFighting, ActorCourage.COURAGEOUS, FIGHT_EMOTES, allowedChargeActions);
@@ -184,7 +178,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 4 use medecine
+            // 3 use medecine
             ActorAction useMedAction = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
             if (useMedAction != null)
             {
@@ -192,7 +186,7 @@ namespace RogueSurvivor.Gameplay.AI
                 return useMedAction;
             }
 
-            // 5 rest if tired
+            // 4 rest if tired
             ActorAction restAction = BehaviorRestIfTired(game);
             if (restAction != null)
             {
@@ -200,7 +194,7 @@ namespace RogueSurvivor.Gameplay.AI
                 return new ActionWait(m_Actor, game);
             }
 
-            // 7 eat when hungry (also eat corpses)
+            // 5 eat when hungry (also eat corpses)
             if (game.Rules.IsActorHungry(m_Actor))
             {
                 ActorAction eatAction = BehaviorEat(game);
@@ -220,7 +214,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 8 sleep.
+            // 6 sleep.
             if (!hasAnyEnemies && WouldLikeToSleep(game, m_Actor) && IsInside(m_Actor) && game.Rules.CanActorSleep(m_Actor))
             {
                 // secure sleep?
@@ -241,7 +235,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 9 drop light/tracker with no batteries
+            // 7 drop light/tracker with no batteries
             ActorAction dropOutOfBatteries = BehaviorDropUselessItem(game);
             if (dropOutOfBatteries != null)
             {
@@ -249,12 +243,12 @@ namespace RogueSurvivor.Gameplay.AI
                 return dropOutOfBatteries;
             }
 
-            // 11 get nearby item (not if seeing enemy)
+            // 8 get nearby item (not if seeing enemy)
             // ignore not currently visible items & blocked items.
-            // alpha10 upgraded rule to use the same new core behavior as CivilianAI with custom params
+            // upgraded rule to use the same new core behavior as CivilianAI with custom params
             if (!hasCurrentEnemies)
             {
-                // alpha10 new common behaviour code, also used by CivilianAI, but Gangs can break and push
+                // new common behaviour code, also used by CivilianAI, but Gangs can break and push
                 ActorAction getItemAction = BehaviorGoGetInterestingItems(game, mapPercepts,
                      true, true, CANT_GET_ITEM_EMOTE, false, ref m_DummyPerceptLastItemsSaw);
 
@@ -262,7 +256,7 @@ namespace RogueSurvivor.Gameplay.AI
                     return getItemAction;
             }
 
-            // 12 steal item from someone.
+            // 9 steal item from someone.
             if (!hasCurrentEnemies)
             {
                 Map map = m_Actor.Location.Map;
@@ -283,7 +277,7 @@ namespace RogueSurvivor.Gameplay.AI
 
                 if (mayStealFrom != null)
                 {
-                    // alpha10 make sure to consider only reachable victims
+                    // make sure to consider only reachable victims
                     RouteFinder.SpecialActions allowedActions;
                     allowedActions = RouteFinder.SpecialActions.ADJ_TO_DEST_IS_GOAL | RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS;
                     // gangs can break & push stuff
@@ -309,7 +303,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 13 tear down barricade
+            // 10 tear down barricade
             ActorAction attackBarricadeAction = BehaviorAttackBarricade(game);
             if (attackBarricadeAction != null)
             {
@@ -317,7 +311,7 @@ namespace RogueSurvivor.Gameplay.AI
                 return attackBarricadeAction;
             }
 
-            // 14 follow leader
+            // 11 follow leader
             if (checkOurLeader)
             {
                 Point lastKnownLeaderPosition = m_Actor.Leader.Location.Position;
@@ -332,7 +326,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 15 take lead (if leadership)
+            // 12 take lead (if leadership)
             bool isLeader = m_Actor.Sheet.SkillTable.GetSkillLevel((int)Skills.IDs.LEADERSHIP) >= 1;
             bool canLead = !checkOurLeader && isLeader && m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(m_Actor);
             if (canLead)
@@ -350,7 +344,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 16 (leader) don't leave followers behind.
+            // 13 (leader) don't leave followers behind.
             if (m_Actor.CountFollowers > 0)
             {
                 Actor target;
@@ -377,7 +371,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 17 explore
+            // 14 explore
             ActorAction exploreAction = BehaviorExplore(game, m_Exploration);
             if (exploreAction != null)
             {
@@ -385,7 +379,7 @@ namespace RogueSurvivor.Gameplay.AI
                 return exploreAction;
             }
 
-            // 18 wander
+            // 15 wander
             m_Actor.Activity = Activity.IDLE;
             return BehaviorWander(game, m_Exploration);
         }

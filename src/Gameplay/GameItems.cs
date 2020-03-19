@@ -193,16 +193,16 @@ namespace RogueSurvivor.Gameplay
 
         struct MeleeWeaponData
         {
-            public const int COUNT_FIELDS = 12;  // alpha10
+            public const int COUNT_FIELDS = 12;
 
             public string NAME { get; set; }
             public string PLURAL { get; set; }
             public int ATK { get; set; }
             public int DMG { get; set; }
             public int STA { get; set; }
-            public int DISARM { get; set; }  // alpha10
-            public int TOOLBASHDMGBONUS { get; set; }  // alpha10
-            public float TOOLBUILDBONUS { get; set; } // alpha10
+            public int DISARM { get; set; }
+            public int TOOLBASHDMGBONUS { get; set; }
+            public float TOOLBUILDBONUS { get; set; }
             public int STACKINGLIMIT { get; set; }
             public bool ISFRAGILE { get; set; }
             public string FLAVOR { get; set; }
@@ -216,9 +216,9 @@ namespace RogueSurvivor.Gameplay
                     ATK = line[3].ParseInt(),
                     DMG = line[4].ParseInt(),
                     STA = line[5].ParseInt(),
-                    DISARM = line[6].ParseInt(),  // alpha10
-                    TOOLBASHDMGBONUS = line[7].ParseInt(), // alpha10
-                    TOOLBUILDBONUS = line[8].ParseFloat(),  // alpha10
+                    DISARM = line[6].ParseInt(),
+                    TOOLBASHDMGBONUS = line[7].ParseInt(),
+                    TOOLBUILDBONUS = line[8].ParseFloat(),
                     STACKINGLIMIT = line[9].ParseInt(),
                     ISFRAGILE = line[10].ParseBool(),
                     FLAVOR = line[11].ParseText()
@@ -261,13 +261,13 @@ namespace RogueSurvivor.Gameplay
 
         struct RangedWeaponData
         {
-            public const int COUNT_FIELDS = 10; // alpha10
+            public const int COUNT_FIELDS = 10;
 
             public string NAME { get; set; }
             public string PLURAL { get; set; }
             public int ATK { get; set; }
-            public int RAPID1 { get; set; } // alpha10
-            public int RAPID2 { get; set; } // alpha10
+            public int RAPID1 { get; set; }
+            public int RAPID2 { get; set; }
             public int DMG { get; set; }
             public int RANGE { get; set; }
             public int MAXAMMO { get; set; }
@@ -432,7 +432,7 @@ namespace RogueSurvivor.Gameplay
             public string NAME { get; set; }
             public string PLURAL { get; set; }
             public int BATTERIES { get; set; }
-            public bool HASCLOCK { get; set; }  // alpha10
+            public bool HASCLOCK { get; set; }
             public string FLAVOR { get; set; }
 
             public static TrackerData FromCSVLine(CSVLine line)
@@ -442,7 +442,7 @@ namespace RogueSurvivor.Gameplay
                     NAME = line[1].ParseText(),
                     PLURAL = line[2].ParseText(),
                     BATTERIES = line[3].ParseInt(),
-                    HASCLOCK = line[4].ParseBool(),  // alpha10
+                    HASCLOCK = line[4].ParseBool(),
                     FLAVOR = line[5].ParseText()
                 };
             }
@@ -723,7 +723,6 @@ namespace RogueSurvivor.Gameplay
                 FlavorDescription = DATA_FOOD_CANNED_FOOD.FLAVOR
             };
 
-            // alpha10 disarm chance added to attack, tool bonuses added to properties
             MeleeWeaponData mwdata;
 
             mwdata = DATA_MELEE_BASEBALLBAT;
@@ -735,8 +734,8 @@ namespace RogueSurvivor.Gameplay
                 StackingLimit = mwdata.STACKINGLIMIT,
                 FlavorDescription = mwdata.FLAVOR,
                 IsFragile = mwdata.ISFRAGILE,
-                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS, // alpha10
-                ToolBuildBonus = mwdata.TOOLBUILDBONUS  // alpha10
+                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS,
+                ToolBuildBonus = mwdata.TOOLBUILDBONUS
             };
 
             mwdata = DATA_MELEE_COMBAT_KNIFE;
@@ -748,8 +747,8 @@ namespace RogueSurvivor.Gameplay
                 StackingLimit = mwdata.STACKINGLIMIT,
                 FlavorDescription = mwdata.FLAVOR,
                 IsFragile = mwdata.ISFRAGILE,
-                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS, // alpha10
-                ToolBuildBonus = mwdata.TOOLBUILDBONUS  // alpha10
+                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS,
+                ToolBuildBonus = mwdata.TOOLBUILDBONUS
             };
 
             mwdata = DATA_MELEE_CROWBAR;
@@ -761,8 +760,8 @@ namespace RogueSurvivor.Gameplay
                 StackingLimit = mwdata.STACKINGLIMIT,
                 FlavorDescription = mwdata.FLAVOR,
                 IsFragile = mwdata.ISFRAGILE,
-                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS, // alpha10
-                ToolBuildBonus = mwdata.TOOLBUILDBONUS  // alpha10
+                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS,
+                ToolBuildBonus = mwdata.TOOLBUILDBONUS
             };
 
             mwdata = DATA_MELEE_UNIQUE_JASON_MYERS_AXE;
@@ -773,8 +772,8 @@ namespace RogueSurvivor.Gameplay
                 IsProper = true,
                 FlavorDescription = mwdata.FLAVOR,
                 IsUnbreakable = true,
-                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS, // alpha10
-                ToolBuildBonus = mwdata.TOOLBUILDBONUS  // alpha10
+                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS,
+                ToolBuildBonus = mwdata.TOOLBUILDBONUS
             };
 
             mwdata = DATA_MELEE_GOLFCLUB;
@@ -786,8 +785,8 @@ namespace RogueSurvivor.Gameplay
                 StackingLimit = mwdata.STACKINGLIMIT,
                 FlavorDescription = mwdata.FLAVOR,
                 IsFragile = mwdata.ISFRAGILE,
-                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS, // alpha10
-                ToolBuildBonus = mwdata.TOOLBUILDBONUS  // alpha10
+                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS,
+                ToolBuildBonus = mwdata.TOOLBUILDBONUS
             };
 
             mwdata = DATA_MELEE_IRON_GOLFCLUB;
@@ -799,8 +798,8 @@ namespace RogueSurvivor.Gameplay
                 StackingLimit = mwdata.STACKINGLIMIT,
                 FlavorDescription = mwdata.FLAVOR,
                 IsFragile = mwdata.ISFRAGILE,
-                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS, // alpha10
-                ToolBuildBonus = mwdata.TOOLBUILDBONUS  // alpha10
+                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS,
+                ToolBuildBonus = mwdata.TOOLBUILDBONUS
             };
 
             mwdata = DATA_MELEE_HUGE_HAMMER;
@@ -812,8 +811,8 @@ namespace RogueSurvivor.Gameplay
                 StackingLimit = mwdata.STACKINGLIMIT,
                 FlavorDescription = mwdata.FLAVOR,
                 IsFragile = mwdata.ISFRAGILE,
-                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS, // alpha10
-                ToolBuildBonus = mwdata.TOOLBUILDBONUS  // alpha10
+                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS,
+                ToolBuildBonus = mwdata.TOOLBUILDBONUS
             };
 
             mwdata = DATA_MELEE_SHOVEL;
@@ -825,8 +824,8 @@ namespace RogueSurvivor.Gameplay
                 StackingLimit = mwdata.STACKINGLIMIT,
                 FlavorDescription = mwdata.FLAVOR,
                 IsFragile = mwdata.ISFRAGILE,
-                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS, // alpha10
-                ToolBuildBonus = mwdata.TOOLBUILDBONUS  // alpha10
+                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS,
+                ToolBuildBonus = mwdata.TOOLBUILDBONUS
             };
 
             mwdata = DATA_MELEE_SHORT_SHOVEL;
@@ -838,8 +837,8 @@ namespace RogueSurvivor.Gameplay
                 StackingLimit = mwdata.STACKINGLIMIT,
                 FlavorDescription = mwdata.FLAVOR,
                 IsFragile = mwdata.ISFRAGILE,
-                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS, // alpha10
-                ToolBuildBonus = mwdata.TOOLBUILDBONUS  // alpha10
+                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS,
+                ToolBuildBonus = mwdata.TOOLBUILDBONUS
             };
 
             mwdata = DATA_MELEE_TRUNCHEON;
@@ -851,8 +850,8 @@ namespace RogueSurvivor.Gameplay
                 StackingLimit = mwdata.STACKINGLIMIT,
                 FlavorDescription = mwdata.FLAVOR,
                 IsFragile = mwdata.ISFRAGILE,
-                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS, // alpha10
-                ToolBuildBonus = mwdata.TOOLBUILDBONUS  // alpha10
+                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS,
+                ToolBuildBonus = mwdata.TOOLBUILDBONUS
             };
 
             mwdata = DATA_MELEE_IMPROVISED_CLUB;
@@ -864,8 +863,8 @@ namespace RogueSurvivor.Gameplay
                 StackingLimit = mwdata.STACKINGLIMIT,
                 FlavorDescription = mwdata.FLAVOR,
                 IsFragile = mwdata.ISFRAGILE,
-                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS, // alpha10
-                ToolBuildBonus = mwdata.TOOLBUILDBONUS  // alpha10
+                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS,
+                ToolBuildBonus = mwdata.TOOLBUILDBONUS
             };
 
             mwdata = DATA_MELEE_IMPROVISED_SPEAR;
@@ -877,8 +876,8 @@ namespace RogueSurvivor.Gameplay
                 StackingLimit = mwdata.STACKINGLIMIT,
                 FlavorDescription = mwdata.FLAVOR,
                 IsFragile = mwdata.ISFRAGILE,
-                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS, // alpha10
-                ToolBuildBonus = mwdata.TOOLBUILDBONUS  // alpha10
+                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS,
+                ToolBuildBonus = mwdata.TOOLBUILDBONUS
             };
 
             mwdata = DATA_MELEE_SMALL_HAMMER;
@@ -890,8 +889,8 @@ namespace RogueSurvivor.Gameplay
                 StackingLimit = mwdata.STACKINGLIMIT,
                 FlavorDescription = mwdata.FLAVOR,
                 IsFragile = mwdata.ISFRAGILE,
-                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS, // alpha10
-                ToolBuildBonus = mwdata.TOOLBUILDBONUS  // alpha10
+                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS,
+                ToolBuildBonus = mwdata.TOOLBUILDBONUS
             };
 
             mwdata = DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA;
@@ -902,8 +901,8 @@ namespace RogueSurvivor.Gameplay
                 FlavorDescription = mwdata.FLAVOR,
                 IsProper = true,
                 IsUnbreakable = true,
-                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS, // alpha10
-                ToolBuildBonus = mwdata.TOOLBUILDBONUS  // alpha10
+                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS,
+                ToolBuildBonus = mwdata.TOOLBUILDBONUS
             };
 
             mwdata = DATA_MELEE_UNIQUE_BIGBEAR_BAT;
@@ -914,8 +913,8 @@ namespace RogueSurvivor.Gameplay
                 FlavorDescription = mwdata.FLAVOR,
                 IsProper = true,
                 IsUnbreakable = true,
-                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS, // alpha10
-                ToolBuildBonus = mwdata.TOOLBUILDBONUS  // alpha10
+                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS,
+                ToolBuildBonus = mwdata.TOOLBUILDBONUS
             };
 
             mwdata = DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD;
@@ -926,11 +925,10 @@ namespace RogueSurvivor.Gameplay
                 FlavorDescription = mwdata.FLAVOR,
                 IsProper = true,
                 IsUnbreakable = true,
-                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS, // alpha10
-                ToolBuildBonus = mwdata.TOOLBUILDBONUS  // alpha10
+                ToolBashDamageBonus = mwdata.TOOLBASHDMGBONUS,
+                ToolBuildBonus = mwdata.TOOLBUILDBONUS
             };
 
-            // alpha10 rapid fire property
             RangedWeaponData rwp;
 
             rwp = DATA_RANGED_ARMY_PISTOL;
@@ -1160,8 +1158,6 @@ namespace RogueSurvivor.Gameplay
                 IsAn = StartsWithVowel(armData.NAME)
             };
 
-            // alpha10 added clock prop to trackers
-
             TrackerData traData;
 
             traData = DATA_TRACKER_CELL_PHONE;
@@ -1252,7 +1248,6 @@ namespace RogueSurvivor.Gameplay
 
             ScentSprayData sspData;
 
-            // alpha10 new way of using stench killer
             sspData = DATA_SCENT_SPRAY_STENCH_KILLER;
             this[IDs.SCENT_SPRAY_STENCH_KILLER] = new ItemSprayScentModel(sspData.NAME, sspData.PLURAL, GameImages.ITEM_STENCH_KILLER,
                 sspData.QUANTITY, Odor.SUPPRESSOR, sspData.STRENGTH * WorldTime.TURNS_PER_HOUR)

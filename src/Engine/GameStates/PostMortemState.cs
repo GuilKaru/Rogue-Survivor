@@ -220,7 +220,7 @@ namespace RogueSurvivor.Engine.GameStates
             graveyard.Append(string.Format("- difficulty rating of {0}%.", (int)(100 * game.Session.Scoring.DifficultyRating)));
             if (RogueGame.Options.IsPermadeathOn)
                 graveyard.Append(string.Format("- {0} : yes.", GameOptions.Name(GameOptions.IDs.GAME_PERMADEATH)));
-            if (!RogueGame.Options.AllowUndeadsEvolution && Rules.HasEvolution(game.Session.GameMode)) // alpha10 only if manually disabled
+            if (!RogueGame.Options.AllowUndeadsEvolution && Rules.HasEvolution(game.Session.GameMode))
                 graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION), RogueGame.Options.AllowUndeadsEvolution ? "yes" : "no"));
             if (RogueGame.Options.CitySize != GameOptions.DEFAULT_CITY_SIZE)
                 graveyard.Append(string.Format("- {0} : {1}.", GameOptions.Name(GameOptions.IDs.GAME_CITY_SIZE), RogueGame.Options.CitySize));

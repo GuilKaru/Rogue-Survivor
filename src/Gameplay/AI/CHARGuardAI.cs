@@ -48,7 +48,6 @@ namespace RogueSurvivor.Gameplay.AI
         {
             List<Percept> mapPercepts = FilterSameMap(game, percepts);
 
-            // alpha10
             // don't run by default.
             m_Actor.IsRunning = false;
 
@@ -58,7 +57,6 @@ namespace RogueSurvivor.Gameplay.AI
             {
                 return bestEquip;
             }
-            // end alpha10
 
             // 1. Follow order
             if (this.Order != null)
@@ -74,18 +72,16 @@ namespace RogueSurvivor.Gameplay.AI
             }
 
             ///////////////////////////////////////
-            // alpha10 OBSOLETE 1 equip weapon
-            // alpha10 OBSOLETE 2 equip armor
-            // 3 fire at nearest enemy.
-            // 4 hit adjacent enemy.
-            // 5 warn trepassers.
-            // 6 shout
-            // 7 rest if tired
-            // 8 charge enemy
-            // 9 sleep when sleepy.
-            // 10 follow leader.
-            // 11 wander in CHAR office.
-            // 12 wander.
+            // 1 fire at nearest enemy.
+            // 2 hit adjacent enemy.
+            // 3 warn trepassers.
+            // 4 shout
+            // 5 rest if tired
+            // 6 charge enemy
+            // 7 sleep when sleepy.
+            // 8 follow leader.
+            // 9 wander in CHAR office.
+            // 10 wander.
             //////////////////////////////////////
 
             // don't run by default.
@@ -97,24 +93,7 @@ namespace RogueSurvivor.Gameplay.AI
             bool checkOurLeader = m_Actor.HasLeader && !DontFollowLeader;
             bool hasAnyEnemies = allEnemies != null;
 
-            //// 1 equip weapon
-            //// alpha 10 OBSOLETE
-            //ActorAction equipWpnAction = BehaviorEquipWeapon(game);
-            //if (equipWpnAction != null)
-            //{
-            //    m_Actor.Activity = Activity.IDLE;
-            //    return equipWpnAction;
-            //}
-
-            //// 2 equip armor
-            //ActorAction equipArmAction = BehaviorEquipBestBodyArmor(game);
-            //if (equipArmAction != null)
-            //{
-            //    m_Actor.Activity = Activity.IDLE;
-            //    return equipArmAction;
-            //}
-
-            // 3 fire at nearest enemy.
+            // 1 fire at nearest enemy.
             if (currentEnemies != null)
             {
                 List<Percept> fireTargets = FilterFireTargets(game, currentEnemies);
@@ -133,14 +112,14 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 4 hit adjacent enemy
+            // 2 hit adjacent enemy
             if (currentEnemies != null)
             {
                 Percept nearestEnemy = FilterNearest(game, currentEnemies);
                 Actor targetActor = nearestEnemy.Percepted as Actor;
 
                 // fight or flee?
-                RouteFinder.SpecialActions allowedChargeActions = RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS; // alpha10
+                RouteFinder.SpecialActions allowedChargeActions = RouteFinder.SpecialActions.JUMP | RouteFinder.SpecialActions.DOORS;
                 ActorAction fightOrFlee = BehaviorFightOrFlee(game, currentEnemies, true, true, ActorCourage.COURAGEOUS, FIGHT_EMOTES, allowedChargeActions);
                 if (fightOrFlee != null)
                 {
@@ -148,7 +127,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 5 warn trepassers.
+            // 3 warn trepassers.
             List<Percept> nonEnemies = FilterNonEnemies(game, mapPercepts);
             if (nonEnemies != null)
             {
@@ -158,7 +137,6 @@ namespace RogueSurvivor.Gameplay.AI
                     if (other.Faction == game.Factions.TheCHARCorporation)
                         return false;
 
-                    // alpha10 bug fix only if visible right now!
                     if (p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter)
                         return false;
 
@@ -177,7 +155,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 6 shout
+            // 4 shout
             if (hasAnyEnemies)
             {
                 if (nonEnemies != null)
@@ -191,7 +169,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 7 rest if tired
+            // 5 rest if tired
             ActorAction restAction = BehaviorRestIfTired(game);
             if (restAction != null)
             {
@@ -199,7 +177,7 @@ namespace RogueSurvivor.Gameplay.AI
                 return new ActionWait(m_Actor, game);
             }
 
-            // 8 charge/chase enemy
+            // 6 charge/chase enemy
             if (allEnemies != null)
             {
                 Percept chasePercept = FilterNearest(game, allEnemies);
@@ -212,7 +190,7 @@ namespace RogueSurvivor.Gameplay.AI
                     chasePercept = new Percept(chasedActor, m_Actor.Location.Map.LocalTime.TurnCounter, chasedActor.Location);
                 }
 
-                // alpha10 chase only if reachable
+                // chase only if reachable
                 if (CanReachSimple(game, chasePercept.Location.Position, RouteFinder.SpecialActions.DOORS | RouteFinder.SpecialActions.JUMP))
                 {
                     // chase.
@@ -226,7 +204,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 9 sleep when sleepy
+            // 7 sleep when sleepy
             if (game.Rules.IsActorSleepy(m_Actor) && !hasAnyEnemies)
             {
                 ActorAction sleepAction = BehaviorSleep(game, m_LOSSensor.FOV);
@@ -238,7 +216,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 10 follow leader
+            // 8 follow leader
             if (checkOurLeader)
             {
                 Point lastKnownLeaderPosition = m_Actor.Leader.Location.Position;
@@ -252,7 +230,7 @@ namespace RogueSurvivor.Gameplay.AI
                 }
             }
 
-            // 11 wander in CHAR office.
+            // 9 wander in CHAR office.
             ActorAction wanderInOfficeAction = BehaviorWander(game, (loc) => RogueGame.IsInCHAROffice(loc), null);
             if (wanderInOfficeAction != null)
             {
@@ -260,7 +238,7 @@ namespace RogueSurvivor.Gameplay.AI
                 return wanderInOfficeAction;
             }
 
-            // 12 wander
+            // 10 wander
             m_Actor.Activity = Activity.IDLE;
             return BehaviorWander(game, null);
         }

@@ -8,7 +8,7 @@ namespace RogueSurvivor.Data
     {
         protected Actor m_Actor;
 
-        public Actor ControlledActor { get { return m_Actor; } } // alpha10
+        public Actor ControlledActor { get { return m_Actor; } }
 
         public virtual void TakeControl(Actor actor)
         {

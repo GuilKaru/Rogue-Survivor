@@ -24,7 +24,6 @@ namespace RogueSurvivor.Engine
             }
         }
 
-        // alpha10
         public string Music { get; private set; }
         public int Priority { get; private set; }
 

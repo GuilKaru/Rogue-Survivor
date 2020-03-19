@@ -212,7 +212,7 @@ namespace RogueSurvivor.Data
             get { return m_HitPoints; }
             set
             {
-                if (m_IsInvincible && value < m_HitPoints) // alpha10
+                if (m_IsInvincible && value < m_HitPoints)
                     return;
                 m_HitPoints = value;
             }
@@ -229,7 +229,7 @@ namespace RogueSurvivor.Data
             get { return m_StaminaPoints; }
             set
             {
-                if (m_IsInvincible && value < m_StaminaPoints) // alpha10
+                if (m_IsInvincible && value < m_StaminaPoints)
                     return;
                 m_StaminaPoints = value;
             }
@@ -246,7 +246,7 @@ namespace RogueSurvivor.Data
             get { return m_FoodPoints; }
             set
             {
-                if (m_IsInvincible && value < m_FoodPoints) // alpha10
+                if (m_IsInvincible && value < m_FoodPoints)
                     return;
                 m_FoodPoints = value;
             }
@@ -263,7 +263,7 @@ namespace RogueSurvivor.Data
             get { return m_SleepPoints; }
             set
             {
-                if (m_IsInvincible && value < m_SleepPoints) // alpha10
+                if (m_IsInvincible && value < m_SleepPoints)
                     return;
                 m_SleepPoints = value;
             }
@@ -280,7 +280,7 @@ namespace RogueSurvivor.Data
             get { return m_Sanity; }
             set
             {
-                if (m_IsInvincible && value < m_Sanity) // alpha10
+                if (m_IsInvincible && value < m_Sanity)
                     return;
                 m_Sanity = value;
             }
@@ -437,7 +437,7 @@ namespace RogueSurvivor.Data
             get { return m_Infection; }
             set
             {
-                if (m_IsInvincible && value > m_Infection) // alpha10
+                if (m_IsInvincible && value > m_Infection)
                     return;
                 m_Infection = value;
             }
@@ -449,7 +449,6 @@ namespace RogueSurvivor.Data
             set { m_DraggedCorpse = value; }
         }
 
-        // alpha 10
         public bool IsInvincible
         {
             get { return m_IsInvincible; }
@@ -592,7 +591,6 @@ namespace RogueSurvivor.Data
             return 0;
         }
 
-        // alpha10
         /// <summary>
         /// Is this other actor our leader, a follower or a mate.
         /// </summary>
@@ -710,7 +708,6 @@ namespace RogueSurvivor.Data
             return GetEquippedItem(DollPart.RIGHT_HAND);
         }
 
-        // alpha10
         /// <summary>
         /// Assumed to be equiped at Right hand.
         /// </summary>
@@ -720,7 +717,6 @@ namespace RogueSurvivor.Data
             return GetEquippedItem(DollPart.RIGHT_HAND) as ItemMeleeWeapon;
         }
 
-        // alpha10
         /// <summary>
         /// Assumed to be equiped at Right hand.
         /// </summary>
@@ -740,7 +736,6 @@ namespace RogueSurvivor.Data
             // remove dead target.
             if (m_TargetActor != null && m_TargetActor.IsDead) m_TargetActor = null;
 
-            // alpha10
             // remove trust entries with dead actors.
             // side effect: this means revived actor will forget their trust after a save game!
             if (m_TrustList != null)
@@ -786,7 +781,7 @@ namespace RogueSurvivor.Data
                     m_SelfDefenceFrom.TrimExcess();
             }
 
-            // alpha10 inventory
+            // inventory
             if (m_Inventory != null)
                 m_Inventory.OptimizeBeforeSaving();
         }

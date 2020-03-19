@@ -51,7 +51,7 @@ namespace RogueSurvivor.Engine
             GAME_RATS_UPGRADE,
             GAME_SKELETONS_UPGRADE,
             GAME_SHAMBLERS_UPGRADE,
-            GAME_AUTOSAVE_PERIOD  // alpha10.1
+            GAME_AUTOSAVE_PERIOD
         };
 
         public enum ZupDays

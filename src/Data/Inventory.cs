@@ -192,9 +192,7 @@ namespace RogueSurvivor.Data
 
             // Inventory full.
             // Can we stack at least one?
-            return HasAtLeastOneStackableWith(it); // alpha10 small speed improvement
-            /*int stackedQuantity;
-            return GetItemsStackableWith(it, out stackedQuantity) != null;*/
+            return HasAtLeastOneStackableWith(it);
         }
 
 #if false
@@ -314,7 +312,6 @@ namespace RogueSurvivor.Data
             return stackList;
         }
 
-        // alpha10
         bool HasAtLeastOneStackableWith(Item it)
         {
             if (!it.Model.IsStackable)
@@ -358,7 +355,6 @@ namespace RogueSurvivor.Data
             return m_Items.Contains(it);
         }
 
-        // alpha10
         /// <summary>
         /// Defragment the inventory : consolidate smaller stacks into bigger ones. 
         /// Improves AI inventory management, not meant for the player as it can change the inventory and confuses him.

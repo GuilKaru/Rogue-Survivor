@@ -336,7 +336,6 @@ namespace RogueSurvivor.Gameplay.AI
             if (m_Actor.Inventory.IsEmpty)
                 return null;
 
-            // alpha10.1 bugfix followers drop all was looping
             // use drop item behaviour on the first item it can.
             for (int i = 0; i < m_Actor.Inventory.CountItems; i++)
             {

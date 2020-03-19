@@ -15,7 +15,6 @@ namespace RogueSurvivor.Gameplay.AI
     /// </summary>
     class InsaneHumanAI : BaseAI
     {
-        // const int ATTACK_CHANCE = 80;  // alpha10.1 obsolete
         const int SHOUT_CHANCE = 80;
         const int USE_EXIT_CHANCE = 50;
 
@@ -98,15 +97,13 @@ namespace RogueSurvivor.Gameplay.AI
             List<Percept> mapPercepts = FilterSameMap(game, percepts);
 
             ///////////////////////////////////////////////////////////////////////
-            // alpha10 OBSOLETE 1 equip weapon
-            // alpha10 1 equip best items
-            // 2 (chance) move closer to an enemy, nearest & visible enemies first
+            // 1 equip best items
+            // 2 move closer to an enemy, nearest & visible enemies first
             // 3 (chance) shout insanities.
             // 4 (chance) use exit.
             // 5 wander
             ///////////////////////////////////////////////////////////////////////
 
-            // alpha10
             m_Actor.IsRunning = false;
 
             // 1 equip best items
@@ -116,72 +113,69 @@ namespace RogueSurvivor.Gameplay.AI
                 return bestEquip;
             }
 
-            // 2 (chance) move closer to an enemy, nearest & visible enemies first
-            // alpha10.1 always try to attack if (game.Rules.RollChance(ATTACK_CHANCE))
+            // 2 move closer to an enemy, nearest & visible enemies first
+            List<Percept> enemies = FilterEnemies(game, mapPercepts);
+            if (enemies != null)
             {
-                List<Percept> enemies = FilterEnemies(game, mapPercepts);
-                if (enemies != null)
+                // try visible enemies first, the closer the best.
+                List<Percept> visibleEnemies = Filter(game, enemies, (p) => p.Turn == m_Actor.Location.Map.LocalTime.TurnCounter);
+                if (visibleEnemies != null)
                 {
-                    // try visible enemies first, the closer the best.
-                    List<Percept> visibleEnemies = Filter(game, enemies, (p) => p.Turn == m_Actor.Location.Map.LocalTime.TurnCounter);
-                    if (visibleEnemies != null)
+                    Percept bestEnemyPercept = null;
+                    ActorAction bestBumpAction = null;
+                    float closest = int.MaxValue;
+
+                    foreach (Percept enemyP in visibleEnemies)
                     {
-                        Percept bestEnemyPercept = null;
-                        ActorAction bestBumpAction = null;
-                        float closest = int.MaxValue;
-
-                        foreach (Percept enemyP in visibleEnemies)
+                        float distance = game.Rules.GridDistance(m_Actor.Location.Position, enemyP.Location.Position);
+                        if (distance < closest)
                         {
-                            float distance = game.Rules.GridDistance(m_Actor.Location.Position, enemyP.Location.Position);
-                            if (distance < closest)
+                            ActorAction bumpAction = BehaviorStupidBumpToward(game, enemyP.Location.Position, true, true);
+                            if (bumpAction != null)
                             {
-                                ActorAction bumpAction = BehaviorStupidBumpToward(game, enemyP.Location.Position, true, true);
-                                if (bumpAction != null)
-                                {
-                                    closest = distance;
-                                    bestEnemyPercept = enemyP;
-                                    bestBumpAction = bumpAction;
-                                }
+                                closest = distance;
+                                bestEnemyPercept = enemyP;
+                                bestBumpAction = bumpAction;
                             }
-                        }
-
-                        if (bestBumpAction != null)
-                        {
-                            m_Actor.Activity = Activity.CHASING;
-                            m_Actor.TargetActor = bestEnemyPercept.Percepted as Actor;
-                            return bestBumpAction;
                         }
                     }
 
-                    // then try rest, the closer the best.
-                    List<Percept> oldEnemies = Filter(game, enemies, (p) => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter);
-                    if (oldEnemies != null)
+                    if (bestBumpAction != null)
                     {
-                        Percept bestEnemyPercept = null;
-                        ActorAction bestBumpAction = null;
-                        float closest = int.MaxValue;
+                        m_Actor.Activity = Activity.CHASING;
+                        m_Actor.TargetActor = bestEnemyPercept.Percepted as Actor;
+                        return bestBumpAction;
+                    }
+                }
 
-                        foreach (Percept enemyP in oldEnemies)
+                // then try rest, the closer the best.
+                List<Percept> oldEnemies = Filter(game, enemies, (p) => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter);
+                if (oldEnemies != null)
+                {
+                    Percept bestEnemyPercept = null;
+                    ActorAction bestBumpAction = null;
+                    float closest = int.MaxValue;
+
+                    foreach (Percept enemyP in oldEnemies)
+                    {
+                        float distance = game.Rules.GridDistance(m_Actor.Location.Position, enemyP.Location.Position);
+                        if (distance < closest)
                         {
-                            float distance = game.Rules.GridDistance(m_Actor.Location.Position, enemyP.Location.Position);
-                            if (distance < closest)
+                            ActorAction bumpAction = BehaviorStupidBumpToward(game, enemyP.Location.Position, true, true);
+                            if (bumpAction != null)
                             {
-                                ActorAction bumpAction = BehaviorStupidBumpToward(game, enemyP.Location.Position, true, true);
-                                if (bumpAction != null)
-                                {
-                                    closest = distance;
-                                    bestEnemyPercept = enemyP;
-                                    bestBumpAction = bumpAction;
-                                }
+                                closest = distance;
+                                bestEnemyPercept = enemyP;
+                                bestBumpAction = bumpAction;
                             }
                         }
+                    }
 
-                        if (bestBumpAction != null)
-                        {
-                            m_Actor.Activity = Activity.CHASING;
-                            m_Actor.TargetActor = bestEnemyPercept.Percepted as Actor;
-                            return bestBumpAction;
-                        }
+                    if (bestBumpAction != null)
+                    {
+                        m_Actor.Activity = Activity.CHASING;
+                        m_Actor.TargetActor = bestEnemyPercept.Percepted as Actor;
+                        return bestBumpAction;
                     }
                 }
             }

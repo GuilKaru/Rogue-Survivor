@@ -417,7 +417,6 @@ namespace RogueSurvivor.Gameplay.Generators
             DecorateOutsideWallsWithPosters(map, cityRectangle, m_Params.PostersChance);
             DecorateOutsideWallsWithTags(map, cityRectangle, m_Params.TagsChance);
 
-            // alpha10
             /////////
             // Music
             /////////
@@ -450,7 +449,6 @@ namespace RogueSurvivor.Gameplay.Generators
             // 7. Objects.
             // 8. Items.
             // 9. Tags.
-            // alpha10
             // 10. Music.
             ///////////////////////////////////////////////////
             Map surface = district.EntryMap;
@@ -707,7 +705,6 @@ namespace RogueSurvivor.Gameplay.Generators
                     }
                 }
 
-            // alpha10
             // 10. Music.
             sewers.BgMusic = GameMusics.SEWERS;
 
@@ -731,7 +728,6 @@ namespace RogueSurvivor.Gameplay.Generators
             // 3. Small tools room.
             // 4. Tags & Posters almost everywhere.
             // 5. Additional jobs.
-            // alpha10
             // 6. Music
             /////////////////////////////////////
             Map surface = district.EntryMap;
@@ -879,7 +875,6 @@ namespace RogueSurvivor.Gameplay.Generators
                 for (int y = 0; y < subway.Height; y++)
                     subway.GetTileAt(x, y).IsInside = true;
 
-            // alpha10
             // 6. Music.
             subway.BgMusic = GameMusics.SUBWAY;
 
@@ -1378,7 +1373,6 @@ namespace RogueSurvivor.Gameplay.Generators
                         }
                     });
 
-                // alpha10 music
                 shopBasement.BgMusic = GameMusics.SEWERS;
 
                 // link maps, stairs in one corner.
@@ -1522,14 +1516,14 @@ namespace RogueSurvivor.Gameplay.Generators
             // 4. Furniture
             ////////////////
             // chairs on the sides.
-            // alpha10.1 chance to add book/magazines
+            // chance to add book/magazines
             MapObjectFill(map, b.InsideRect,
                 (pt) =>
                 {
                     if (CountAdjWalls(map, pt.X, pt.Y) < 3)
                         return null;
 
-                    // alpha10.1 book/magazines on chair?
+                    // book/magazines on chair?
                     if (m_DiceRoller.RollChance(25))
                         map.DropItemAt(m_DiceRoller.RollChance(20) ? MakeItemBook() : MakeItemMagazines(), pt);
 
@@ -1924,7 +1918,6 @@ namespace RogueSurvivor.Gameplay.Generators
             map.AddZone(parkZone);
             MakeWalkwayZones(map, b);
 
-            // alpha10
             ////////////
             // 5. Shed?
             ////////////
@@ -2016,10 +2009,9 @@ namespace RogueSurvivor.Gameplay.Generators
             });
         }
 
-        // alpha10.1 makes apartements or vanilla house
         protected virtual bool MakeHousingBuilding(Map map, Block b)
         {
-            // alpha10.1 decide floorplan
+            // decide floorplan
             // apartment?
             if (m_DiceRoller.RollChance(HOUSE_IS_APARTMENTS_CHANCE))
                 if (MakeApartmentsBuilding(map, b))
@@ -2029,7 +2021,6 @@ namespace RogueSurvivor.Gameplay.Generators
             return MakeVanillaHousingBuilding(map, b);
         }
 
-        // alpha10.1 apartment houses
         protected virtual bool MakeApartmentsBuilding(Map map, Block b)
         {
             ////////////////////////
@@ -2215,7 +2206,6 @@ namespace RogueSurvivor.Gameplay.Generators
             return true;
         }
 
-        // alpha10.1 pre alpha10.1 regular houses
         protected virtual bool MakeVanillaHousingBuilding(Map map, Block b)
         {
             ////////////////////////
@@ -2240,7 +2230,7 @@ namespace RogueSurvivor.Gameplay.Generators
             /////////////////
             // 3. Make rooms
             /////////////////
-            // alpha10 make some housings floor plan non rectangular by randomly chosing not to place one border room
+            // make some housings floor plan non rectangular by randomly chosing not to place one border room
             // and replace it with a special "outside" room : a garden, a parking lot.
 
             int iOutsideRoom = -1;
@@ -2366,7 +2356,7 @@ namespace RogueSurvivor.Gameplay.Generators
             if (!hasOutsideDoor)
             {
                 // replace a random window with a door.
-                // alpha10 list all the exit windows, pick one and replace with a door.
+                // list all the exit windows, pick one and replace with a door.
 
                 // list all exit windows
                 List<Point> buildingExits = new List<Point>(8);
@@ -2809,7 +2799,6 @@ namespace RogueSurvivor.Gameplay.Generators
             map.AddZone(MakeUniqueZone(RogueGame.NAME_SUBWAY_STATION, b.BuildingRect));
         }
 
-        // alpha10.1 allow different x and y min size
         protected virtual void MakeRoomsPlan(Map map, ref List<Rectangle> list, Rectangle rect, int minRoomsXSize, int minRoomsYSize)
         {
             ////////////
@@ -2891,7 +2880,6 @@ namespace RogueSurvivor.Gameplay.Generators
                 (x, y) => IsInside(map, x, y) || m_DiceRoller.RollChance(outsideDoorChance) ? MakeObjWoodenDoor() : MakeObjWindow());
         }
 
-        // alpha10.1 can force room role (optional param)
         // FIXME -- room role should be an enum and not hardcoded numbers -_-
         /// <summary>
         /// 
@@ -2903,11 +2891,11 @@ namespace RogueSurvivor.Gameplay.Generators
         {
             Rectangle insideRoom = new Rectangle(roomRect.Left + 1, roomRect.Top + 1, roomRect.Width - 2, roomRect.Height - 2);
 
-            // alpha10.1 roll room role if not set
+            // roll room role if not set
             if (role == -1)
                 role = m_DiceRoller.Roll(0, 10);
 
-            // alpha10.1 added restriction to not place a mapobj if adj to at least 5 mapobj as to not cramp apartements
+            // added restriction to not place a mapobj if adj to at least 5 mapobj as to not cramp apartements
 
             switch (role)
             {
@@ -2923,7 +2911,7 @@ namespace RogueSurvivor.Gameplay.Generators
                         for (int i = 0; i < nbBeds; i++)
                         {
                             MapObjectPlaceInGoodPosition(map, insideRoom,
-                                (pt) => CountAdjWalls(map, pt.X, pt.Y) >= 3 && CountAdjDoors(map, pt.X, pt.Y) == 0 && CountAdjMapObjects(map, pt.X, pt.Y) < 5,  // alpha10.1 not cramped
+                                (pt) => CountAdjWalls(map, pt.X, pt.Y) >= 3 && CountAdjDoors(map, pt.X, pt.Y) == 0 && CountAdjMapObjects(map, pt.X, pt.Y) < 5,
                                 m_DiceRoller,
                                 (pt) =>
                                 {
@@ -2931,7 +2919,7 @@ namespace RogueSurvivor.Gameplay.Generators
                                     Rectangle adjBedRect = new Rectangle(pt.X - 1, pt.Y - 1, 3, 3);
                                     adjBedRect = Rectangle.Intersect(adjBedRect, insideRoom);
                                     MapObjectPlaceInGoodPosition(map, adjBedRect,
-                                        (pt2) => pt2 != pt && CountAdjDoors(map, pt2.X, pt2.Y) == 0 && CountAdjWalls(map, pt2.X, pt2.Y) > 0 && CountAdjMapObjects(map, pt.X, pt.Y) < 5,  // alpha10.1 not cramped,
+                                        (pt2) => pt2 != pt && CountAdjDoors(map, pt2.X, pt2.Y) == 0 && CountAdjWalls(map, pt2.X, pt2.Y) > 0 && CountAdjMapObjects(map, pt.X, pt.Y) < 5,
                                         m_DiceRoller,
                                         (pt2) =>
                                         {
@@ -2955,7 +2943,7 @@ namespace RogueSurvivor.Gameplay.Generators
                         for (int i = 0; i < nbWardrobeOrDrawer; i++)
                         {
                             MapObjectPlaceInGoodPosition(map, insideRoom,
-                                                (pt) => CountAdjWalls(map, pt.X, pt.Y) >= 2 && CountAdjDoors(map, pt.X, pt.Y) == 0 && CountAdjMapObjects(map, pt.X, pt.Y) < 5,  // alpha10.1 not cramped,
+                                                (pt) => CountAdjWalls(map, pt.X, pt.Y) >= 2 && CountAdjDoors(map, pt.X, pt.Y) == 0 && CountAdjMapObjects(map, pt.X, pt.Y) < 5,
                                                 m_DiceRoller,
                                                 (pt) =>
                                                 {
@@ -2985,7 +2973,7 @@ namespace RogueSurvivor.Gameplay.Generators
                         for (int i = 0; i < nbTables; i++)
                         {
                             MapObjectPlaceInGoodPosition(map, insideRoom,
-                                (pt) => CountAdjWalls(map, pt.X, pt.Y) == 0 && CountAdjDoors(map, pt.X, pt.Y) == 0 && CountAdjMapObjects(map, pt.X, pt.Y) < 5,  // alpha10.1 not cramped,
+                                (pt) => CountAdjWalls(map, pt.X, pt.Y) == 0 && CountAdjDoors(map, pt.X, pt.Y) == 0 && CountAdjMapObjects(map, pt.X, pt.Y) < 5,
                                 m_DiceRoller,
                                 (pt) =>
                                 {
@@ -3001,7 +2989,7 @@ namespace RogueSurvivor.Gameplay.Generators
                                     Rectangle adjTableRect = new Rectangle(pt.X - 1, pt.Y - 1, 3, 3);
                                     adjTableRect = Rectangle.Intersect(adjTableRect, insideRoom);
                                     MapObjectPlaceInGoodPosition(map, adjTableRect,
-                                        (pt2) => pt2 != pt && CountAdjDoors(map, pt2.X, pt2.Y) == 0 && CountAdjMapObjects(map, pt.X, pt.Y) < 5,  // alpha10.1 not cramped,
+                                        (pt2) => pt2 != pt && CountAdjDoors(map, pt2.X, pt2.Y) == 0 && CountAdjMapObjects(map, pt.X, pt.Y) < 5,
                                         m_DiceRoller,
                                         (pt2) => MakeObjChair(GameImages.OBJ_CHAIR));
 
@@ -3016,7 +3004,7 @@ namespace RogueSurvivor.Gameplay.Generators
                         for (int i = 0; i < nbDrawers; i++)
                         {
                             MapObjectPlaceInGoodPosition(map, insideRoom,
-                                                (pt) => CountAdjWalls(map, pt.X, pt.Y) >= 2 && CountAdjDoors(map, pt.X, pt.Y) == 0 && CountAdjMapObjects(map, pt.X, pt.Y) < 5,  // alpha10.1 not cramped,
+                                                (pt) => CountAdjWalls(map, pt.X, pt.Y) >= 2 && CountAdjDoors(map, pt.X, pt.Y) == 0 && CountAdjMapObjects(map, pt.X, pt.Y) < 5,
                                                 m_DiceRoller,
                                                 (pt) => MakeObjDrawer(GameImages.OBJ_DRAWER));
                         }
@@ -3029,7 +3017,7 @@ namespace RogueSurvivor.Gameplay.Generators
                     {
                         // table with item & chair.
                         MapObjectPlaceInGoodPosition(map, insideRoom,
-                            (pt) => CountAdjWalls(map, pt.X, pt.Y) == 0 && CountAdjDoors(map, pt.X, pt.Y) == 0 && CountAdjMapObjects(map, pt.X, pt.Y) < 5,  // alpha10.1 not cramped,
+                            (pt) => CountAdjWalls(map, pt.X, pt.Y) == 0 && CountAdjDoors(map, pt.X, pt.Y) == 0 && CountAdjMapObjects(map, pt.X, pt.Y) < 5,
                             m_DiceRoller,
                             (pt) =>
                             {
@@ -3054,7 +3042,7 @@ namespace RogueSurvivor.Gameplay.Generators
 
                         // fridge with items
                         MapObjectPlaceInGoodPosition(map, insideRoom,
-                                            (pt) => CountAdjWalls(map, pt.X, pt.Y) >= 2 && CountAdjDoors(map, pt.X, pt.Y) == 0 && CountAdjMapObjects(map, pt.X, pt.Y) < 5,  // alpha10.1 not cramped,
+                                            (pt) => CountAdjWalls(map, pt.X, pt.Y) >= 2 && CountAdjDoors(map, pt.X, pt.Y) == 0 && CountAdjMapObjects(map, pt.X, pt.Y) < 5,
                                             m_DiceRoller,
                                             (pt) =>
                                             {
@@ -3513,8 +3501,7 @@ namespace RogueSurvivor.Gameplay.Generators
                 surfaceStairs.X = m_DiceRoller.Roll(rect.Left, rect.Right);
                 surfaceStairs.Y = m_DiceRoller.Roll(rect.Top, rect.Bottom);
 
-                // valid if walkable & no blocking object.
-                // alpha10 and inside
+                // valid if walkable & no blocking object and inside
                 if (!map.GetTileAt(surfaceStairs.X, surfaceStairs.Y).Model.IsWalkable)
                     continue;
                 if (map.GetMapObjectAt(surfaceStairs.X, surfaceStairs.Y) != null)
@@ -3631,7 +3618,6 @@ namespace RogueSurvivor.Gameplay.Generators
                     });
             }
 
-            // alpha10
             // music.
             basement.BgMusic = GameMusics.SEWERS;
 
@@ -3639,7 +3625,6 @@ namespace RogueSurvivor.Gameplay.Generators
             return basement;
         }
 
-        // alpha10 added entry pos
         public Map GenerateUniqueMap_CHARUnderground(Map surfaceMap, Zone officeZone, out Point baseEntryPos)
         {
             /////////////////////////
@@ -3650,7 +3635,6 @@ namespace RogueSurvivor.Gameplay.Generators
             // 5. Posters & Blood.
             // 6. Populate.
             // 7. Add uniques.
-            // alpha10
             // 8. Music
             /////////////////////////
 
@@ -3711,7 +3695,6 @@ namespace RogueSurvivor.Gameplay.Generators
                 break;
             }
 
-            // alpha10
             // remember position
             baseEntryPos = surfaceExit;
 
@@ -3913,7 +3896,6 @@ namespace RogueSurvivor.Gameplay.Generators
             // 7. Add uniques.
             // TODO...
 
-            // alpha10
             // 8. Music
             underground.BgMusic = GameMusics.CHAR_UNDERGROUND_FACILITY;
 
@@ -4155,7 +4137,7 @@ namespace RogueSurvivor.Gameplay.Generators
             // 4. Generate Jails level (-2).
             Map jailsLevel = GeneratePoliceStation_JailsLevel(officesLevel);
 
-            // alpha10 music
+            // music
             officesLevel.BgMusic = jailsLevel.BgMusic = GameMusics.SURFACE;
 
             // 5. Link maps.
@@ -4399,7 +4381,7 @@ namespace RogueSurvivor.Gameplay.Generators
                 // gate.
                 Point gatePos = new Point(x + 1, yCells);
                 map.SetTileModelAt(gatePos.X, gatePos.Y, m_Game.Tiles.FLOOR_CONCRETE);
-                map.PlaceMapObjectAt(MakeObjIronGate(GameImages.OBJ_GATE_CLOSED, false), gatePos);  // alpha10.1 made unbreakable because civ ai can now bash their way out when trapped :p
+                map.PlaceMapObjectAt(MakeObjIronGate(GameImages.OBJ_GATE_CLOSED, false), gatePos);
                 // zone.
                 map.AddZone(MakeUniqueZone(RogueGame.NAME_POLICE_STATION_JAILS_CELL, cellRoom));
             }
@@ -4411,7 +4393,6 @@ namespace RogueSurvivor.Gameplay.Generators
 
             // 3. Populate.
             // a prisoner in each cell.
-            // alph10.1 the prisoner who should not be is now in one of the cell at random instead of always the last one
             int prisonnerCell = m_DiceRoller.Roll(0, cells.Count);
             for (int i = 0; i < cells.Count; i++)
             {
@@ -4494,7 +4475,7 @@ namespace RogueSurvivor.Gameplay.Generators
             Map storage = GenerateHospital_Storage((map.Seed << 4) ^ map.Seed);
             Map power = GenerateHospital_Power((map.Seed << 5) ^ map.Seed);
 
-            // alpha10 music
+            // music
             admissions.BgMusic = offices.BgMusic = patients.BgMusic = storage.BgMusic = power.BgMusic = GameMusics.HOSPITAL;
 
             // 5. Link maps.
@@ -4852,8 +4833,6 @@ namespace RogueSurvivor.Gameplay.Generators
             }
             map.SetTileModelAt(1, storageSouth.Top, m_Game.Tiles.FLOOR_TILES);
 
-            // alpha10.1 moved Jason Myers out of power room to storage north corridor
-            // also upped high stamina to 5 (was 3).
             // Jason Myers
             ActorModel model = m_Game.Actors.JasonMyers;
             Actor jason = model.CreateNamed(m_Game.Factions.ThePsychopaths, "Jason Myers", false, 0);
@@ -4930,35 +4909,6 @@ namespace RogueSurvivor.Gameplay.Generators
                     map.PlaceMapObjectAt(MakeObjPowerGenerator(GameImages.OBJ_POWERGEN_OFF, GameImages.OBJ_POWERGEN_ON), pt);
                 });
 
-            // alpha10.1 moved Jason Myers out of power room to storage north corridor
-            /*
-            // 3. Populate.
-            // enraged patient!
-            ActorModel model = m_Game.GameActors.JasonMyers;
-            Actor jason = model.CreateNamed(m_Game.GameFactions.ThePsychopaths, "Jason Myers", false, 0);
-            jason.IsUnique = true;
-            jason.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_JASON_MYERS);
-            GiveStartingSkillToActor(jason, Skills.IDs.TOUGH);
-            GiveStartingSkillToActor(jason, Skills.IDs.TOUGH);
-            GiveStartingSkillToActor(jason, Skills.IDs.TOUGH);
-            GiveStartingSkillToActor(jason, Skills.IDs.STRONG);
-            GiveStartingSkillToActor(jason, Skills.IDs.STRONG);
-            GiveStartingSkillToActor(jason, Skills.IDs.STRONG);
-            GiveStartingSkillToActor(jason, Skills.IDs.AGILE);
-            GiveStartingSkillToActor(jason, Skills.IDs.AGILE);
-            GiveStartingSkillToActor(jason, Skills.IDs.AGILE);
-            GiveStartingSkillToActor(jason, Skills.IDs.HIGH_STAMINA);
-            GiveStartingSkillToActor(jason, Skills.IDs.HIGH_STAMINA);
-            GiveStartingSkillToActor(jason, Skills.IDs.HIGH_STAMINA);
-            jason.Inventory.AddAll(MakeItemJasonMyersAxe());
-            map.PlaceActorAt(jason, new Point(map.Width / 2, map.Height / 2));
-            m_Game.Session.UniqueActors.JasonMyers = new UniqueActor()
-            {
-                TheActor = jason,
-                IsSpawned = true
-            };
-            */
-
             // done.
             return map;
         }
@@ -4973,7 +4923,6 @@ namespace RogueSurvivor.Gameplay.Generators
             SkinNakedHuman(m_DiceRoller, patient);
             GiveNameToActor(m_DiceRoller, patient);
             patient.Name = "Patient " + patient.Name;
-            //patient.Controller = new CivilianAI();  // alpha10.1 defined by model like other actors
 
             // skills.
             GiveRandomSkillsToActor(m_DiceRoller, patient, 1);
@@ -4992,7 +4941,6 @@ namespace RogueSurvivor.Gameplay.Generators
             SkinNakedHuman(m_DiceRoller, nurse);
             GiveNameToActor(m_DiceRoller, nurse);
             nurse.Name = "Nurse " + nurse.Name;
-            //nurse.Controller = new CivilianAI(); // alpha10.1 defined by model like other actors
 
             // add uniform.
             nurse.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_NURSE_UNIFORM);
@@ -5015,7 +4963,6 @@ namespace RogueSurvivor.Gameplay.Generators
             SkinNakedHuman(m_DiceRoller, doctor);
             GiveNameToActor(m_DiceRoller, doctor);
             doctor.Name = "Doctor " + doctor.Name;
-            //doctor.Controller = new CivilianAI(); // alpha10.1 defined by model like other actors
 
             // add uniform.
             doctor.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_DOCTOR_UNIFORM);
@@ -5121,9 +5068,8 @@ namespace RogueSurvivor.Gameplay.Generators
                     map.DropItemAt(it, pt);
                 });
 
-            // alpha10 
             // chance to spawn a nurse
-            if (m_DiceRoller.RollChance(20))  // alpha10.1 increased to 20% (avg 5 nurses for 24 storage rooms)
+            if (m_DiceRoller.RollChance(20))
             {
                 bool spawnedActor = false;
                 DoForEachTile(map, room,
@@ -5262,9 +5208,6 @@ namespace RogueSurvivor.Gameplay.Generators
             int nbSkills = 3 + new WorldTime(spawnTime).Day;
             base.GiveRandomSkillsToActor(m_DiceRoller, survivor, nbSkills);
 
-            // AI.
-            //survivor.Controller = new CivilianAI(); // alpha10.1 defined by model like other actors
-
             // slightly randomize Food and Sleep - 0..25%.
             int foodDeviation = (int)(0.25f * survivor.FoodPoints);
             survivor.FoodPoints = survivor.FoodPoints - m_Rules.Roll(0, foodDeviation);
@@ -5301,7 +5244,6 @@ namespace RogueSurvivor.Gameplay.Generators
             for (int i = 0; i < itemsToCarry; i++)
                 GiveRandomItemToActor(m_DiceRoller, civilian, spawnTime);
             base.GiveRandomSkillsToActor(m_DiceRoller, civilian, skills);
-            //civilian.Controller = new CivilianAI();  // alpha10.1 defined by model like other actors
 
             // slightly randomize Food and Sleep - 0..25%.
             int foodDeviation = (int)(0.25f * civilian.FoodPoints);
@@ -5328,7 +5270,6 @@ namespace RogueSurvivor.Gameplay.Generators
             base.GiveRandomSkillsToActor(m_DiceRoller, newCop, 1);
             base.GiveStartingSkillToActor(newCop, Skills.IDs.FIREARMS);
             base.GiveStartingSkillToActor(newCop, Skills.IDs.LEADERSHIP);
-            //newCop.Controller = new CivilianAI(); // alpha10.1 defined by model like other actors
 
             // give items.
             if (m_DiceRoller.RollChance(50))
@@ -5506,8 +5447,7 @@ namespace RogueSurvivor.Gameplay.Generators
             planks.Quantity = m_Game.Items.WOODENPLANK.StackingLimit;
             newNat.Inventory.AddAll(planks);
 
-            // skills : carpentry for building small barricades.
-            // alpha10 and firearms
+            // skills : carpentry for building small barricades and firearms
             GiveStartingSkillToActor(newNat, Skills.IDs.CARPENTRY);
             GiveStartingSkillToActor(newNat, Skills.IDs.FIREARMS);
 

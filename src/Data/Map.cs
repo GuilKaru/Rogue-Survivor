@@ -1256,7 +1256,7 @@ namespace RogueSurvivor.Data
                 for (int y = 0; y < m_Height; y++)
                     m_Tiles[x, y].OptimizeBeforeSaving();
 
-            // alpha10 items stacks
+            // items stacks
             foreach (Inventory stack in m_GroundItemsByPosition.Values)
                 stack.OptimizeBeforeSaving();
 
