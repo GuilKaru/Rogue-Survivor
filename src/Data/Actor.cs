@@ -141,6 +141,16 @@ namespace RogueSurvivor.Data
         public string HimOrHer => Model.DollBody.IsMale ? "him" : "her";
         public string HimselfOrHerself => Model.DollBody.IsMale ? "himself" : "herself";
 
+        public string Conjugate(string verb)
+        {
+            return IsProperName && !IsPluralName ? verb + "s" : verb;
+        }
+
+        public string Conjugate(Verb verb)
+        {
+            return IsProperName && !IsPluralName ? verb.HeForm : verb.YouForm;
+        }
+
         public ActorController Controller
         {
             get { return m_Controller; }
@@ -218,6 +228,8 @@ namespace RogueSurvivor.Data
             }
         }
 
+        public int MaxHitPoints => Global.Rules.ActorMaxHPs(this);
+
         public int PreviousHitPoints
         {
             get { return m_previousHitPoints; }
@@ -234,6 +246,8 @@ namespace RogueSurvivor.Data
                 m_StaminaPoints = value;
             }
         }
+
+        public int MaxStaminaPoints => Global.Rules.ActorMaxSTA(this); 
 
         public int PreviousStaminaPoints
         {
@@ -252,6 +266,8 @@ namespace RogueSurvivor.Data
             }
         }
 
+        public int MaxFoodPoints => Global.Rules.ActorMaxFood(this);
+
         public int PreviousFoodPoints
         {
             get { return m_previousFoodPoints; }
@@ -269,6 +285,8 @@ namespace RogueSurvivor.Data
             }
         }
 
+        public int MaxSleepPoints => Global.Rules.ActorMaxSleep(this);
+
         public int PreviousSleepPoints
         {
             get { return m_previousSleepPoints; }
@@ -282,9 +300,14 @@ namespace RogueSurvivor.Data
             {
                 if (m_IsInvincible && value < m_Sanity)
                     return;
-                m_Sanity = value;
+                if (value > m_Sanity)
+                    m_Sanity = Math.Min(value, MaxSanity);
+                else
+                    m_Sanity = Math.Max(value, 0);
             }
         }
+
+        public int MaxSanity => Global.Rules.ActorMaxSanity(this);
 
         public int PreviousSanity
         {
@@ -512,6 +535,41 @@ namespace RogueSurvivor.Data
             m_CurrentMeleeAttack = model.StartingSheet.UnarmedAttack;
             m_CurrentDefence = model.StartingSheet.BaseDefence;
             m_CurrentRangedAttack = Attack.BLANK;
+        }
+
+        public void RecomputeStartingStats()
+        {
+            HitPoints = MaxHitPoints;
+            StaminaPoints = MaxStaminaPoints;
+            FoodPoints = MaxFoodPoints;
+            SleepPoints = MaxSleepPoints;
+            Sanity = MaxSanity;
+            if (Inventory != null)
+                Inventory.MaxCapacity = Global.Rules.ActorMaxInv(this);
+        }
+
+        public Skill SkillUpgrade(Skills.IDs id)
+        {
+            Sheet.SkillTable.AddOrIncreaseSkill((int)id);
+            Skill sk = Sheet.SkillTable.GetSkill((int)id);
+            OnSkillUpgrade(id);
+
+            return sk;
+        }
+
+        public void OnSkillUpgrade(Skills.IDs id)
+        {
+            switch (id)
+            {
+                case Skills.IDs.HAULER:
+                    if (Inventory != null)
+                        Inventory.MaxCapacity = Global.Rules.ActorMaxInv(this);
+                    break;
+
+                default:
+                    // no special upkeep to do.
+                    break;
+            }
         }
 
         public void AddFollower(Actor other)

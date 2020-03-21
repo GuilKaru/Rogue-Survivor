@@ -2468,7 +2468,7 @@ namespace RogueSurvivor.Engine
             }
 
             // 4. No need to sleep.
-            if (actor.SleepPoints >= ActorMaxSleep(actor) - WorldTime.TURNS_PER_HOUR)
+            if (actor.SleepPoints >= actor.MaxSleepPoints - WorldTime.TURNS_PER_HOUR)
             {
                 reason = "not sleepy at all";
                 return false;
@@ -2504,7 +2504,8 @@ namespace RogueSurvivor.Engine
         public int SanityToHoursUntilUnstable(Actor a)
         {
             int left = a.Sanity - ActorDisturbedLevel(a);
-            if (left <= 0) return 0;
+            if (left <= 0)
+                return 0;
             return left / WorldTime.TURNS_PER_HOUR;
         }
 
@@ -3068,7 +3069,7 @@ namespace RogueSurvivor.Engine
             if (map == null)
                 return null;
 
-            int n = map.CountActors;
+            int n = map.ActorsCount;
             for (int i = map.CheckNextActorIndex; i < n; i++)
             {
                 Actor a = map.GetActor(i);
@@ -3520,7 +3521,7 @@ namespace RogueSurvivor.Engine
                 rapidHit1 *= FIRING_WHEN_STA_TIRED;
                 rapidHit2 *= FIRING_WHEN_STA_TIRED;
             }
-            else if (actor.StaminaPoints < ActorMaxSTA(actor))
+            else if (actor.StaminaPoints < actor.MaxStaminaPoints)
             {
                 hit *= FIRING_WHEN_STA_NOT_FULL;
                 rapidHit1 *= FIRING_WHEN_STA_NOT_FULL;

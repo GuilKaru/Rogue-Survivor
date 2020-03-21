@@ -61,7 +61,7 @@ namespace RogueSurvivor.Gameplay.AI.Sensors
             {
                 // roughly estimate time for two sensing methods.
                 int searchFovMethodTime = maxRange * maxRange;
-                int searchActorsListMethodTime = actor.Location.Map.CountActors;
+                int searchActorsListMethodTime = actor.Location.Map.ActorsCount;
 
                 // choose method which seems less costly in time.
                 if (searchFovMethodTime < searchActorsListMethodTime)

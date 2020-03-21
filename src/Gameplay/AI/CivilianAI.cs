@@ -549,7 +549,7 @@ namespace RogueSurvivor.Gameplay.AI
             // 14 use entertainment
             if (m_Actor.Model.Abilities.HasSanity)
             {
-                if (m_Actor.Sanity < 0.75f * game.Rules.ActorMaxSanity(m_Actor))
+                if (m_Actor.Sanity < 0.75f * m_Actor.MaxSanity)
                 {
                     ActorAction entAction = BehaviorUseEntertainment(game);
                     if (entAction != null)

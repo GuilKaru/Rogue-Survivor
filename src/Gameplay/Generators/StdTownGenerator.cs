@@ -5,8 +5,8 @@ namespace RogueSurvivor.Gameplay.Generators
 {
     class StdTownGenerator : BaseTownGenerator
     {
-        public StdTownGenerator(RogueGame game, BaseTownGenerator.Parameters parameters)
-            : base(game, parameters)
+        public StdTownGenerator(BaseTownGenerator.Parameters parameters)
+            : base(parameters)
         {
         }
 
@@ -70,7 +70,7 @@ namespace RogueSurvivor.Gameplay.Generators
             ////////////////////////////////
             // People and undeads in sewers
             ////////////////////////////////
-            if (Rules.HasZombiesInSewers(m_Game.Session.GameMode))
+            if (Rules.HasZombiesInSewers(Global.Session.GameMode))
             {
                 int maxTries = 10 * sewers.Width * sewers.Height;
                 // start with day zero nb of undeads.

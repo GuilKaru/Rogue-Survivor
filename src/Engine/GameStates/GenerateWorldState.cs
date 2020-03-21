@@ -23,7 +23,7 @@ namespace RogueSurvivor.Engine.GameStates
             BaseTownGenerator.Parameters genParams = BaseTownGenerator.DEFAULT_PARAMS;
             genParams.MapWidth = genParams.MapHeight = 100;
             Logger.WriteLine(Logger.Stage.INIT, "creating Generator");
-            townGenerator = new StdTownGenerator((RogueGame)game, genParams);
+            townGenerator = new StdTownGenerator(genParams);
             game.townGenerator = townGenerator;
         }
 
@@ -898,8 +898,8 @@ namespace RogueSurvivor.Engine.GameStates
                 townGenerator.GiveNameToActor(roller, player);
                 player.Sheet.SkillTable.AddOrIncreaseSkill((int)charGen.StartingSkill);
 
-                townGenerator.RecomputeActorStartingStats(player);
-                game.OnSkillUpgrade(player, charGen.StartingSkill);
+                player.RecomputeStartingStats();
+                player.OnSkillUpgrade(charGen.StartingSkill);
                 // slightly randomize Food and Sleep - 0..25%.
                 int foodDeviation = (int)(0.25f * player.FoodPoints);
                 player.FoodPoints = player.FoodPoints - game.Rules.Roll(0, foodDeviation);

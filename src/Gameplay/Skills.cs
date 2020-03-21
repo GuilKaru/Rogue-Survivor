@@ -250,6 +250,20 @@ namespace RogueSurvivor.Gameplay
             return (IDs)roller.Roll((int)IDs._FIRST_UNDEAD, (int)IDs._LAST_UNDEAD + 1);
         }
 
+        public static Skills.IDs? ZombifySkill(Skills.IDs skill)
+        {
+            switch (skill)
+            {
+                case Skills.IDs.AGILE: return Skills.IDs.Z_AGILE;
+                case Skills.IDs.LIGHT_EATER: return Skills.IDs.Z_LIGHT_EATER;
+                case Skills.IDs.LIGHT_FEET: return Skills.IDs.Z_LIGHT_FEET;
+                case Skills.IDs.MEDIC: return Skills.IDs.Z_INFECTOR;
+                case Skills.IDs.STRONG: return Skills.IDs.Z_STRONG;
+                case Skills.IDs.TOUGH: return Skills.IDs.Z_TOUGH;
+                default: return null;
+            }
+        }
+
         struct SkillData
         {
             public const int COUNT_FIELDS = 6;

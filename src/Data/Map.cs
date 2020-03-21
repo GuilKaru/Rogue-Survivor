@@ -1,4 +1,7 @@
-﻿using System;
+﻿using RogueSurvivor.Engine;
+using RogueSurvivor.Engine.Items;
+using RogueSurvivor.Gameplay;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.Serialization;
@@ -164,7 +167,7 @@ namespace RogueSurvivor.Data
             get { return m_ActorsList; }
         }
 
-        public int CountActors
+        public int ActorsCount
         {
             get { return m_ActorsList.Count; }
         }
@@ -506,6 +509,86 @@ namespace RogueSurvivor.Data
             m_iCheckNextActorIndex = 0;
         }
 
+        public int CountLivings()
+        {
+            int count = 0;
+            foreach (Actor a in Actors)
+                if (!a.Model.Abilities.IsUndead)
+                    ++count;
+
+            return count;
+        }
+
+        public int CountActors(Predicate<Actor> predFn)
+        {
+            int count = 0;
+            foreach (Actor a in Actors)
+                if (predFn(a))
+                    ++count;
+
+            return count;
+        }
+
+        public int CountFaction(Faction f)
+        {
+            int count = 0;
+            foreach (Actor a in Actors)
+                if (a.Faction == f)
+                    ++count;
+
+            return count;
+        }
+
+        public int CountUndeads()
+        {
+            int count = 0;
+            foreach (Actor a in Actors)
+                if (a.Model.Abilities.IsUndead)
+                    ++count;
+
+            return count;
+        }
+
+        public int CountFoodItemsNutrition()
+        {
+            // food items on ground.
+            int groundNutrition = 0;
+            foreach (Inventory inv in GroundInventories)
+            {
+                if (inv.IsEmpty)
+                    continue;
+                foreach (Item it in inv.Items)
+                {
+                    if (it is ItemFood)
+                        groundNutrition += Global.Rules.FoodItemNutrition(it as ItemFood, LocalTime.TurnCounter);
+                }
+            }
+            // food items carried by actors.
+            int carriedNutrition = 0;
+            foreach (Actor a in Actors)
+            {
+                Inventory inv = a.Inventory;
+                if (inv == null || inv.IsEmpty)
+                    continue;
+                foreach (Item it in inv.Items)
+                {
+                    if (it is ItemFood)
+                        carriedNutrition += Global.Rules.FoodItemNutrition(it as ItemFood, LocalTime.TurnCounter);
+                }
+            }
+
+            return groundNutrition + carriedNutrition;
+        }
+
+        public bool HasActorOfModelID(GameActors.IDs actorModelID)
+        {
+            foreach (Actor a in Actors)
+                if (a.Model.ID == (int)actorModelID)
+                    return true;
+
+            return false;
+        }
+
         public bool HasMapObject(MapObject mapObj)
         {
             return m_MapObjectsList.Contains(mapObj);
@@ -541,13 +624,9 @@ namespace RogueSurvivor.Data
                 throw new InvalidOperationException("cannot place map objects on unwalkable tiles");
 
             if (HasMapObject(mapObj))
-            {
                 m_aux_MapObjectsByPosition.Remove(mapObj.Location.Position);
-            }
             else
-            {
                 m_MapObjectsList.Add(mapObj);
-            }
             m_aux_MapObjectsByPosition.Add(position, mapObj);
             mapObj.Location = new Location(this, position);
         }
@@ -757,7 +836,8 @@ namespace RogueSurvivor.Data
 
         public void AddTimer(TimedTask t)
         {
-            if (m_Timers == null) m_Timers = new List<TimedTask>(5);
+            if (m_Timers == null)
+                m_Timers = new List<TimedTask>(5);
             m_Timers.Add(t);
         }
 

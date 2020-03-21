@@ -1877,11 +1877,11 @@ namespace RogueSurvivor.Gameplay.AI
                 return null;
 
             // check needs.
-            bool needHP = m_Actor.HitPoints < game.Rules.ActorMaxHPs(m_Actor);
+            bool needHP = m_Actor.HitPoints < m_Actor.MaxHitPoints;
             bool needSTA = game.Rules.IsActorTired(m_Actor);
             bool needSLP = m_Actor.Model.Abilities.HasToSleep && WouldLikeToSleep(game, m_Actor);
             bool needCure = m_Actor.Infection > 0;
-            bool needSan = m_Actor.Model.Abilities.HasSanity && m_Actor.Sanity < (int)(0.75f * game.Rules.ActorMaxSanity(m_Actor));
+            bool needSan = m_Actor.Model.Abilities.HasSanity && m_Actor.Sanity < (int)(0.75f * m_Actor.MaxSanity);
 
             // if no need, don't.
             if (!needHP && !needSTA && !needSLP && !needCure && !needSan)
@@ -2945,7 +2945,7 @@ namespace RogueSurvivor.Gameplay.AI
                         {
                             // score = damage inflicted vs target toughness(max hp).
                             // -> means it is better to hurt badly one big enemy than a few scratch on a group of weaklings.
-                            int value = game.Rules.BlastDamage(blastDistToTarget, model.BlastAttack) * game.Rules.ActorMaxHPs(otherActor);
+                            int value = game.Rules.BlastDamage(blastDistToTarget, model.BlastAttack) * otherActor.MaxHitPoints;
                             score += value;
                         }
                         else
@@ -3263,7 +3263,7 @@ namespace RogueSurvivor.Gameplay.AI
                 return null;
 
             // if undead, must need health.
-            if (m_Actor.Model.Abilities.IsUndead && m_Actor.HitPoints >= game.Rules.ActorMaxHPs(m_Actor))
+            if (m_Actor.Model.Abilities.IsUndead && m_Actor.HitPoints >= m_Actor.MaxHitPoints)
                 return null;
 
             // either 1) eat corpses or 2) go get them.
@@ -3611,7 +3611,7 @@ namespace RogueSurvivor.Gameplay.AI
                 return null;
 
             int turn = m_Actor.Location.Map.LocalTime.TurnCounter;
-            int need = game.Rules.ActorMaxFood(m_Actor) - m_Actor.FoodPoints;
+            int need = m_Actor.MaxFoodPoints - m_Actor.FoodPoints;
             Item bestFood = null;
             int bestScore = int.MinValue;
             foreach (Item it in m_Actor.Inventory.Items)
@@ -4248,13 +4248,13 @@ namespace RogueSurvivor.Gameplay.AI
                 // exception: always want to cure health and infection.
                 // this is will allow the player to trade meds for other items, which will increase the
                 // value of meds players mostly ignored previously (eg: sta healers).
-                if ((itMed.Healing > 0) && (m_Actor.HitPoints < game.Rules.ActorMaxHPs(m_Actor)))
+                if ((itMed.Healing > 0) && (m_Actor.HitPoints < m_Actor.MaxHitPoints))
                     return ItemRating.NEED;
-                if ((itMed.StaminaBoost > 0) && (m_Actor.StaminaPoints < 0.75f * game.Rules.ActorMaxSTA(m_Actor)))
+                if ((itMed.StaminaBoost > 0) && (m_Actor.StaminaPoints < 0.75f * m_Actor.MaxStaminaPoints))
                     return ItemRating.NEED;
-                if ((itMed.SleepBoost > 0) && (m_Actor.SleepPoints < 0.75f * game.Rules.ActorMaxSleep(m_Actor)))
+                if ((itMed.SleepBoost > 0) && (m_Actor.SleepPoints < 0.75f * m_Actor.MaxSleepPoints))
                     return ItemRating.NEED;
-                if ((itMed.SanityCure > 0) && (m_Actor.Sanity < 0.75f * game.Rules.ActorMaxSanity(m_Actor)))
+                if ((itMed.SanityCure > 0) && (m_Actor.Sanity < 0.75f * m_Actor.MaxSanity))
                     return ItemRating.NEED;
                 if ((itMed.InfectionCure > 0) && (m_Actor.Infection > 0)) // always want to cure infection
                     return ItemRating.NEED;

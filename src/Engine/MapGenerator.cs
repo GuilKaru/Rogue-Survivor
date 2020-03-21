@@ -8,16 +8,6 @@ namespace RogueSurvivor.Engine
 {
     abstract class MapGenerator
     {
-        protected readonly Rules m_Rules;
-
-        public MapGenerator(Rules rules)
-        {
-            if (rules == null)
-                throw new ArgumentNullException("rules");
-
-            m_Rules = rules;
-        }
-
         public abstract Map Generate(int seed);
 
         public void TileFill(Map map, TileModel model)
@@ -225,7 +215,7 @@ namespace RogueSurvivor.Engine
                 position.X = roller.Roll(left, left + width);
                 position.Y = roller.Roll(top, top + height);
 
-                if (m_Rules.IsWalkableFor(actor, map, position.X, position.Y) &&
+                if (Global.Rules.IsWalkableFor(actor, map, position.X, position.Y) &&
                     (goodPositionFn == null || goodPositionFn(position)))
                 {
                     map.PlaceActorAt(actor, position);
