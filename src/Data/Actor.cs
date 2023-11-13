@@ -2,6 +2,8 @@
 using RogueSurvivor.Gameplay;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace RogueSurvivor.Data
 {
@@ -523,6 +525,20 @@ namespace RogueSurvivor.Data
 
         public void AddFollower(Actor other)
         {
+            //With this I know I can see my skills and my Followers skills
+            Debug.WriteLine(m_Name);
+            for(int i = 0; i < m_Sheet.SkillTable.SkillsList.Count(); i++)
+            {
+                Debug.WriteLine(Skills.Name(m_Sheet.SkillTable.SkillsList[i]) + " = " + m_Sheet.SkillTable.GetSkillLevel(m_Sheet.SkillTable.SkillsList[i]));
+            }
+            Debug.WriteLine("/////////////////////////////////////////////////////");
+            Debug.WriteLine(other.m_Name + " This is my Follower");
+            for (int i = 0; i < other.m_Sheet.SkillTable.SkillsList.Count(); i++)
+            {
+                Debug.WriteLine(Skills.Name(other.m_Sheet.SkillTable.SkillsList[i]) + " = " + other.m_Sheet.SkillTable.GetSkillLevel(other.m_Sheet.SkillTable.SkillsList[i]));
+            }
+            Debug.WriteLine("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
+
             if (other == null)
                 throw new ArgumentNullException("other");
             if (m_Followers != null && m_Followers.Contains(other))
