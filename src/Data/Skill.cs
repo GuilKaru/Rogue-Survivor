@@ -169,5 +169,38 @@ namespace RogueSurvivor.Data
                     m_Table = null;
             }
         }
+
+        public void AddAndBuffSkill(int id, int buff)
+        {
+            if (m_Table == null)
+                m_Table = new Dictionary<int, Skill>(3);
+
+            Skill sk = GetSkill(id);
+            if (sk == null)
+            {
+                sk = new Skill(id);
+                m_Table.Add(id, sk);
+            }
+
+            sk.Level += buff;
+        }
+
+        public void DecAndDebuffSkill(int id, int buff)
+        {
+            if (m_Table == null) return;
+
+            Skill sk = GetSkill(id);
+            if (sk == null) return;
+            if (sk.Level - buff <= 0)
+            {
+                m_Table.Remove(id);
+                if (m_Table.Count == 0)
+                    m_Table = null;
+            }
+            else
+            {
+                sk.Level -= buff;
+            }
+        }
     }
 }

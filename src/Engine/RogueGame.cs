@@ -17216,6 +17216,10 @@ namespace RogueSurvivor.Engine
         {
             actor.Sheet.SkillTable.AddOrIncreaseSkill((int)id);
             Skill sk = actor.Sheet.SkillTable.GetSkill((int)id);
+            if(actor.Followers != null)
+            {
+                actor.UpdateFollowersSkills(id);
+            }
             OnSkillUpgrade(actor, id);
 
             return sk;

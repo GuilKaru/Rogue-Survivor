@@ -61,6 +61,7 @@ namespace RogueSurvivor.Data
         Defence m_CurrentDefence;
         Actor m_Leader;
         List<Actor> m_Followers = null;
+        bool m_Inspired = false;
         int m_TrustInLeader;
         List<TrustRecord> m_TrustList = null;
         int m_KillsCount;
@@ -525,20 +526,6 @@ namespace RogueSurvivor.Data
 
         public void AddFollower(Actor other)
         {
-            //With this I know I can see my skills and my Followers skills
-            Debug.WriteLine(m_Name);
-            for(int i = 0; i < m_Sheet.SkillTable.SkillsList.Count(); i++)
-            {
-                Debug.WriteLine(Skills.Name(m_Sheet.SkillTable.SkillsList[i]) + " = " + m_Sheet.SkillTable.GetSkillLevel(m_Sheet.SkillTable.SkillsList[i]));
-            }
-            Debug.WriteLine("/////////////////////////////////////////////////////");
-            Debug.WriteLine(other.m_Name + " This is my Follower");
-            for (int i = 0; i < other.m_Sheet.SkillTable.SkillsList.Count(); i++)
-            {
-                Debug.WriteLine(Skills.Name(other.m_Sheet.SkillTable.SkillsList[i]) + " = " + other.m_Sheet.SkillTable.GetSkillLevel(other.m_Sheet.SkillTable.SkillsList[i]));
-            }
-            Debug.WriteLine("|||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
-
             if (other == null)
                 throw new ArgumentNullException("other");
             if (m_Followers != null && m_Followers.Contains(other))
@@ -551,6 +538,8 @@ namespace RogueSurvivor.Data
             if (other.Leader != null)
                 other.Leader.RemoveFollower(other);
             other.m_Leader = this;
+
+            BuffFollower(other);
         }
 
         public void RemoveFollower(Actor other)
@@ -573,6 +562,8 @@ namespace RogueSurvivor.Data
                 ai.Directives.Reset();
                 ai.SetOrder(null);
             }
+
+            DebuffFollower(other);
         }
 
         public void RemoveAllFollowers()
@@ -583,6 +574,45 @@ namespace RogueSurvivor.Data
             }
         }
 
+        public void BuffFollower(Actor follower)
+        {
+            var skills = new List<string> { "AGILE", "AWAKE", "BOWS", "CARPENTRY", "FIREARMS", "HIGH_STAMINA", "MARTIAL_ARTS", "NECROLOGY", "STRONG_PSYCHE", "UNSUSPICIOUS" };
+
+            int leaderSkillLevel;
+
+            for (int i = 0; i < m_Sheet.SkillTable.SkillsList.Count(); i++)
+            {
+                if (skills.Contains(Skills.Name(m_Sheet.SkillTable.SkillsList[i]), StringComparer.OrdinalIgnoreCase))
+                {
+                    leaderSkillLevel = m_Sheet.SkillTable.GetSkillLevel(m_Sheet.SkillTable.SkillsList[i]);
+                    follower.m_Sheet.SkillTable.AddAndBuffSkill(m_Sheet.SkillTable.SkillsList[i], leaderSkillLevel);
+                }
+            }
+        }
+
+        public void DebuffFollower(Actor follower)
+        {
+            var skills = new List<string> { "AGILE", "AWAKE", "BOWS", "CARPENTRY", "FIREARMS", "HIGH_STAMINA", "MARTIAL_ARTS", "NECROLOGY", "STRONG_PSYCHE", "UNSUSPICIOUS"};
+
+            int leaderSkillLevel;
+
+            for (int i = 0; i < m_Sheet.SkillTable.SkillsList.Count(); i++)
+            {
+                if (skills.Contains(Skills.Name(m_Sheet.SkillTable.SkillsList[i]), StringComparer.OrdinalIgnoreCase))
+                {
+                    leaderSkillLevel = m_Sheet.SkillTable.GetSkillLevel(m_Sheet.SkillTable.SkillsList[i]);
+                    follower.m_Sheet.SkillTable.DecAndDebuffSkill(m_Sheet.SkillTable.SkillsList[i], leaderSkillLevel);
+                }
+            }
+        }
+
+        public void UpdateFollowersSkills(Skills.IDs id)
+        {
+            for(int i = 0; i < m_Followers.Count(); i++)
+            {
+                m_Followers[i].m_Sheet.SkillTable.AddOrIncreaseSkill((int)id);
+            }
+        }
         public void SetTrustIn(Actor other, int trust)
         {
             if (m_TrustList == null)
