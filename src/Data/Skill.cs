@@ -8,7 +8,7 @@ namespace RogueSurvivor.Data
     {
         int m_ID;
         int m_Level;
-
+        int m_BuffedLevel;
         public int ID
         {
             get { return m_ID; }
@@ -18,6 +18,12 @@ namespace RogueSurvivor.Data
         {
             get { return m_Level; }
             set { m_Level = value; }
+        }
+
+        public int BuffedLevel
+        {
+            get { return m_BuffedLevel; }
+            set { m_BuffedLevel = value; }
         }
 
         public Skill(int id)
@@ -181,17 +187,17 @@ namespace RogueSurvivor.Data
                 sk = new Skill(id);
                 m_Table.Add(id, sk);
             }
-
-            sk.Level += buff;
+                sk.BuffedLevel += buff;
+                sk.Level += buff;
         }
 
-        public void DecAndDebuffSkill(int id, int buff)
+        public void DecAndDebuffSkill(int id)
         {
             if (m_Table == null) return;
 
             Skill sk = GetSkill(id);
             if (sk == null) return;
-            if (sk.Level - buff <= 0)
+            if (sk.Level - sk.BuffedLevel <= 0)
             {
                 m_Table.Remove(id);
                 if (m_Table.Count == 0)
@@ -199,7 +205,8 @@ namespace RogueSurvivor.Data
             }
             else
             {
-                sk.Level -= buff;
+                sk.Level -= sk.BuffedLevel;
+                sk.BuffedLevel = 0;
             }
         }
     }

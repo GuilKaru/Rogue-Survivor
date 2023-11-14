@@ -1,4 +1,5 @@
-﻿using RogueSurvivor.Engine.Items;
+﻿using RogueSurvivor.Engine;
+using RogueSurvivor.Engine.Items;
 using RogueSurvivor.Gameplay;
 using System;
 using System.Collections.Generic;
@@ -579,12 +580,20 @@ namespace RogueSurvivor.Data
             var skills = new List<string> { "AGILE", "AWAKE", "BOWS", "CARPENTRY", "FIREARMS", "HIGH_STAMINA", "MARTIAL_ARTS", "NECROLOGY", "STRONG_PSYCHE", "UNSUSPICIOUS" };
 
             int leaderSkillLevel;
+            int followerSkillLevel;
 
             for (int i = 0; i < m_Sheet.SkillTable.SkillsList.Count(); i++)
             {
                 if (skills.Contains(Skills.Name(m_Sheet.SkillTable.SkillsList[i]), StringComparer.OrdinalIgnoreCase))
                 {
                     leaderSkillLevel = m_Sheet.SkillTable.GetSkillLevel(m_Sheet.SkillTable.SkillsList[i]);
+                    followerSkillLevel = follower.m_Sheet.SkillTable.GetSkillLevel(m_Sheet.SkillTable.SkillsList[i]);
+
+                    if(leaderSkillLevel + followerSkillLevel > Skills.MaxSkillLevel(m_Sheet.SkillTable.SkillsList[i]))
+                    {
+                        leaderSkillLevel = Skills.MaxSkillLevel(m_Sheet.SkillTable.SkillsList[i]) - followerSkillLevel;
+                    }
+
                     follower.m_Sheet.SkillTable.AddAndBuffSkill(m_Sheet.SkillTable.SkillsList[i], leaderSkillLevel);
                 }
             }
@@ -594,14 +603,14 @@ namespace RogueSurvivor.Data
         {
             var skills = new List<string> { "AGILE", "AWAKE", "BOWS", "CARPENTRY", "FIREARMS", "HIGH_STAMINA", "MARTIAL_ARTS", "NECROLOGY", "STRONG_PSYCHE", "UNSUSPICIOUS"};
 
-            int leaderSkillLevel;
+            //int leaderSkillLevel;
 
             for (int i = 0; i < m_Sheet.SkillTable.SkillsList.Count(); i++)
             {
                 if (skills.Contains(Skills.Name(m_Sheet.SkillTable.SkillsList[i]), StringComparer.OrdinalIgnoreCase))
                 {
-                    leaderSkillLevel = m_Sheet.SkillTable.GetSkillLevel(m_Sheet.SkillTable.SkillsList[i]);
-                    follower.m_Sheet.SkillTable.DecAndDebuffSkill(m_Sheet.SkillTable.SkillsList[i], leaderSkillLevel);
+                    //leaderSkillLevel = m_Sheet.SkillTable.GetSkillLevel(m_Sheet.SkillTable.SkillsList[i]);
+                    follower.m_Sheet.SkillTable.DecAndDebuffSkill(m_Sheet.SkillTable.SkillsList[i]);
                 }
             }
         }
@@ -610,7 +619,10 @@ namespace RogueSurvivor.Data
         {
             for(int i = 0; i < m_Followers.Count(); i++)
             {
-                m_Followers[i].m_Sheet.SkillTable.AddOrIncreaseSkill((int)id);
+                if (m_Followers[i].m_Sheet.SkillTable.GetSkillLevel((int)id) + 1 <= Skills.MaxSkillLevel(id))
+                {
+                    m_Followers[i].m_Sheet.SkillTable.AddAndBuffSkill((int)id, 1);
+                }
             }
         }
         public void SetTrustIn(Actor other, int trust)
