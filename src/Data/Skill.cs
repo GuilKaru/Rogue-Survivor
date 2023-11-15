@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace RogueSurvivor.Data
 {
@@ -8,7 +9,7 @@ namespace RogueSurvivor.Data
     {
         int m_ID;
         int m_Level;
-        int m_BuffedLevel;
+        int m_BuffedLevel; // keep track on how many levels you have buffed the skill.
         public int ID
         {
             get { return m_ID; }
@@ -176,6 +177,7 @@ namespace RogueSurvivor.Data
             }
         }
 
+        //This levels up the skill but keep track of the buff
         public void AddAndBuffSkill(int id, int buff)
         {
             if (m_Table == null)
@@ -187,10 +189,11 @@ namespace RogueSurvivor.Data
                 sk = new Skill(id);
                 m_Table.Add(id, sk);
             }
-                sk.BuffedLevel += buff;
+                sk.BuffedLevel += buff; //Keep track on how much this skill is being buffed
                 sk.Level += buff;
         }
 
+        //Decreses or remove a skill depending on the buff
         public void DecAndDebuffSkill(int id)
         {
             if (m_Table == null) return;
@@ -206,7 +209,7 @@ namespace RogueSurvivor.Data
             else
             {
                 sk.Level -= sk.BuffedLevel;
-                sk.BuffedLevel = 0;
+                sk.BuffedLevel = 0; //Reset buff
             }
         }
     }

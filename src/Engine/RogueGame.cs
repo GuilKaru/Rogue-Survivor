@@ -12950,7 +12950,7 @@ namespace RogueSurvivor.Engine
 
             // take lead.
             actor.AddFollower(other);
-
+            
             // reset trust in leader.
             int prevTrust = other.GetTrustIn(actor);
             other.TrustInLeader = prevTrust;
@@ -17216,6 +17216,7 @@ namespace RogueSurvivor.Engine
         {
             actor.Sheet.SkillTable.AddOrIncreaseSkill((int)id);
             Skill sk = actor.Sheet.SkillTable.GetSkill((int)id);
+            //Update the buff of the followers
             if(actor.Followers != null)
             {
                 actor.UpdateFollowersSkills(id);

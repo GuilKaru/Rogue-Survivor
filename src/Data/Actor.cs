@@ -62,7 +62,6 @@ namespace RogueSurvivor.Data
         Defence m_CurrentDefence;
         Actor m_Leader;
         List<Actor> m_Followers = null;
-        bool m_Inspired = false;
         int m_TrustInLeader;
         List<TrustRecord> m_TrustList = null;
         int m_KillsCount;
@@ -577,6 +576,7 @@ namespace RogueSurvivor.Data
 
         public void BuffFollower(Actor follower)
         {
+            //List of skills that can be buffed
             var skills = new List<string> { "AGILE", "AWAKE", "BOWS", "CARPENTRY", "FIREARMS", "HIGH_STAMINA", "MARTIAL_ARTS", "NECROLOGY", "STRONG_PSYCHE", "UNSUSPICIOUS" };
 
             int leaderSkillLevel;
@@ -584,17 +584,22 @@ namespace RogueSurvivor.Data
 
             for (int i = 0; i < m_Sheet.SkillTable.SkillsList.Count(); i++)
             {
-                if (skills.Contains(Skills.Name(m_Sheet.SkillTable.SkillsList[i]), StringComparer.OrdinalIgnoreCase))
-                {
-                    leaderSkillLevel = m_Sheet.SkillTable.GetSkillLevel(m_Sheet.SkillTable.SkillsList[i]);
-                    followerSkillLevel = follower.m_Sheet.SkillTable.GetSkillLevel(m_Sheet.SkillTable.SkillsList[i]);
+                int skillNumber = m_Sheet.SkillTable.SkillsList[i];
 
-                    if(leaderSkillLevel + followerSkillLevel > Skills.MaxSkillLevel(m_Sheet.SkillTable.SkillsList[i]))
+                //Compare skills of the actor to the list of skills that can be buffed
+                if (skills.Contains(Skills.Name(skillNumber), StringComparer.OrdinalIgnoreCase))
+                {
+                    //Get the skill Level of the skills in the leader and follower
+                    leaderSkillLevel = LeaderBuff(m_Sheet.SkillTable.GetSkillLevel(skillNumber));
+                    followerSkillLevel = follower.m_Sheet.SkillTable.GetSkillLevel(skillNumber);
+
+                    //The sum of the leader and follower skill can't be higher than the max level of the skill
+                    if(leaderSkillLevel + followerSkillLevel > Skills.MaxSkillLevel(skillNumber))
                     {
-                        leaderSkillLevel = Skills.MaxSkillLevel(m_Sheet.SkillTable.SkillsList[i]) - followerSkillLevel;
+                        leaderSkillLevel = Skills.MaxSkillLevel(skillNumber) - followerSkillLevel;
                     }
 
-                    follower.m_Sheet.SkillTable.AddAndBuffSkill(m_Sheet.SkillTable.SkillsList[i], leaderSkillLevel);
+                    follower.m_Sheet.SkillTable.AddAndBuffSkill(skillNumber, leaderSkillLevel);
                 }
             }
         }
@@ -603,25 +608,48 @@ namespace RogueSurvivor.Data
         {
             var skills = new List<string> { "AGILE", "AWAKE", "BOWS", "CARPENTRY", "FIREARMS", "HIGH_STAMINA", "MARTIAL_ARTS", "NECROLOGY", "STRONG_PSYCHE", "UNSUSPICIOUS"};
 
-            //int leaderSkillLevel;
-
             for (int i = 0; i < m_Sheet.SkillTable.SkillsList.Count(); i++)
             {
-                if (skills.Contains(Skills.Name(m_Sheet.SkillTable.SkillsList[i]), StringComparer.OrdinalIgnoreCase))
+                int skillNumber = m_Sheet.SkillTable.SkillsList[i];
+
+                if (skills.Contains(Skills.Name(skillNumber), StringComparer.OrdinalIgnoreCase))
                 {
-                    //leaderSkillLevel = m_Sheet.SkillTable.GetSkillLevel(m_Sheet.SkillTable.SkillsList[i]);
-                    follower.m_Sheet.SkillTable.DecAndDebuffSkill(m_Sheet.SkillTable.SkillsList[i]);
+                    //In the debuff we don't need the skill level of the leader, since the skills have their buff section.
+                    follower.m_Sheet.SkillTable.DecAndDebuffSkill(skillNumber);
                 }
+            }
+        }
+
+        public int LeaderBuff(int leaderSkillLevel)
+        {
+            //Give buff depending on the level of the Skill. Less than 2 is 1, less than 4 is 2, and 5 is 3
+            if(leaderSkillLevel <= 2)
+            {
+                return 1;
+            }
+            else if(leaderSkillLevel <= 4)
+            {
+                return 2;
+            }
+            else
+            {
+                return 3;
             }
         }
 
         public void UpdateFollowersSkills(Skills.IDs id)
         {
-            for(int i = 0; i < m_Followers.Count(); i++)
+            int leaderSkillLevel = m_Sheet.SkillTable.GetSkillLevel((int)id);
+
+            //Level 1 - 3 - 5 are breakpoints to get +1 in the sharing of the skill.
+            if(leaderSkillLevel == 1 || leaderSkillLevel == 3 || leaderSkillLevel == 5)
             {
-                if (m_Followers[i].m_Sheet.SkillTable.GetSkillLevel((int)id) + 1 <= Skills.MaxSkillLevel(id))
+                for (int i = 0; i < m_Followers.Count(); i++)
                 {
-                    m_Followers[i].m_Sheet.SkillTable.AddAndBuffSkill((int)id, 1);
+                    if (m_Followers[i].m_Sheet.SkillTable.GetSkillLevel((int)id) + 1 <= Skills.MaxSkillLevel(id))
+                    {
+                        m_Followers[i].m_Sheet.SkillTable.AddAndBuffSkill((int)id, 1);
+                    }
                 }
             }
         }
